@@ -48,7 +48,7 @@ export default function DashboardCharts({ monthlyChart, byType, totalCo2 }: Prop
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
             <XAxis dataKey="month" tick={{ fontSize: 12 }} />
             <YAxis tick={{ fontSize: 12 }} />
-            <Tooltip formatter={(v: number) => [`${v} kg`, "CO₂e"]} />
+            <Tooltip formatter={(v: any) => [`${v} kg`, "CO₂e"]} />
             <Area type="monotone" dataKey="co2" stroke="#16a34a" fill="url(#co2Grad)" strokeWidth={2} />
           </AreaChart>
         </ResponsiveContainer>

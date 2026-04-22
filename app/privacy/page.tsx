@@ -1,4 +1,18 @@
-export const metadata = { title: "Privacy Policy — GreenTrack AI" };
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Privacy Policy",
+  description:
+    "Read GreenTrack AI's privacy policy. Learn how we collect, use, and protect your data in compliance with UK GDPR.",
+  alternates: {
+    canonical: `${process.env.NEXT_PUBLIC_APP_URL || "https://greentrack.ai"}/privacy`,
+  },
+  openGraph: {
+    title: "Privacy Policy | GreenTrack AI",
+    description: "How GreenTrack AI collects, uses, and protects your data under UK GDPR.",
+    url: `${process.env.NEXT_PUBLIC_APP_URL || "https://greentrack.ai"}/privacy`,
+  },
+};
 
 export default function PrivacyPage() {
   return (

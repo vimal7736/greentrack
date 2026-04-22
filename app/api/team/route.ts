@@ -34,7 +34,7 @@ export async function GET() {
     .eq("org_id", profile.org_id)
     .order("created_at", { ascending: true });
 
-  const org = profile.organisations as unknown as { name: string; tier: string; seats_limit: number } | null;
+  const org = (Array.isArray(profile.organisations) ? profile.organisations[0] : profile.organisations) as { name: string; tier: string; seats_limit: number } | null;
 
   return NextResponse.json({
     members: members ?? [],
@@ -67,7 +67,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Only admins can invite members" }, { status: 403 });
   }
 
-  const org = profile.organisations as unknown as { seats_limit: number; tier: string } | null;
+  const org = (Array.isArray(profile.organisations) ? profile.organisations[0] : profile.organisations) as { seats_limit: number; tier: string } | null;
   const seatsLimit = org?.seats_limit ?? 3;
 
   // Count current members

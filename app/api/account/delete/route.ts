@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
+import { sendAccountDeletedEmail } from "@/lib/email";
 
 /**
  * GET /api/account/delete
@@ -44,6 +45,11 @@ export async function GET() {
     if ((count ?? 0) === 0) {
       await admin.from("organisations").delete().eq("id", profile.org_id);
     }
+  }
+
+  // Fire-and-forget email
+  if (user.email) {
+    sendAccountDeletedEmail({ to: user.email });
   }
 
   // Delete the auth user (removes session and prevents future login with this account)

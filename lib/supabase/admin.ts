@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import "@/lib/env";
 
 /**
  * Admin client using the service role key.

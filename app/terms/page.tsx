@@ -1,4 +1,18 @@
-export const metadata = { title: "Terms of Service — GreenTrack AI" };
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Terms of Service",
+  description:
+    "Read GreenTrack AI's terms of service. Understand your rights and responsibilities when using our carbon tracking platform.",
+  alternates: {
+    canonical: `${process.env.NEXT_PUBLIC_APP_URL || "https://greentrack.ai"}/terms`,
+  },
+  openGraph: {
+    title: "Terms of Service | GreenTrack AI",
+    description: "Your rights and responsibilities when using the GreenTrack AI platform.",
+    url: `${process.env.NEXT_PUBLIC_APP_URL || "https://greentrack.ai"}/terms`,
+  },
+};
 
 export default function TermsPage() {
   return (

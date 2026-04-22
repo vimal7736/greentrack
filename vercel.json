@@ -1,0 +1,17 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "next build",
+  "outputDirectory": ".next",
+  "functions": {
+    "app/api/bills/upload/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/reports/summary/route.ts": {
+      "maxDuration": 30
+    },
+    "app/api/webhooks/stripe/route.ts": {
+      "maxDuration": 10
+    }
+  },
+  "regions": ["lhr1"]
+}

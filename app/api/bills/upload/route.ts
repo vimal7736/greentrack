@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { checkRateLimit } from "@/lib/ratelimit";
 
 /**
  * POST /api/bills/upload
@@ -12,6 +13,12 @@ export async function POST(request: Request) {
   // Auth check
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
+
+  // Rate limiting
+  const { success } = await checkRateLimit("upload", user.id);
+  if (!success) {
+    return NextResponse.json({ error: "Rate limit exceeded. Please try again in a minute." }, { status: 429 });
+  }
 
   // Get org_id
   const { data: profile } = await supabase
@@ -40,7 +47,7 @@ export async function POST(request: Request) {
   }
 
   // ── Tier enforcement ──────────────────────────────────────────────────────
-  const org = profile.organisations as { tier: string } | null;
+  const org = (Array.isArray(profile.organisations) ? profile.organisations[0] : profile.organisations) as { tier: string } | null;
   const tier = org?.tier ?? "free";
 
   if (tier === "free") {

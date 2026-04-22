@@ -19,7 +19,7 @@ export async function POST() {
     .eq("id", user.id)
     .single();
 
-  const org = profile?.organisations as unknown as { stripe_customer_id: string | null } | null;
+  const org = (Array.isArray(profile?.organisations) ? profile.organisations[0] : profile?.organisations) as { stripe_customer_id: string | null } | null;
 
   if (!org?.stripe_customer_id) {
     return NextResponse.json({ error: "No billing account found" }, { status: 404 });

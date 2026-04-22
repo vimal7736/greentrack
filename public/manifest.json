@@ -1,0 +1,18 @@
+{
+  "name": "GreenTrack AI",
+  "short_name": "GreenTrack",
+  "description": "Carbon footprint tracking for UK businesses",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#f9fafb",
+  "theme_color": "#14532d",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

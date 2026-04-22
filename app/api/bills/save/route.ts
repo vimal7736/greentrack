@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { sendBillProcessedEmail } from "@/lib/email";
 
 /**
  * POST /api/bills/save
@@ -17,7 +18,7 @@ export async function POST(request: Request) {
   // Get user's org
   const { data: profile } = await supabase
     .from("profiles")
-    .select("org_id")
+    .select("org_id, organisations(name)")
     .eq("id", user.id)
     .single();
 
@@ -94,6 +95,15 @@ export async function POST(request: Request) {
   if (insertError) {
     return NextResponse.json({ error: insertError.message }, { status: 500 });
   }
+
+  // Fire-and-forget email
+  const org = (Array.isArray(profile.organisations) ? profile.organisations[0] : profile.organisations) as { name: string } | null;
+  sendBillProcessedEmail({
+    to: user.email!,
+    orgName: org?.name ?? "Your Organisation",
+    billType: bill_type,
+    co2Kg: co2_kg,
+  });
 
   return NextResponse.json({
     bill,

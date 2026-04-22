@@ -36,7 +36,7 @@ export default async function DashboardPage() {
     return <NoOrgState />;
   }
 
-  const org = profile.organisations as unknown as { name: string } | null;
+  const org = (Array.isArray(profile.organisations) ? profile.organisations[0] : profile.organisations) as { name: string } | null;
   const orgName = org?.name ?? "Your Organisation";
 
   // Fetch last 12 months of bills

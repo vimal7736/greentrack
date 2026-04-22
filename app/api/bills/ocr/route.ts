@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { checkRateLimit } from "@/lib/ratelimit";
 
 /**
  * POST /api/bills/ocr
@@ -14,6 +15,12 @@ export async function POST(request: Request) {
   // Auth check
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
+
+  // Rate limiting
+  const { success } = await checkRateLimit("ocr", user.id);
+  if (!success) {
+    return NextResponse.json({ error: "Rate limit exceeded. Please try again in a minute." }, { status: 429 });
+  }
 
   const { signedUrl, billType } = await request.json();
 

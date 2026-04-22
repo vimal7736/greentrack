@@ -21,7 +21,7 @@ export async function GET() {
     return NextResponse.json({ error: "No organisation found" }, { status: 404 });
   }
 
-  const org = profile.organisations as unknown as {
+  const org = (Array.isArray(profile.organisations) ? profile.organisations[0] : profile.organisations) as {
     name: string;
     tier: string;
     stripe_subscription_id: string | null;

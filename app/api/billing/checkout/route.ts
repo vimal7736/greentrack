@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { stripe } from "@/lib/stripe";
 import { NextResponse } from "next/server";
+import { checkRateLimit } from "@/lib/ratelimit";
 
 /**
  * POST /api/billing/checkout
@@ -12,6 +13,12 @@ export async function POST(request: Request) {
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
+
+  // Rate limiting
+  const { success } = await checkRateLimit("checkout", user.id);
+  if (!success) {
+    return NextResponse.json({ error: "Rate limit exceeded. Please try again later." }, { status: 429 });
+  }
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -32,7 +39,7 @@ export async function POST(request: Request) {
     ? process.env.STRIPE_STARTER_PRICE_ID!
     : process.env.STRIPE_BUSINESS_PRICE_ID!;
 
-  const org = profile.organisations as unknown as {
+  const org = (Array.isArray(profile.organisations) ? profile.organisations[0] : profile.organisations) as {
     name: string;
     stripe_customer_id: string | null;
     tier: string;

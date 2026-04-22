@@ -52,42 +52,50 @@ export default function Sidebar({ userName, userEmail, userRole, orgName, orgTie
   const tierLabel = safeTier.charAt(0).toUpperCase() + safeTier.slice(1);
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 bg-green-900 text-white flex flex-col z-40">
+    <aside
+      className="fixed left-0 top-0 h-screen w-64 bg-green-900 text-white flex flex-col z-40"
+      aria-label="Application sidebar"
+    >
       {/* Logo */}
       <div className="px-6 py-5 border-b border-green-800">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-green-400 rounded-lg flex items-center justify-center">
+        <Link href="/dashboard" className="flex items-center gap-2" aria-label="GreenTrack AI home">
+          <div className="w-8 h-8 bg-green-400 rounded-lg flex items-center justify-center" aria-hidden="true">
             <Leaf className="w-5 h-5 text-green-900" />
           </div>
           <div>
             <p className="font-bold text-white text-sm">GreenTrack AI</p>
             <p className="text-green-400 text-xs">Carbon Management</p>
           </div>
-        </div>
+        </Link>
       </div>
 
       {/* Org + Tier */}
       <div className="px-4 py-3 border-b border-green-800">
-        <p className="text-white text-sm font-semibold truncate">{orgName}</p>
-        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${TIER_COLORS[orgTier] ?? TIER_COLORS.free}`}>
+        <p className="text-white text-sm font-semibold truncate" aria-label={`Organisation: ${orgName}`}>{orgName}</p>
+        <span
+          className={`text-xs px-2 py-0.5 rounded-full font-medium ${TIER_COLORS[orgTier] ?? TIER_COLORS.free}`}
+          aria-label={`Subscription plan: ${tierLabel}`}
+        >
           {tierLabel} Plan
         </span>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto" aria-label="Main navigation">
         {navItems.map(({ label, href, icon: Icon }) => {
           const active = pathname === href;
           return (
             <Link
               key={href}
               href={href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${active
+              aria-current={active ? "page" : undefined}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                active
                   ? "bg-green-700 text-white"
                   : "text-green-200 hover:bg-green-800 hover:text-white"
-                }`}
+              }`}
             >
-              <Icon className="w-4 h-4 shrink-0" />
+              <Icon className="w-4 h-4 shrink-0" aria-hidden="true" />
               {label}
             </Link>
           );
@@ -97,12 +105,14 @@ export default function Sidebar({ userName, userEmail, userRole, orgName, orgTie
           <div className="pt-2 border-t border-green-800 mt-2">
             <Link
               href="/admin"
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${pathname === "/admin"
+              aria-current={pathname === "/admin" ? "page" : undefined}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                pathname === "/admin"
                   ? "bg-green-700 text-white"
                   : "text-green-200 hover:bg-green-800 hover:text-white"
-                }`}
+              }`}
             >
-              <Shield className="w-4 h-4 shrink-0" />
+              <Shield className="w-4 h-4 shrink-0" aria-hidden="true" />
               Admin Panel
             </Link>
           </div>
@@ -112,7 +122,10 @@ export default function Sidebar({ userName, userEmail, userRole, orgName, orgTie
       {/* User */}
       <div className="px-4 py-4 border-t border-green-800">
         <div className="flex items-center gap-3 mb-3">
-          <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-xs font-bold text-white">
+          <div
+            className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-xs font-bold text-white"
+            aria-hidden="true"
+          >
             {initials}
           </div>
           <div className="flex-1 min-w-0">
@@ -123,9 +136,10 @@ export default function Sidebar({ userName, userEmail, userRole, orgName, orgTie
         <button
           type="button"
           onClick={handleSignOut}
-          className="flex items-center gap-2 text-green-300 hover:text-white text-xs transition-colors"
+          aria-label="Sign out of GreenTrack AI"
+          className="flex items-center gap-2 text-green-300 hover:text-white text-xs transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-400"
         >
-          <LogOut className="w-3.5 h-3.5" />
+          <LogOut className="w-3.5 h-3.5" aria-hidden="true" />
           Sign out
         </button>
       </div>

@@ -39,17 +39,19 @@ export async function GET(request: Request) {
 
   if (!profile?.org_id) return new NextResponse("No organisation found", { status: 404 });
 
-  const org = profile.organisations as unknown as { name: string } | null;
+  const org = (Array.isArray(profile.organisations) ? profile.organisations[0] : profile.organisations) as { name: string } | null;
   const from = `${year}-01-01`;
   const to = `${year}-12-31`;
 
-  const { data: bills = [] } = await supabase
+  const { data: billsData } = await supabase
     .from("bills")
     .select("bill_type, bill_date, usage_amount, usage_unit, co2_kg")
     .eq("org_id", profile.org_id)
     .gte("bill_date", from)
     .lte("bill_date", to)
     .order("bill_date", { ascending: true });
+
+  const bills = billsData ?? [];
 
   const totalCo2 = bills.reduce((s, b) => s + (b.co2_kg ?? 0), 0);
   const totalKwh = bills.filter((b) => b.usage_unit === "kWh").reduce((s, b) => s + (b.usage_amount ?? 0), 0);
