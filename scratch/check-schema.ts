@@ -5,30 +5,47 @@ import path from "path";
 dotenv.config({ path: ".env.local" });
 
 async function checkTables() {
-  const supabase = createClient(
+  const serviceClient = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
+  const anonClient = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+
   console.log("Checking tables...");
-  
-  // Querying pg_catalog to see real table names
-  const { data, error } = await supabase.rpc('get_tables'); // Hope this exists, if not use raw query
-  
-  if (error) {
-    console.log("RPC get_tables failed, trying raw query via .from().select()");
-    const tables = ["organisations", "organizations", "profiles", "bills"];
-    for (const t of tables) {
-      const { error: tErr } = await supabase.from(t).select('count', { count: 'exact', head: true });
-      if (tErr) {
-        console.log(`Table '${t}' error:`, tErr.message);
-      } else {
-        console.log(`Table '${t}' exists!`);
-      }
+  const tables = ["organisations", "organizations", "profiles", "bills"];
+
+  console.log("\n--- EXHAUSTIVE VERIFICATION ---");
+  for (const t of tables) {
+    console.log(`Checking '${t}'...`);
+    const { data, error, status, statusText } = await serviceClient.from(t).select('*').limit(0);
+    
+    if (error) {
+      console.log(`  FAILED: [${error.code}] ${error.message}`);
+      console.log(`  Status: ${status} ${statusText}`);
+    } else {
+      console.log(`  SUCCESS: Table exists. Status: ${status} ${statusText}`);
     }
+  }
+
+  // Try to list ALL tables in public schema if possible
+  console.log("\n--- Listing all tables in 'public' ---");
+  const { data: allTables, error: listErr } = await serviceClient.from('information_schema.tables').select('table_name').eq('table_schema', 'public');
+  if (listErr) {
+    console.log("Could not list tables:", listErr.message);
   } else {
-    console.log("Tables:", data);
+    console.log("Public tables:", allTables.map(t => t.table_name).join(", "));
   }
 }
 
+
+
+
+
+
+
 checkTables();
+
