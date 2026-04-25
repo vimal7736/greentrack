@@ -39,3 +39,16 @@ export function formatMonthShort(dateStr: string): string {
     return dateStr;
   }
 }
+
+export function formatPriceWithVat(
+  price: number,
+  vatRate: number = 0
+): { vatAmount: string; totalPrice: string } {
+  const vat = price * vatRate;
+  const total = price + vat;
+  return {
+    vatAmount: vat.toFixed(2),
+    totalPrice: total.toFixed(2),
+  };
+}
+

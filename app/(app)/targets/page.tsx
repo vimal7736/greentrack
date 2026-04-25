@@ -6,8 +6,17 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, ReferenceLine,
 } from "recharts";
-import { useTheme } from "next-themes";
 import { Target, TrendingDown, Leaf, AlertTriangle, CheckCircle } from "lucide-react";
+
+import { formatCarbonTonnes } from "@/lib/utils/format";
+import { PageBackground } from "@/components/ui/PageBackground";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Spinner } from "@/components/ui/Spinner";
+import { Button } from "@/components/ui/Button";
+import { StatCard } from "@/components/ui/StatCard";
+import { SectionHeader } from "@/components/ui/SectionHeader";
+import { HeroBanner } from "@/components/ui/HeroBanner";
+import { RangeSlider } from "@/components/ui/RangeSlider";
 
 type MonthStat = { month: string; co2: number; target: number };
 
@@ -90,115 +99,65 @@ export default function TargetsPage() {
     ? Math.ceil(new Date().getFullYear() + Math.log(10 / (monthlyAvg * 12)) / Math.log(1 - reductionPct / 100))
     : null;
 
-  function Slider({ label, value, min, max, step, onChange, unit, accent }: {
-    label: string; value: number; min: number; max: number;
-    step: number; onChange: (v: number) => void; unit: string; accent: string;
-  }) {
-    const pct = ((value - min) / (max - min)) * 100;
-    return (
-      <div className="space-y-4">
-        <div className="flex justify-between items-end">
-          <div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-text-muted opacity-50 mb-1">{label}</p>
-            <p className="text-xl font-black text-text-primary tracking-tight">{value.toLocaleString()} <span className="text-xs opacity-30">{unit}</span></p>
-          </div>
-          <div className="px-3 py-1 rounded-lg bg-bg-inset text-[10px] font-black text-text-muted">
-             {pct.toFixed(0)}%
-          </div>
-        </div>
-        <div className="relative group h-8 flex items-center">
-           <div className="absolute inset-x-0 h-2 bg-bg-inset rounded-full overflow-hidden">
-              <div 
-                className="h-full transition-all duration-300 relative" 
-                style={{ width: `${pct}%`, background: accent }}
-              >
-                 <div className="absolute top-0 right-0 h-full w-4 bg-white/20 blur-sm" />
-              </div>
-           </div>
-           <input
-             type="range" min={min} max={max} step={step} value={value}
-             onChange={(e) => onChange(Number(e.target.value))}
-             className="absolute inset-0 w-full opacity-0 cursor-pointer h-full z-10"
-           />
-           <div 
-             className="absolute w-6 h-6 rounded-full bg-white shadow-premium border-2 pointer-events-none transition-transform group-active:scale-90"
-             style={{ left: `calc(${pct}% - 12px)`, borderColor: accent }}
-           />
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="relative space-y-8 animate-fade-in pb-20">
-      {/* Background Decorations */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gt-green-500/5 rounded-full blur-[140px] -translate-y-1/2 translate-x-1/4" />
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-brand-orange/5 rounded-full blur-[120px] translate-y-1/4 -translate-x-1/4" />
-      </div>
+      <PageBackground />
 
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <div className="w-12 h-12 rounded-2xl bg-bg-surface shadow-premium flex items-center justify-center">
-          <Target className="w-6 h-6 text-brand-orange-dark" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-black tracking-tight text-text-primary">Reduction Strategy</h1>
-          <p className="text-sm font-bold text-text-muted opacity-60">
-            Science-based trajectories and climate action goals
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        icon={<Target className="w-6 h-6" />}
+        title="Reduction Strategy"
+        subtitle="Science-based trajectories and climate action goals"
+      />
 
       {loading ? (
-        <div className="py-20 text-center animate-pulse">
-           <div className="w-12 h-12 border-4 border-gt-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-           <p className="text-[10px] font-black uppercase tracking-widest text-text-muted">Calculating Pathways...</p>
+        <div className="py-20">
+          <Spinner label="Calculating Pathways..." />
         </div>
       ) : (
         <div className="space-y-8 animate-scale-in">
           {/* Status Grid */}
           <div className="grid grid-cols-4 gap-6">
-            {[
-              { label: "YTD Carbon", value: `${(ytdCo2 / 1000).toFixed(2)} t`, sub: `Limit: ${(ytdTarget / 1000).toFixed(2)} t`, Icon: TrendingDown, 
-                color: onTrack ? "text-gt-green-600" : "text-brand-orange-dark",
-                bg: onTrack ? "bg-gt-green-500/10" : "bg-brand-orange/10" },
-              { label: "Budget Velocity", value: `${ytdPct.toFixed(0)}%`, sub: onTrack ? "Operational Efficiency" : "Correction Needed", Icon: onTrack ? CheckCircle : AlertTriangle,
-                color: onTrack ? "text-gt-green-600" : "text-brand-orange-dark",
-                bg: onTrack ? "bg-gt-green-500/10" : "bg-brand-orange/10" },
-              { label: "Average Stream", value: `${monthlyAvg.toFixed(0)} kg`, sub: "24-Month Average", Icon: Leaf,
-                color: "text-gt-green-700", bg: "bg-gt-green-500/10" },
-              { label: "Net Zero Hub", value: netZeroYear ? String(netZeroYear) : "—", sub: `Target: ${reductionPct}% / yr`, Icon: Target,
-                color: "text-brand-orange-dark", bg: "bg-brand-orange/10" },
-            ].map(({ label, value, sub, Icon, color, bg }) => (
-              <div key={label} className="premium-card p-6 border-none group">
-                <div className="flex items-center justify-between mb-4">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-text-muted opacity-50">{label}</p>
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 ${bg}`}>
-                    <Icon className={`w-5 h-5 ${color}`} />
-                  </div>
-                </div>
-                <p className={`text-2xl font-black tracking-tighter ${color}`}>{value}</p>
-                <p className="text-[10px] font-bold text-text-muted mt-2 opacity-60 uppercase tracking-widest">{sub}</p>
-              </div>
-            ))}
+            {
+              [
+                { label: "YTD Carbon", value: `${(ytdCo2 / 1000).toFixed(2)} t`, sub: `Limit: ${(ytdTarget / 1000).toFixed(2)} t`, Icon: TrendingDown, 
+                  color: onTrack ? "text-gt-green-600" : "text-brand-orange-dark",
+                  bg: onTrack ? "bg-gt-green-500/10" : "bg-brand-orange/10" },
+                { label: "Budget Velocity", value: `${ytdPct.toFixed(0)}%`, sub: onTrack ? "Operational Efficiency" : "Correction Needed", Icon: onTrack ? CheckCircle : AlertTriangle,
+                  color: onTrack ? "text-gt-green-600" : "text-brand-orange-dark",
+                  bg: onTrack ? "bg-gt-green-500/10" : "bg-brand-orange/10" },
+                { label: "Average Stream", value: `${monthlyAvg.toFixed(0)} kg`, sub: "24-Month Average", Icon: Leaf,
+                  color: "text-gt-green-700", bg: "bg-gt-green-500/10" },
+                { label: "Net Zero Hub", value: netZeroYear ? String(netZeroYear) : "—", sub: `Target: ${reductionPct}% / yr`, Icon: Target,
+                  color: "text-brand-orange-dark", bg: "bg-brand-orange/10" },
+              ].map(({ label, value, sub, Icon, color, bg }) => (
+                <StatCard
+                  key={label}
+                  label={label}
+                  value={value}
+                  sub={sub}
+                  icon={<Icon className={`w-5 h-5 ${color}`} />}
+                  iconBg={bg}
+                  valueColor={color}
+                />
+              ))
+            }
           </div>
 
           <div className="grid grid-cols-3 gap-8">
             {/* Target Controls */}
             <div className="col-span-1 premium-card p-8 border-none space-y-10">
-              <div className="space-y-1">
-                <h2 className="text-sm font-black uppercase tracking-widest text-text-primary">Scenario Parameters</h2>
-                <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest opacity-40">Fine-tune your reduction model</p>
-              </div>
+              <SectionHeader
+                title="Scenario Parameters"
+                subtitle="Fine-tune your reduction model"
+              />
               
               <div className="space-y-10">
-                <Slider
+                <RangeSlider
                   label="Annual Carbon Cap"
                   value={annualTarget} min={500} max={50000} step={100}
                   onChange={setAnnualTarget} unit="kg/yr" accent="var(--brand-green)"
                 />
-                <Slider
+                <RangeSlider
                   label="Yearly Reduction Rate"
                   value={reductionPct} min={1} max={30} step={1}
                   onChange={setReductionPct} unit="% / yr" accent="var(--brand-orange)"
@@ -213,10 +172,10 @@ export default function TargetsPage() {
             {/* Trajectory Chart */}
             <div className="col-span-2 premium-card p-8 border-none relative overflow-hidden">
                <div className="flex items-center justify-between mb-10">
-                  <div>
-                    <h2 className="text-sm font-black uppercase tracking-widest text-text-primary">Trajectory Audit</h2>
-                    <p className="text-[10px] font-bold text-text-muted mt-1 uppercase tracking-widest opacity-40">Actual Performance vs Theoretical Pathway</p>
-                  </div>
+                  <SectionHeader
+                    title="Trajectory Audit"
+                    subtitle="Actual Performance vs Theoretical Pathway"
+                  />
                   <div className="flex items-center gap-6">
                     <div className="flex items-center gap-2">
                        <div className="w-3 h-3 rounded-full bg-gt-green-500" />
@@ -274,32 +233,25 @@ export default function TargetsPage() {
           </div>
 
           {/* SBTi info card */}
-          <div className="premium-card p-8 border-none bg-gradient-to-br from-gt-green-900 to-black text-white relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 group-hover:rotate-12 transition-transform duration-700">
-               <Leaf className="w-48 h-48" />
-            </div>
-            <div className="relative z-10 flex gap-8 items-center">
-              <div className="w-16 h-16 rounded-3xl bg-white/10 backdrop-blur-xl flex items-center justify-center shadow-2xl">
-                 <Target className="w-8 h-8 text-gt-green-400" />
-              </div>
-              <div className="space-y-2 max-w-2xl">
-                <p className="text-xl font-black tracking-tight">Science Based Targets Initiative (SBTi)</p>
-                <p className="text-xs font-bold text-white/60 leading-relaxed">
-                  Your current trajectory projects Net Zero alignment around <span className="text-white font-black">{netZeroYear ?? "N/A"}</span>.
-                  To accelerate your climate transition, consider aggressive efficiency upgrades or renewable energy sourcing 
-                  to align with the global 1.5°C pathway. Every percentage point in your reduction rate compounds into 
-                  years saved on your journey to decarbonization.
-                </p>
-              </div>
-              <div className="flex-1 text-right">
-                 <button className="px-6 py-3 rounded-xl bg-gt-green-500 hover:bg-white hover:text-black text-[10px] font-black uppercase tracking-widest transition-all">
-                    Model 2030 Goals
-                 </button>
-              </div>
-            </div>
-          </div>
+          <HeroBanner
+            icon={<Target className="w-8 h-8 text-gt-green-400" />}
+            bgIcon={<Leaf className="w-48 h-48" />}
+            title="Science Based Targets Initiative (SBTi)"
+            subtitle={`Your current trajectory projects Net Zero alignment around ${netZeroYear ?? "N/A"}. To accelerate your climate transition, consider aggressive efficiency upgrades or renewable energy sourcing to align with the global 1.5°C pathway. Every percentage point in your reduction rate compounds into years saved on your journey to decarbonization.`}
+            action={
+              <Button
+                variant="primary"
+                size="lg"
+                className="bg-gt-green-500 hover:bg-white hover:text-black"
+              >
+                Model 2030 Goals
+              </Button>
+            }
+          />
         </div>
       )}
     </div>
   );
 }
+
+

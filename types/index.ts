@@ -1,7 +1,7 @@
 // ─── Database row types (match Supabase table columns exactly) ───────────────
 
 export type Tier = "free" | "starter" | "business";
-export type Role = "owner" | "member" | "super_admin";
+export type Role = "owner" | "admin" | "member" | "super_admin";
 export type BillType = "electricity" | "gas" | "water" | "fuel_diesel" | "fuel_petrol";
 
 export interface Organisation {
@@ -10,6 +10,8 @@ export interface Organisation {
   logo_url: string | null;
   tier: Tier;
   stripe_customer_id: string | null;
+  stripe_subscription_id: string | null;
+  seats_limit: number;
   created_at: string;
 }
 
@@ -17,8 +19,27 @@ export interface Profile {
   id: string;
   org_id: string;
   full_name: string | null;
+  email: string;
   role: Role;
   created_at: string;
+}
+
+// Shape returned by GET /api/team → members[]
+export interface TeamMember {
+  id: string;
+  full_name: string;
+  email: string;
+  role: string;
+  created_at: string;
+}
+
+export interface TeamApiResponse {
+  members: TeamMember[];
+  org: {
+    name: string;
+    tier: string;
+    seats_limit: number;
+  };
 }
 
 export interface Bill {
