@@ -12,8 +12,6 @@ import { Target, TrendingDown, Leaf, AlertTriangle, CheckCircle } from "lucide-r
 type MonthStat = { month: string; co2: number; target: number };
 
 export default function TargetsPage() {
-  const { resolvedTheme } = useTheme();
-  const [mounted,     setMounted]     = useState(false);
   const [loading,     setLoading]     = useState(true);
   const [monthlyData, setMonthlyData] = useState<MonthStat[]>([]);
   const [totalCo2,    setTotalCo2]    = useState(0);
@@ -23,8 +21,6 @@ export default function TargetsPage() {
   const [annualTarget,    setAnnualTarget]    = useState(5000);   /* kg/year */
   const [reductionPct,    setReductionPct]    = useState(7);      /* % per year (SBTi ~1.5°C pathway) */
   const [baselineYear,    setBaselineYear]    = useState(2023);
-
-  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     (async () => {
@@ -46,7 +42,6 @@ export default function TargetsPage() {
 
       if (!bills) return setLoading(false);
 
-      /* Build 24-month map */
       const now    = new Date();
       const map: Record<string, number> = {};
       for (let i = 23; i >= 0; i--) {
@@ -65,29 +60,19 @@ export default function TargetsPage() {
 
       setTotalCo2(total);
       setMonthlyAvg(avg);
-      setAnnualTarget(Math.round(avg * 12 * 0.85)); /* default: 15% below current rate */
+      setAnnualTarget(Math.round(avg * 12 * 0.85));
 
       setMonthlyData(
         Object.entries(map).map(([ym, co2]) => ({
           month:  ym.slice(0, 7),
           co2:    Math.round(co2 * 10) / 10,
-          target: 0, /* filled below */
+          target: 0,
         }))
       );
       setLoading(false);
     })();
   }, []);
 
-  const isDark = mounted && resolvedTheme === "dark";
-  const base   = isDark ? "#1c1c1c" : "#e4e0d6";
-  const dark   = isDark ? "#0e0e0e" : "#b6b3aa";
-  const light  = isDark ? "#2c2c2c" : "#ffffff";
-  const text   = isDark ? "#f5f0e8" : "#0a0a0a";
-  const muted  = isDark ? "#7a7570" : "#9a9590";
-  const raised = `6px 6px 14px ${dark}, -6px -6px 14px ${light}`;
-  const inset  = `inset 5px 5px 10px ${dark}, inset -5px -5px 10px ${light}`;
-
-  /* Monthly target line: annualTarget / 12, declining at reductionPct%/yr */
   const chartData = useMemo<MonthStat[]>(() => {
     return monthlyData.map((d, i) => ({
       ...d,
@@ -95,198 +80,225 @@ export default function TargetsPage() {
     }));
   }, [monthlyData, annualTarget, reductionPct]);
 
-  /* YTD progress */
   const thisYear    = new Date().getFullYear().toString();
   const ytdCo2      = chartData.filter((d) => d.month.startsWith(thisYear)).reduce((s, d) => s + d.co2, 0);
   const ytdTarget   = (annualTarget / 12) * (new Date().getMonth() + 1);
   const ytdPct      = ytdTarget > 0 ? (ytdCo2 / ytdTarget) * 100 : 0;
   const onTrack     = ytdCo2 <= ytdTarget;
 
-  /* Net zero projection at current rate */
   const netZeroYear = monthlyAvg > 0
     ? Math.ceil(new Date().getFullYear() + Math.log(10 / (monthlyAvg * 12)) / Math.log(1 - reductionPct / 100))
     : null;
 
-  const tooltipStyle = {
-    background: isDark ? "#1c1c1c" : "#f5f0e8",
-    border:     `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}`,
-    borderRadius: 8, color: text, fontSize: 11, fontWeight: 600,
-  };
-
-  function Slider({ label, value, min, max, step, onChange, unit }: {
+  function Slider({ label, value, min, max, step, onChange, unit, accent }: {
     label: string; value: number; min: number; max: number;
-    step: number; onChange: (v: number) => void; unit: string;
+    step: number; onChange: (v: number) => void; unit: string; accent: string;
   }) {
+    const pct = ((value - min) / (max - min)) * 100;
     return (
-      <div>
-        <div className="flex justify-between mb-2">
-          <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: muted }}>{label}</p>
-          <p className="text-xs font-black" style={{ color: text }}>{value.toLocaleString()} {unit}</p>
-        </div>
-        <div className="relative h-6 flex items-center">
-          <div className="w-full h-2 rounded-full"
-               style={{ background: base, boxShadow: inset }}>
-            <div className="h-full rounded-full transition-all"
-                 style={{
-                   width: `${((value - min) / (max - min)) * 100}%`,
-                   background: "var(--brand-green)",
-                 }} />
+      <div className="space-y-4">
+        <div className="flex justify-between items-end">
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-widest text-text-muted opacity-50 mb-1">{label}</p>
+            <p className="text-xl font-black text-text-primary tracking-tight">{value.toLocaleString()} <span className="text-xs opacity-30">{unit}</span></p>
           </div>
-          <input
-            type="range" min={min} max={max} step={step} value={value}
-            onChange={(e) => onChange(Number(e.target.value))}
-            className="absolute inset-0 w-full opacity-0 cursor-pointer h-6"
-          />
+          <div className="px-3 py-1 rounded-lg bg-bg-inset text-[10px] font-black text-text-muted">
+             {pct.toFixed(0)}%
+          </div>
+        </div>
+        <div className="relative group h-8 flex items-center">
+           <div className="absolute inset-x-0 h-2 bg-bg-inset rounded-full overflow-hidden">
+              <div 
+                className="h-full transition-all duration-300 relative" 
+                style={{ width: `${pct}%`, background: accent }}
+              >
+                 <div className="absolute top-0 right-0 h-full w-4 bg-white/20 blur-sm" />
+              </div>
+           </div>
+           <input
+             type="range" min={min} max={max} step={step} value={value}
+             onChange={(e) => onChange(Number(e.target.value))}
+             className="absolute inset-0 w-full opacity-0 cursor-pointer h-full z-10"
+           />
+           <div 
+             className="absolute w-6 h-6 rounded-full bg-white shadow-premium border-2 pointer-events-none transition-transform group-active:scale-90"
+             style={{ left: `calc(${pct}% - 12px)`, borderColor: accent }}
+           />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 animate-fade-in" style={{ color: text }}>
+    <div className="relative space-y-8 animate-fade-in pb-20">
+      {/* Background Decorations */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gt-green-500/5 rounded-full blur-[140px] -translate-y-1/2 translate-x-1/4" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-brand-orange/5 rounded-full blur-[120px] translate-y-1/4 -translate-x-1/4" />
+      </div>
 
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center"
-             style={{ background: base, boxShadow: raised }}>
-          <Target className="w-5 h-5" style={{ color: "var(--brand-orange)" }} />
+      <div className="flex items-center gap-4">
+        <div className="w-12 h-12 rounded-2xl bg-bg-surface shadow-premium flex items-center justify-center">
+          <Target className="w-6 h-6 text-brand-orange-dark" />
         </div>
         <div>
-          <h1 className="text-2xl font-black tracking-tight">Reduction Targets</h1>
-          <p className="text-sm" style={{ color: muted }}>
-            Track your Net Zero trajectory and science-based targets
+          <h1 className="text-2xl font-black tracking-tight text-text-primary">Reduction Strategy</h1>
+          <p className="text-sm font-bold text-text-muted opacity-60">
+            Science-based trajectories and climate action goals
           </p>
         </div>
       </div>
 
       {loading ? (
-        <div className="text-center py-16" style={{ color: muted }}>Loading data…</div>
+        <div className="py-20 text-center animate-pulse">
+           <div className="w-12 h-12 border-4 border-gt-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+           <p className="text-[10px] font-black uppercase tracking-widest text-text-muted">Calculating Pathways...</p>
+        </div>
       ) : (
-        <>
-          {/* YTD status + key metrics */}
-          <div className="grid grid-cols-4 gap-4">
+        <div className="space-y-8 animate-scale-in">
+          {/* Status Grid */}
+          <div className="grid grid-cols-4 gap-6">
             {[
-              {
-                label: "YTD Emissions",
-                value: `${(ytdCo2 / 1000).toFixed(2)} t`,
-                sub:   `Target: ${(ytdTarget / 1000).toFixed(2)} t`,
-                Icon: TrendingDown,
-                color: onTrack ? "#22c55e" : "#f97316",
-              },
-              {
-                label: "Budget Used",
-                value: `${ytdPct.toFixed(0)}%`,
-                sub:   onTrack ? "On track ✓" : "Over budget",
-                Icon: onTrack ? CheckCircle : AlertTriangle,
-                color: onTrack ? "#22c55e" : "#f97316",
-              },
-              {
-                label: "Monthly Avg",
-                value: `${monthlyAvg.toFixed(0)} kg`,
-                sub:   "Last 24 months",
-                Icon: Leaf,
-                color: "var(--brand-green-dark)",
-              },
-              {
-                label: "Net Zero ETA",
-                value: netZeroYear ? String(netZeroYear) : "—",
-                sub:   `At ${reductionPct}% annual reduction`,
-                Icon: Target,
-                color: "var(--brand-orange)",
-              },
-            ].map(({ label, value, sub, Icon, color }) => (
-              <div key={label} className="rounded-2xl p-5"
-                   style={{ background: base, boxShadow: raised }}>
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: muted }}>{label}</p>
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center"
-                       style={{ background: base, boxShadow: inset }}>
-                    <Icon className="w-4 h-4" style={{ color }} />
+              { label: "YTD Carbon", value: `${(ytdCo2 / 1000).toFixed(2)} t`, sub: `Limit: ${(ytdTarget / 1000).toFixed(2)} t`, Icon: TrendingDown, 
+                color: onTrack ? "text-gt-green-600" : "text-brand-orange-dark",
+                bg: onTrack ? "bg-gt-green-500/10" : "bg-brand-orange/10" },
+              { label: "Budget Velocity", value: `${ytdPct.toFixed(0)}%`, sub: onTrack ? "Operational Efficiency" : "Correction Needed", Icon: onTrack ? CheckCircle : AlertTriangle,
+                color: onTrack ? "text-gt-green-600" : "text-brand-orange-dark",
+                bg: onTrack ? "bg-gt-green-500/10" : "bg-brand-orange/10" },
+              { label: "Average Stream", value: `${monthlyAvg.toFixed(0)} kg`, sub: "24-Month Average", Icon: Leaf,
+                color: "text-gt-green-700", bg: "bg-gt-green-500/10" },
+              { label: "Net Zero Hub", value: netZeroYear ? String(netZeroYear) : "—", sub: `Target: ${reductionPct}% / yr`, Icon: Target,
+                color: "text-brand-orange-dark", bg: "bg-brand-orange/10" },
+            ].map(({ label, value, sub, Icon, color, bg }) => (
+              <div key={label} className="premium-card p-6 border-none group">
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-text-muted opacity-50">{label}</p>
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 ${bg}`}>
+                    <Icon className={`w-5 h-5 ${color}`} />
                   </div>
                 </div>
-                <p className="text-2xl font-black leading-none" style={{ color }}>{value}</p>
-                <p className="text-[11px] mt-2" style={{ color: muted }}>{sub}</p>
+                <p className={`text-2xl font-black tracking-tighter ${color}`}>{value}</p>
+                <p className="text-[10px] font-bold text-text-muted mt-2 opacity-60 uppercase tracking-widest">{sub}</p>
               </div>
             ))}
           </div>
 
-          {/* Target controls */}
-          <div className="rounded-2xl p-6" style={{ background: base, boxShadow: raised }}>
-            <p className="text-xs font-bold uppercase tracking-widest mb-5" style={{ color: muted }}>
-              Configure Targets
-            </p>
-            <div className="grid grid-cols-2 gap-6">
-              <Slider
-                label="Annual CO₂ Target"
-                value={annualTarget} min={500} max={50000} step={100}
-                onChange={setAnnualTarget} unit="kg/yr"
-              />
-              <Slider
-                label="Annual Reduction Rate"
-                value={reductionPct} min={1} max={30} step={1}
-                onChange={setReductionPct} unit="% / yr"
-              />
-            </div>
-            <p className="text-[11px] mt-4 leading-relaxed" style={{ color: muted }}>
-              💡 The Science Based Targets initiative (SBTi) recommends at least{" "}
-              <strong style={{ color: "var(--brand-green)" }}>4.2% annual reduction</strong>{" "}
-              for a 1.5°C-aligned pathway.
-            </p>
-          </div>
+          <div className="grid grid-cols-3 gap-8">
+            {/* Target Controls */}
+            <div className="col-span-1 premium-card p-8 border-none space-y-10">
+              <div className="space-y-1">
+                <h2 className="text-sm font-black uppercase tracking-widest text-text-primary">Scenario Parameters</h2>
+                <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest opacity-40">Fine-tune your reduction model</p>
+              </div>
+              
+              <div className="space-y-10">
+                <Slider
+                  label="Annual Carbon Cap"
+                  value={annualTarget} min={500} max={50000} step={100}
+                  onChange={setAnnualTarget} unit="kg/yr" accent="var(--brand-green)"
+                />
+                <Slider
+                  label="Yearly Reduction Rate"
+                  value={reductionPct} min={1} max={30} step={1}
+                  onChange={setReductionPct} unit="% / yr" accent="var(--brand-orange)"
+                />
+              </div>
 
-          {/* Trajectory chart */}
-          <div className="rounded-2xl p-6" style={{ background: base, boxShadow: inset }}>
-            <p className="text-xs font-bold uppercase tracking-widest mb-5" style={{ color: muted }}>
-              Actual CO₂ vs Target Trajectory (24 months)
-            </p>
-            <ResponsiveContainer width="100%" height={260}>
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false}
-                               stroke={isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)"} />
-                <XAxis dataKey="month" tick={{ fontSize: 10, fill: muted }} axisLine={false} tickLine={false}
-                       tickFormatter={(v) => v.slice(2)} />
-                <YAxis tick={{ fontSize: 10, fill: muted }} axisLine={false} tickLine={false} width={40} />
-                <Tooltip contentStyle={tooltipStyle}
-                         formatter={(v: unknown, name: string) => [`${v} kg`, name === "co2" ? "Actual" : "Target"]} />
-                <ReferenceLine y={annualTarget / 12} stroke={muted} strokeDasharray="4 4"
-                               label={{ value: "Avg target/mo", fill: muted, fontSize: 10 }} />
-                <Line type="monotone" dataKey="co2" stroke="#22c55e" strokeWidth={2.5}
-                      dot={{ r: 2, fill: "#22c55e", strokeWidth: 0 }}
-                      activeDot={{ r: 5 }} name="Actual" />
-                <Line type="monotone" dataKey="target" stroke="#f97316" strokeWidth={2}
-                      strokeDasharray="5 3" dot={false} name="Target" />
-              </LineChart>
-            </ResponsiveContainer>
-            <div className="flex items-center gap-5 mt-3 justify-center">
-              {[["Actual emissions", "#22c55e"], ["Target trajectory", "#f97316"]].map(([lbl, clr]) => (
-                <div key={lbl} className="flex items-center gap-1.5">
-                  <div className="w-6 h-0.5 rounded" style={{ background: clr }} />
-                  <span className="text-[11px]" style={{ color: muted }}>{lbl}</span>
-                </div>
-              ))}
+              <div className="p-4 rounded-2xl bg-bg-inset/30 border border-border-subtle/50 text-[10px] font-bold text-text-muted leading-relaxed">
+                 <span className="text-gt-green-600 font-black">ADVISORY:</span> SBTi mandates a minimum <span className="text-text-primary font-black">4.2% reduction</span> for 1.5°C Paris alignment.
+              </div>
+            </div>
+
+            {/* Trajectory Chart */}
+            <div className="col-span-2 premium-card p-8 border-none relative overflow-hidden">
+               <div className="flex items-center justify-between mb-10">
+                  <div>
+                    <h2 className="text-sm font-black uppercase tracking-widest text-text-primary">Trajectory Audit</h2>
+                    <p className="text-[10px] font-bold text-text-muted mt-1 uppercase tracking-widest opacity-40">Actual Performance vs Theoretical Pathway</p>
+                  </div>
+                  <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-2">
+                       <div className="w-3 h-3 rounded-full bg-gt-green-500" />
+                       <span className="text-[9px] font-black uppercase tracking-widest text-text-muted">Actual</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                       <div className="w-3 h-3 rounded-full bg-brand-orange-dark border-2 border-dashed border-white" />
+                       <span className="text-[9px] font-black uppercase tracking-widest text-text-muted">Pathway</span>
+                    </div>
+                  </div>
+               </div>
+
+               <div className="h-[280px]">
+                 <ResponsiveContainer width="100%" height="100%">
+                   <LineChart data={chartData}>
+                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-subtle)" />
+                     <XAxis 
+                       dataKey="month" 
+                       axisLine={false} 
+                       tickLine={false} 
+                       tick={{ fontSize: 9, fontWeight: 900, fill: "var(--text-muted)" }} 
+                       tickFormatter={(v) => v.slice(2)}
+                       dy={10}
+                     />
+                     <YAxis 
+                       axisLine={false} 
+                       tickLine={false} 
+                       tick={{ fontSize: 9, fontWeight: 900, fill: "var(--text-muted)" }} 
+                     />
+                     <Tooltip 
+                       contentStyle={{ 
+                         borderRadius: "16px", 
+                         border: "none", 
+                         boxShadow: "var(--shadow-premium)",
+                         background: "var(--bg-surface)",
+                         color: "var(--text-primary)",
+                         fontSize: "10px",
+                         fontWeight: "900"
+                       }}
+                     />
+                     <ReferenceLine y={annualTarget / 12} stroke="var(--text-muted)" strokeDasharray="6 6" opacity={0.3} />
+                     <Line 
+                       type="monotone" dataKey="co2" stroke="var(--brand-green)" strokeWidth={4}
+                       dot={{ r: 4, fill: "var(--brand-green)", strokeWidth: 0 }}
+                       activeDot={{ r: 8, strokeWidth: 0 }} name="Actual" 
+                     />
+                     <Line 
+                       type="monotone" dataKey="target" stroke="var(--brand-orange-dark)" strokeWidth={2}
+                       strokeDasharray="8 4" dot={false} name="Target" 
+                     />
+                   </LineChart>
+                 </ResponsiveContainer>
+               </div>
             </div>
           </div>
 
           {/* SBTi info card */}
-          <div className="rounded-2xl p-5 flex gap-4"
-               style={{
-                 background: "rgba(34,197,94,0.08)",
-                 border:     "1px solid rgba(34,197,94,0.20)",
-               }}>
-            <Leaf className="w-5 h-5 shrink-0 mt-0.5" style={{ color: "var(--brand-green)" }} />
-            <div>
-              <p className="text-sm font-bold mb-1" style={{ color: "var(--brand-green-dark)" }}>
-                Science Based Targets (SBTi)
-              </p>
-              <p className="text-xs leading-relaxed" style={{ color: muted }}>
-                SBTi requires companies to reduce Scope 1 + 2 emissions by 4.2% per year to align with a 1.5°C
-                global warming pathway. Your current trajectory projects Net Zero around{" "}
-                <strong style={{ color: text }}>{netZeroYear ?? "N/A"}</strong>.
-                Upload more bills and set a steeper reduction rate to accelerate your path.
-              </p>
+          <div className="premium-card p-8 border-none bg-gradient-to-br from-gt-green-900 to-black text-white relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 group-hover:rotate-12 transition-transform duration-700">
+               <Leaf className="w-48 h-48" />
+            </div>
+            <div className="relative z-10 flex gap-8 items-center">
+              <div className="w-16 h-16 rounded-3xl bg-white/10 backdrop-blur-xl flex items-center justify-center shadow-2xl">
+                 <Target className="w-8 h-8 text-gt-green-400" />
+              </div>
+              <div className="space-y-2 max-w-2xl">
+                <p className="text-xl font-black tracking-tight">Science Based Targets Initiative (SBTi)</p>
+                <p className="text-xs font-bold text-white/60 leading-relaxed">
+                  Your current trajectory projects Net Zero alignment around <span className="text-white font-black">{netZeroYear ?? "N/A"}</span>.
+                  To accelerate your climate transition, consider aggressive efficiency upgrades or renewable energy sourcing 
+                  to align with the global 1.5°C pathway. Every percentage point in your reduction rate compounds into 
+                  years saved on your journey to decarbonization.
+                </p>
+              </div>
+              <div className="flex-1 text-right">
+                 <button className="px-6 py-3 rounded-xl bg-gt-green-500 hover:bg-white hover:text-black text-[10px] font-black uppercase tracking-widest transition-all">
+                    Model 2030 Goals
+                 </button>
+              </div>
             </div>
           </div>
-        </>
+        </div>
       )}
     </div>
   );

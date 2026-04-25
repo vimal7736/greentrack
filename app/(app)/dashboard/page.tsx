@@ -237,7 +237,7 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-12 gap-4">
         {/* Chart in a deep inset well */}
         <div
-          className="col-span-8 rounded-2xl p-6"
+          className="col-span-8 rounded-2xl p-6 min-h-[350px]"
           style={{
             background: "var(--neu-base)",
             boxShadow:  "var(--shadow-inset)",
@@ -342,7 +342,7 @@ export default async function DashboardPage() {
 
       {/* ── Energy consumption chart (full width, inset well) ───── */}
       <div
-        className="rounded-2xl p-6"
+        className="rounded-2xl p-6 min-h-[300px]"
         style={{
           background: "var(--neu-base)",
           boxShadow:  "var(--shadow-inset)",
@@ -356,105 +356,139 @@ export default async function DashboardPage() {
       </div>
 
       {/* ── Quick Actions ─────────────────────────────────────────── */}
-      <div>
-        <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "var(--text-muted)" }}>
-          Quick Actions
-        </p>
-        <div className="grid grid-cols-5 gap-3">
+      <div className="space-y-4">
+        <div className="flex items-center justify-between px-1">
+          <p className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: "var(--text-muted)", opacity: 0.5 }}>
+            Operational Launchpad
+          </p>
+          <div className="h-[1px] flex-1 bg-border-subtle/30 mx-4" />
+        </div>
+        
+        <div className="grid grid-cols-5 gap-4">
           {[
-            { label: "Upload Bill",     href: "/upload",   Icon: Upload,   accent: "var(--brand-green)" },
-            { label: "Compare Periods", href: "/compare",  Icon: Scale,    accent: "var(--brand-green-dark)" },
-            { label: "Set Targets",     href: "/targets",  Icon: Target,   accent: "var(--brand-orange)" },
-            { label: "Generate Report", href: "/reports",  Icon: FileText, accent: "var(--brand-orange-dark)" },
-            { label: "Manage Team",     href: "/team",     Icon: Users,    accent: "var(--text-secondary)" },
-          ].map(({ label, href, Icon, accent }) => (
+            { label: "Upload Bill",     href: "/upload",   Icon: Upload,   color: "var(--brand-green)", bg: "bg-gt-green-500/10" },
+            { label: "Compare Periods", href: "/compare",  Icon: Scale,    color: "var(--brand-green-dark)", bg: "bg-gt-green-700/10" },
+            { label: "Set Targets",     href: "/targets",  Icon: Target,   color: "var(--brand-orange)", bg: "bg-brand-orange/10" },
+            { label: "Generate Report", href: "/reports",  Icon: FileText, color: "var(--brand-orange-dark)", bg: "bg-brand-orange-dark/10" },
+            { label: "Manage Team",     href: "/team",     Icon: Users,    color: "var(--text-secondary)", bg: "bg-bg-inset" },
+          ].map(({ label, href, Icon, color, bg }) => (
             <Link
               key={href}
               href={href}
-              className="neu-btn flex flex-col items-center gap-2 py-4 px-3 rounded-2xl text-center"
-              style={{ color: "var(--text-secondary)" }}
+              className="premium-card group relative overflow-hidden flex flex-col items-center gap-4 py-8 px-4 text-center border-none transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl"
             >
-              <Icon className="w-5 h-5" style={{ color: accent }} />
-              <span className="text-[11px] font-semibold leading-tight">{label}</span>
+              <div className={`w-14 h-14 rounded-2xl ${bg} flex items-center justify-center transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3`}>
+                <Icon className="w-6 h-6 transition-colors duration-500" style={{ color }} />
+              </div>
+              <div className="space-y-1">
+                <span className="text-[10px] font-black uppercase tracking-[0.15em] text-text-primary group-hover:text-gt-green-600 transition-colors">
+                  {label}
+                </span>
+                <div className="w-4 h-0.5 bg-gt-green-500 mx-auto rounded-full opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-2 group-hover:translate-y-0" />
+              </div>
+              
+              {/* Decorative background glow on hover */}
+              <div className="absolute inset-0 bg-gradient-to-br from-white/0 to-white/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
             </Link>
           ))}
         </div>
       </div>
 
       {/* ── Recent Bills ─────────────────────────────────────────── */}
-      <div
-        className="rounded-2xl p-6"
-        style={{
-          background: "var(--neu-base)",
-          boxShadow:  "var(--shadow-raised)",
-          border:     "var(--card-border)",
-        }}
-      >
-        <div className="flex items-center justify-between mb-5">
-          <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
-            Recent Bills
-          </p>
+      <div className="premium-card border-none overflow-hidden shadow-2xl">
+        <div className="px-8 py-6 border-b border-border-subtle/30 bg-bg-inset/10 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+             <div className="w-2 h-2 rounded-full bg-gt-green-500 animate-pulse" />
+             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted">Ledger Activity</p>
+          </div>
           <Link
             href="/history"
-            className="neu-btn px-3 py-1.5 text-xs font-bold rounded-lg"
-            style={{ color: "var(--brand-green-dark)" }}
+            className="px-4 py-2 rounded-xl bg-bg-inset hover:bg-white hover:shadow-lg text-[9px] font-black uppercase tracking-widest text-text-primary transition-all flex items-center gap-2"
           >
-            View all →
+            Archive Access <ArrowUpRight className="w-3 h-3" />
           </Link>
         </div>
 
-        {recentBills.length === 0 ? (
-          <div className="text-center py-10">
-            <p className="text-sm mb-3" style={{ color: "var(--text-muted)" }}>No bills yet</p>
-            <Link href="/upload" className="neu-btn px-4 py-2 text-sm font-bold rounded-xl"
-                  style={{ color: "var(--brand-green-dark)" }}>
-              Upload your first bill →
-            </Link>
-          </div>
-        ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr style={{ borderBottom: "1px solid var(--border-default)" }}>
-                {["Type", "Date", "Supplier", "Usage", "CO₂e"].map((h, i) => (
-                  <th
-                    key={h}
-                    className={`pb-3 text-xs font-bold uppercase tracking-widest ${i > 1 ? "text-right" : "text-left"}`}
-                    style={{ color: "var(--text-muted)" }}
-                  >
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {recentBills.map((bill) => {
-                const bs = BADGE_STYLES[bill.bill_type] ?? { bg: "rgba(0,0,0,0.06)", text: "var(--text-muted)" };
-                return (
-                  <tr key={bill.id} className="group">
-                    <td className="py-3">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold"
-                            style={{ background: bs.bg, color: bs.text }}>
-                        {TYPE_LABELS[bill.bill_type] ?? bill.bill_type}
-                      </span>
-                    </td>
-                    <td className="py-3 text-xs" style={{ color: "var(--text-muted)" }}>{bill.bill_date}</td>
-                    <td className="py-3 text-xs text-right" style={{ color: "var(--text-muted)" }}>
-                      {bill.supplier ?? "—"}
-                    </td>
-                    <td className="py-3 text-xs text-right" style={{ color: "var(--text-secondary)" }}>
-                      {bill.usage_amount} {bill.usage_unit}
-                    </td>
-                    <td className="py-3 text-right">
-                      <span className="text-sm font-black" style={{ color: "var(--text-primary)" }}>
-                        {bill.co2_kg} kg
-                      </span>
-                    </td>
+        <div className="p-2">
+          {recentBills.length === 0 ? (
+            <div className="relative py-24 px-8 overflow-hidden rounded-2xl bg-bg-inset/20 flex flex-col items-center text-center">
+              {/* Background abstract element */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gt-green-500/5 rounded-full blur-[80px] pointer-events-none" />
+              
+              <div className="relative z-10 space-y-6 max-w-sm">
+                <div className="w-20 h-20 bg-white shadow-premium rounded-3xl mx-auto flex items-center justify-center animate-bounce-slow">
+                   <Upload className="w-8 h-8 text-gt-green-600" />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-sm font-black text-text-primary uppercase tracking-widest">Repository Vacant</h3>
+                  <p className="text-xs font-bold text-text-muted opacity-60 leading-relaxed">
+                    Begin your decarbonization audit by synchronizing your first energy utility statement.
+                  </p>
+                </div>
+                <Link 
+                  href="/upload" 
+                  className="inline-flex items-center gap-3 px-8 py-4 rounded-2xl bg-black text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-gt-green-600 transition-all hover:scale-105 shadow-xl shadow-black/20"
+                >
+                  Initialize First Audit <ArrowUpRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-[10px] font-black uppercase tracking-widest text-text-muted opacity-40">
+                    <th className="px-8 py-4 text-left font-black">Instrument</th>
+                    <th className="px-6 py-4 text-left font-black">Date</th>
+                    <th className="px-6 py-4 text-left font-black">Vendor</th>
+                    <th className="px-6 py-4 text-right font-black">Consumption</th>
+                    <th className="px-8 py-4 text-right font-black">Carbon Impact</th>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        )}
+                </thead>
+                <tbody className="divide-y divide-border-subtle/20">
+                  {recentBills.map((bill) => {
+                    const bs = BADGE_STYLES[bill.bill_type] ?? { bg: "rgba(0,0,0,0.06)", text: "var(--text-muted)" };
+                    return (
+                      <tr key={bill.id} className="group hover:bg-bg-inset/30 transition-all duration-300">
+                        <td className="px-8 py-5">
+                          <div className="flex items-center gap-3">
+                             <div className="w-8 h-8 rounded-xl bg-white shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
+                               {bill.bill_type === 'electricity' ? <Zap className="w-4 h-4 text-gt-green-500" /> : <Flame className="w-4 h-4 text-brand-orange" />}
+                             </div>
+                             <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: bs.text }}>
+                               {TYPE_LABELS[bill.bill_type] ?? bill.bill_type}
+                             </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-5">
+                           <p className="text-[11px] font-bold text-text-muted uppercase tracking-widest">{bill.bill_date}</p>
+                        </td>
+                        <td className="px-6 py-5">
+                           <p className="text-[10px] font-black text-text-primary uppercase tracking-tighter opacity-60">
+                             {bill.supplier ?? "Verified Protocol"}
+                           </p>
+                        </td>
+                        <td className="px-6 py-5 text-right">
+                           <div className="flex flex-col items-end">
+                              <span className="text-xs font-black text-text-primary tracking-tight">{bill.usage_amount.toLocaleString()}</span>
+                              <span className="text-[9px] font-bold text-text-muted uppercase tracking-widest opacity-40">{bill.usage_unit}</span>
+                           </div>
+                        </td>
+                        <td className="px-8 py-5 text-right">
+                           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gt-green-500/5 border border-gt-green-500/10">
+                              <span className="text-sm font-black text-gt-green-700 tracking-tighter">
+                                {bill.co2_kg} <span className="text-[10px] opacity-40 font-bold uppercase tracking-widest ml-1">kg</span>
+                              </span>
+                           </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

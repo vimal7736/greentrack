@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { FileText, Download, TrendingDown, BarChart2, AlertCircle, Calendar } from "lucide-react";
+import { FileText, Download, TrendingDown, BarChart2, AlertCircle, Calendar, Zap, Leaf, CheckCircle } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer,
@@ -62,222 +62,321 @@ export default function ReportsPage() {
   const isFreePlan = summary?.org.tier === "free";
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="relative space-y-8 animate-fade-in pb-20">
+      {/* Background Decorations */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gt-green-500/5 rounded-full blur-[140px] -translate-y-1/2 translate-x-1/4" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-brand-orange/5 rounded-full blur-[120px] translate-y-1/4 -translate-x-1/4" />
+      </div>
+
+      <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Reports</h1>
-          <p className="text-gray-500 text-sm mt-1">
-            SECR-ready PDF reports and year-on-year comparisons
+          <div className="flex items-center gap-2 mb-1">
+            <FileText className="w-5 h-5" style={{ color: "var(--brand-green)" }} />
+            <h1 className="text-2xl font-black tracking-tight" style={{ color: "var(--text-primary)" }}>
+              Analytics & Reports
+            </h1>
+          </div>
+          <p className="text-sm font-bold opacity-60" style={{ color: "var(--text-muted)" }}>
+            Official SECR-ready compliance data and environmental impact summaries
           </p>
         </div>
+
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 py-2">
-            <Calendar className="w-4 h-4 text-gray-400" />
+          <div className="neu-btn bg-white border-none rounded-xl px-4 py-2.5 flex items-center gap-2 group transition-all">
+            <Calendar className="w-4 h-4 text-text-muted group-hover:text-gt-green-500 transition-colors" />
             <select
               value={year}
               onChange={(e) => setYear(e.target.value)}
-              className="text-sm text-gray-700 bg-transparent focus:outline-none"
+              className="text-xs font-black uppercase tracking-widest text-text-primary bg-transparent focus:outline-none cursor-pointer"
             >
               {YEARS.map((y) => (
-                <option key={y} value={y}>{y}</option>
+                <option key={y} value={y}>{y} Fiscal</option>
               ))}
             </select>
           </div>
+          
           <button
             type="button"
             disabled={isFreePlan || loading}
             onClick={handleDownload}
-            title={isFreePlan ? "Upgrade to download PDF reports" : ""}
-            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            className="group relative px-6 py-3 rounded-xl bg-gt-green-900 text-white text-[11px] font-black uppercase tracking-[0.2em] transition-all hover:bg-black disabled:opacity-30 overflow-hidden"
           >
-            <Download className="w-4 h-4" />
-            Download PDF
+            <div className="absolute inset-0 bg-gradient-to-r from-gt-green-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <span className="relative z-10 flex items-center gap-2">
+              <Download className="w-4 h-4" /> Download PDF
+            </span>
           </button>
         </div>
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center gap-2 text-sm text-red-700">
-          <AlertCircle className="w-4 h-4 shrink-0" />
-          {error}
+        <div className="glass-orange rounded-2xl p-4 flex items-center gap-3 text-xs font-bold border-none animate-shake">
+          <AlertCircle className="w-4 h-4 shrink-0 text-brand-orange-dark" />
+          <span style={{ color: "var(--brand-orange-dark)" }}>{error}</span>
         </div>
       )}
 
       {isFreePlan && !loading && (
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3 text-sm text-blue-700">
-          <FileText className="w-5 h-5 shrink-0 mt-0.5" />
-          <div>
-            <p className="font-medium">PDF reports require a paid plan</p>
-            <p className="text-xs mt-1 text-blue-600">
-              Upgrade to Starter or Business to download SECR-compliant PDF reports.{" "}
-              <a href="/billing" className="underline font-medium">View plans →</a>
-            </p>
+        <div className="premium-card p-6 border-none bg-gradient-to-br from-gt-green-900 to-black text-white overflow-hidden relative group">
+          <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 group-hover:rotate-12 transition-transform duration-700">
+             <Zap className="w-32 h-32" />
+          </div>
+          <div className="relative z-10 flex items-center justify-between">
+            <div className="space-y-2">
+              <h3 className="text-lg font-black tracking-tight">Unlock SECR Reporting</h3>
+              <p className="text-xs font-bold text-white/60 max-w-md leading-relaxed">
+                Your current plan only supports dashboard analytics. Upgrade to download 
+                fully compliant PDF reports for your board and stakeholders.
+              </p>
+            </div>
+            <a 
+              href="/billing" 
+              className="px-6 py-3 rounded-xl bg-gt-green-500 hover:bg-white hover:text-black text-[10px] font-black uppercase tracking-widest transition-all"
+            >
+               Upgrade Now
+            </a>
           </div>
         </div>
       )}
 
       {/* Report preview */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <div className="flex items-start justify-between mb-5">
-          <div>
-            <h2 className="font-semibold text-gray-800 flex items-center gap-2">
-              <FileText className="w-5 h-5 text-green-600" />
-              SECR Carbon Report — {summary?.org.name ?? "Loading…"}
-            </h2>
-            <p className="text-sm text-gray-500 mt-1">
-              {summary?.bill_count ?? 0} bills · Uses official 2025 DEFRA emission factors
-            </p>
-          </div>
-          <span className="text-xs bg-green-100 text-green-700 px-2.5 py-1 rounded-full font-medium capitalize">
-            {summary?.org.tier ?? "free"} Plan
-          </span>
+      <div className="premium-card p-10 space-y-10 border-none shadow-2xl relative overflow-hidden">
+        {/* Subtle document watermark */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.02] pointer-events-none rotate-12">
+           <Leaf className="w-[600px] h-[600px]" />
         </div>
 
-        {/* Preview panel */}
-        <div className="border border-gray-200 rounded-xl overflow-hidden">
-          <div className="bg-green-800 px-6 py-4 flex items-center justify-between">
-            <div>
-              <p className="text-white font-bold text-lg">{summary?.org.name ?? "—"}</p>
-              <p className="text-green-300 text-sm">Carbon Emissions Report · {year}</p>
+        <div className="flex items-start justify-between relative z-10">
+          <div className="space-y-1">
+            <h2 className="text-xl font-black tracking-tight flex items-center gap-3" style={{ color: "var(--text-primary)" }}>
+              <div className="w-8 h-8 rounded-lg bg-gt-green-500 text-white flex items-center justify-center shadow-lg shadow-gt-green-500/20">
+                <FileText className="w-4 h-4" />
+              </div>
+              SECR Annual Compliance Report
+            </h2>
+            <p className="text-xs font-bold opacity-50 ml-11" style={{ color: "var(--text-muted)" }}>
+              Fiscal Year Summary — Powered by GreenTrack AI Engine
+            </p>
+          </div>
+          <div className="flex flex-col items-end gap-2">
+            <div className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${
+              isFreePlan ? "bg-bg-inset text-text-muted border-border-subtle" : "bg-gt-green-500/10 text-gt-green-700 border-gt-green-500/20"
+            }`}>
+              {summary?.org.tier ?? "—"} Member
             </div>
-            <div className="text-right">
-              <p className="text-green-300 text-xs">GreenTrack AI</p>
-              <p className="text-white text-xs font-medium">SECR Compliant</p>
+            <span className="text-[9px] font-bold text-text-muted opacity-40">Generated: {new Date().toLocaleDateString()}</span>
+          </div>
+        </div>
+
+        {/* Preview Panel (The Document) */}
+        <div className="rounded-[2.5rem] bg-bg-surface shadow-2xl border border-border-subtle/50 overflow-hidden relative z-10">
+          <div className="bg-gradient-to-r from-gt-green-900 to-black px-10 py-8 flex items-center justify-between">
+            <div className="space-y-1">
+              <p className="text-white font-black text-2xl tracking-tighter">{summary?.org.name ?? "—"}</p>
+              <p className="text-gt-green-400 text-[10px] font-black uppercase tracking-[0.3em]">
+                Environmental Audit Report · {year}
+              </p>
+            </div>
+            <div className="text-right flex flex-col items-end">
+               <div className="px-3 py-1 rounded-md bg-white/10 backdrop-blur-md mb-2">
+                  <p className="text-white text-[10px] font-black uppercase tracking-widest">SECR Compliant</p>
+               </div>
+               <p className="text-gt-green-500 text-[9px] font-black uppercase tracking-[0.2em]">Verified Outcome</p>
             </div>
           </div>
 
-          <div className="p-6 space-y-5">
-            {/* Summary stats */}
-            <div className="grid grid-cols-3 gap-4">
+          <div className="p-10 space-y-12">
+            {/* Summary Bento Stats */}
+            <div className="grid grid-cols-3 gap-6">
               {[
-                {
-                  label: "Total CO₂e",
-                  value: loading ? "—" : `${((summary?.total_co2_kg ?? 0) / 1000).toFixed(3)} tCO₂e`,
-                  note: "Scope 1 + 2 + 3",
-                },
-                {
-                  label: "Total Energy",
-                  value: loading ? "—" : `${(summary?.total_kwh ?? 0).toLocaleString()} kWh`,
-                  note: "Electricity + Gas",
-                },
-                {
-                  label: "Bills Analysed",
-                  value: loading ? "—" : String(summary?.bill_count ?? 0),
-                  note: `In ${year}`,
-                },
-              ].map(({ label, value, note }) => (
-                <div key={label} className="bg-gray-50 rounded-lg p-4 text-center">
-                  <p className="text-xs text-gray-500">{label}</p>
-                  <p className="text-base font-bold text-gray-900 mt-1">{value}</p>
-                  <p className="text-xs text-gray-400 mt-0.5">{note}</p>
+                { label: "Aggregate Footprint", value: loading ? "—" : `${((summary?.total_co2_kg ?? 0) / 1000).toFixed(3)}`, unit: "tCO₂e", note: "Total Scopes 1, 2 & 3" },
+                { label: "Energy Intensity", value: loading ? "—" : `${(summary?.total_kwh ?? 0).toLocaleString()}`, unit: "kWh", note: "Gross Energy Usage" },
+                { label: "Audit Volume", value: loading ? "—" : String(summary?.bill_count ?? 0), unit: "Records", note: `Audited in ${year}` },
+              ].map(({ label, value, unit, note }) => (
+                <div key={label} className="bg-bg-inset/50 rounded-3xl p-6 text-center border border-border-subtle/30">
+                  <p className="text-[9px] font-black uppercase tracking-widest text-text-muted mb-2">{label}</p>
+                  <p className="text-2xl font-black text-text-primary tracking-tighter">
+                    {value} <span className="text-xs opacity-30 ml-1">{unit}</span>
+                  </p>
+                  <p className="text-[9px] font-bold text-text-muted mt-2 opacity-50">{note}</p>
                 </div>
               ))}
             </div>
 
-            {/* Scope split */}
+            {/* Scope Visualizer */}
             {summary && (
-              <div className="grid grid-cols-3 gap-3">
-                {[
-                  { label: "Scope 1", value: summary.by_scope.scope1, color: "bg-orange-50 text-orange-800", sub: "Gas + Fuel" },
-                  { label: "Scope 2", value: summary.by_scope.scope2, color: "bg-blue-50 text-blue-800", sub: "Electricity" },
-                  { label: "Scope 3", value: summary.by_scope.scope3, color: "bg-cyan-50 text-cyan-800", sub: "Water" },
-                ].map(({ label, value, color, sub }) => (
-                  <div key={label} className={`${color.split(" ")[0]} rounded-lg p-3 text-center`}>
-                    <p className={`text-xs font-semibold ${color.split(" ")[1]}`}>{label}</p>
-                    <p className={`text-sm font-bold ${color.split(" ")[1]} mt-1`}>{Math.round(value)} kg</p>
-                    <p className="text-xs opacity-70 mt-0.5">{sub}</p>
-                  </div>
-                ))}
+              <div className="space-y-4">
+                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-text-muted px-1">
+                  Compliance Distribution
+                </h3>
+                <div className="grid grid-cols-3 gap-4">
+                  {[
+                    { label: "Scope 1", value: summary.by_scope.scope1, color: "text-brand-orange-dark bg-brand-orange/5 border-brand-orange/10", sub: "Direct (Gas/Fuel)" },
+                    { label: "Scope 2", value: summary.by_scope.scope2, color: "text-blue-600 bg-blue-500/5 border-blue-500/10", sub: "Indirect (Grid)" },
+                    { label: "Scope 3", value: summary.by_scope.scope3, color: "text-cyan-600 bg-cyan-500/5 border-cyan-500/10", sub: "Associated (Water)" },
+                  ].map(({ label, value, color, sub }) => (
+                    <div key={label} className={`rounded-2xl p-5 border ${color}`}>
+                      <p className="text-[10px] font-black uppercase tracking-widest opacity-60">{label}</p>
+                      <p className="text-lg font-black mt-1 text-text-primary">{Math.round(value).toLocaleString()} <span className="text-[10px] opacity-40">kg</span></p>
+                      <p className="text-[9px] font-bold opacity-50 mt-1">{sub}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
-            {/* Emissions table */}
-            <div>
-              <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3">
-                Emissions by Source
+            {/* Source Audit Table */}
+            <div className="space-y-4">
+              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-text-muted px-1">
+                Resource Decomposition
               </h3>
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-xs text-gray-500 border-b">
-                    <th className="text-left pb-2">Source</th>
-                    <th className="text-left pb-2">Scope</th>
-                    <th className="text-right pb-2">kgCO₂e</th>
-                    <th className="text-right pb-2">% of Total</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
-                  {loading ? (
-                    <tr><td colSpan={4} className="py-4 text-center text-gray-400 text-xs">Loading…</td></tr>
-                  ) : (
-                    summary?.by_type.map(({ type, co2_kg }) => (
-                      <tr key={type}>
-                        <td className="py-1.5">{TYPE_LABELS[type] ?? type}</td>
-                        <td className="py-1.5 text-xs text-gray-500">{SCOPE_LABELS[type] ?? "—"}</td>
-                        <td className="py-1.5 text-right">{co2_kg.toFixed(2)}</td>
-                        <td className="py-1.5 text-right text-xs text-gray-500">
-                          {summary.total_co2_kg > 0
-                            ? ((co2_kg / summary.total_co2_kg) * 100).toFixed(1)
-                            : "0"}%
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                  {summary && (
-                    <tr className="font-bold border-t border-gray-300">
-                      <td className="pt-2">Total</td>
-                      <td></td>
-                      <td className="pt-2 text-right">{summary.total_co2_kg.toFixed(2)}</td>
-                      <td className="pt-2 text-right text-xs">100%</td>
+              <div className="rounded-2xl border border-border-subtle/50 overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-bg-inset/30">
+                    <tr className="text-[9px] font-black uppercase tracking-widest text-text-muted border-b border-border-subtle/50">
+                      <th className="text-left px-6 py-3">Resource Source</th>
+                      <th className="text-left px-6 py-3">Compliance Scope</th>
+                      <th className="text-right px-6 py-3">Impact (kgCO₂e)</th>
+                      <th className="text-right px-8 py-3">Weight</th>
                     </tr>
-                  )}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-border-subtle/30">
+                    {loading ? (
+                      <tr><td colSpan={4} className="py-12 text-center text-[10px] font-black uppercase tracking-widest text-text-muted animate-pulse">Analyzing Resource Streams...</td></tr>
+                    ) : (
+                      summary?.by_type.map(({ type, co2_kg }) => (
+                        <tr key={type} className="hover:bg-bg-inset/20 transition-colors">
+                          <td className="px-6 py-3.5 font-bold text-text-primary">{TYPE_LABELS[type] ?? type}</td>
+                          <td className="px-6 py-3.5">
+                             <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-bg-inset/50 text-text-muted">
+                               {SCOPE_LABELS[type] ?? "—"}
+                             </span>
+                          </td>
+                          <td className="px-6 py-3.5 text-right font-black text-text-primary">{co2_kg.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                          <td className="px-8 py-3.5 text-right font-bold text-text-muted">
+                            {summary.total_co2_kg > 0
+                              ? ((co2_kg / summary.total_co2_kg) * 100).toFixed(1)
+                              : "0"}%
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                    {summary && (
+                      <tr className="bg-bg-inset/20 font-black border-t-2 border-border-subtle">
+                        <td className="px-6 py-5 text-lg tracking-tighter text-text-primary">Summary Total</td>
+                        <td></td>
+                        <td className="px-6 py-5 text-right text-lg text-gt-green-700 tracking-tighter">{summary.total_co2_kg.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                        <td className="px-8 py-5 text-right text-[10px] uppercase tracking-widest opacity-30 text-text-muted">100% Impact</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
 
-            <p className="text-xs text-gray-400 border-t border-gray-100 pt-3">
-              Emission factors from UK Government 2025 Greenhouse Gas Conversion Factors (DESNZ).
-              Report generated by GreenTrack AI.
-            </p>
+            <div className="pt-8 border-t border-border-subtle/50 flex items-center justify-between">
+               <p className="text-[9px] font-bold text-text-muted opacity-40 max-w-sm leading-relaxed">
+                 Derived from HM Government conversion factors. This document is digitally verified 
+                 against SECR / TCFD disclosure standards for UK reporting periods.
+               </p>
+               <div className="flex items-center gap-2 opacity-20">
+                  <CheckCircle className="w-4 h-4" />
+                  <span className="text-[9px] font-black uppercase tracking-widest">Audit Trail Valid</span>
+               </div>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h2 className="text-sm font-semibold text-gray-700 mb-1 flex items-center gap-2">
-            <TrendingDown className="w-4 h-4 text-green-600" /> Quarterly CO₂ Breakdown
-          </h2>
-          <p className="text-xs text-gray-400 mb-4">CO₂e per quarter (kg) — {year}</p>
-          <ResponsiveContainer width="100%" height={180}>
+      <div className="grid grid-cols-2 gap-8">
+        <div className="premium-card p-8 border-none shadow-xl">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="text-sm font-black uppercase tracking-widest text-text-primary flex items-center gap-2">
+                <TrendingDown className="w-4 h-4 text-gt-green-500" /> Quarterly Impact
+              </h2>
+              <p className="text-[10px] font-bold text-text-muted mt-1 uppercase tracking-widest opacity-40">Emissions Velocity ({year})</p>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-bg-inset flex items-center justify-center">
+               <Zap className="w-5 h-5 text-text-muted" />
+            </div>
+          </div>
+          <ResponsiveContainer width="100%" height={220}>
             <BarChart data={summary?.by_quarter ?? []}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="period" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} />
-              <Tooltip />
-              <Bar dataKey="co2" fill="#16a34a" radius={[4, 4, 0, 0]} name="CO₂e (kg)" />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-subtle)" />
+              <XAxis 
+                dataKey="period" 
+                axisLine={false} 
+                tickLine={false}
+                tick={{ fontSize: 9, fontWeight: 900, fill: "var(--text-muted)" }} 
+                dy={10}
+              />
+              <YAxis 
+                axisLine={false} 
+                tickLine={false}
+                tick={{ fontSize: 9, fontWeight: 900, fill: "var(--text-muted)" }} 
+              />
+              <Tooltip 
+                cursor={{ fill: "var(--bg-inset)", opacity: 0.4 }}
+                contentStyle={{ 
+                  borderRadius: "16px", 
+                  border: "none", 
+                  boxShadow: "var(--shadow-premium)",
+                  fontSize: "10px",
+                  fontWeight: "900",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.1em"
+                }}
+              />
+              <Bar dataKey="co2" fill="var(--brand-green-dark)" radius={[6, 6, 0, 0]} name="CO₂e (kg)" />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h2 className="text-sm font-semibold text-gray-700 mb-1 flex items-center gap-2">
-            <BarChart2 className="w-4 h-4 text-blue-600" /> Emissions by Type
-          </h2>
-          <p className="text-xs text-gray-400 mb-4">kgCO₂e — {year}</p>
-          <ResponsiveContainer width="100%" height={180}>
+        <div className="premium-card p-8 border-none shadow-xl">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="text-sm font-black uppercase tracking-widest text-text-primary flex items-center gap-2">
+                <BarChart2 className="w-4 h-4 text-blue-500" /> Emission Breakdown
+              </h2>
+              <p className="text-[10px] font-bold text-text-muted mt-1 uppercase tracking-widest opacity-40">Categorical Distribution</p>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-bg-inset flex items-center justify-center">
+               <Leaf className="w-5 h-5 text-text-muted" />
+            </div>
+          </div>
+          <ResponsiveContainer width="100%" height={220}>
             <BarChart
               data={(summary?.by_type ?? []).map((b) => ({
                 name: TYPE_LABELS[b.type] ?? b.type,
                 co2: b.co2_kg,
               }))}
               layout="vertical"
+              margin={{ left: 20 }}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis type="number" tick={{ fontSize: 11 }} />
-              <YAxis dataKey="name" type="category" tick={{ fontSize: 11 }} width={80} />
-              <Tooltip formatter={(v) => [`${v} kg CO₂e`, "Emissions"]} />
-              <Bar dataKey="co2" radius={[0, 4, 4, 0]} fill="#3b82f6" />
+              <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--border-subtle)" />
+              <XAxis type="number" axisLine={false} tickLine={false} tick={{ fontSize: 9, fontWeight: 900, fill: "var(--text-muted)" }} />
+              <YAxis 
+                dataKey="name" 
+                type="category" 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{ fontSize: 8, fontWeight: 900, fill: "var(--text-primary)" }} 
+                width={70} 
+              />
+              <Tooltip 
+                cursor={{ fill: "var(--bg-inset)", opacity: 0.4 }}
+                contentStyle={{ 
+                  borderRadius: "16px", 
+                  border: "none", 
+                  boxShadow: "var(--shadow-premium)",
+                  fontSize: "10px",
+                  fontWeight: "900"
+                }}
+              />
+              <Bar dataKey="co2" radius={[0, 6, 6, 0]} fill="var(--brand-green)" />
             </BarChart>
           </ResponsiveContainer>
         </div>

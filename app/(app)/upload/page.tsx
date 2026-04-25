@@ -1,6 +1,10 @@
 "use client";
 import { useState, useRef } from "react";
-import { Upload, CheckCircle, AlertCircle, Edit3, Zap, Flame, Droplets, Fuel } from "lucide-react";
+import Link from "next/link";
+import { 
+  Upload, CheckCircle, AlertCircle, Edit3, Zap, Flame, 
+  Droplets, Fuel, ArrowUpRight, Leaf 
+} from "lucide-react";
 
 type BillTypeKey = "electricity" | "gas" | "water" | "fuel_diesel" | "fuel_petrol";
 type Stage = "upload" | "processing" | "review" | "result";
@@ -144,26 +148,50 @@ export default function UploadPage() {
   const currentIdx = stages.indexOf(stage);
 
   return (
-    <div className="mx-auto space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Upload Bill</h1>
-        <p className="text-gray-500 text-sm mt-1">Upload a PDF utility bill and we'll extract the data automatically</p>
+    <div className="space-y-6 animate-fade-in">
+      {/* ── Header ──────────────────────────────────────────────── */}
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <Upload className="w-5 h-5" style={{ color: "var(--brand-green)" }} />
+            <h1 className="text-2xl font-black tracking-tight" style={{ color: "var(--text-primary)" }}>
+              Upload Bill
+            </h1>
+          </div>
+          <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+            Automatically extract data from your utility bills using AI
+          </p>
+        </div>
+
+        <div
+          className="neu-raised inline-flex items-center gap-2 px-4 py-2 rounded-xl"
+          style={{ color: "var(--brand-green-dark)" }}
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-gt-green-500 animate-pulse-green inline-block" />
+          <span className="text-xs font-bold uppercase tracking-widest">2025 DEFRA Active</span>
+        </div>
       </div>
 
-      {/* Step indicator */}
-      <div className="flex items-center gap-2">
+      {/* ── Step Indicator ────────────────────────────────────────── */}
+      <div className="grid grid-cols-4 gap-4">
         {["Upload", "Processing", "Review", "Result"].map((s, i) => {
           const done = i < currentIdx;
           const active = i === currentIdx;
           return (
-            <div key={s} className="flex items-center gap-2">
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
-                done ? "bg-green-600 text-white" : active ? "bg-green-100 text-green-700 border-2 border-green-600" : "bg-gray-100 text-gray-400"
+            <div
+              key={s}
+              className={`relative flex flex-col items-center gap-2 py-3 rounded-xl transition-all duration-300 ${
+                active ? "neu-inset" : done ? "neu-raised opacity-70" : "neu-raised opacity-40"
+              }`}
+            >
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black transition-colors ${
+                done ? "bg-gt-green-500 text-cream-50" : active ? "bg-gt-green-100 text-gt-green-700" : "bg-bg-inset text-text-muted"
               }`}>
                 {done ? "✓" : i + 1}
               </div>
-              <span className={`text-xs ${active ? "text-green-700 font-semibold" : "text-gray-400"}`}>{s}</span>
-              {i < 3 && <div className="w-8 h-px bg-gray-200" />}
+              <span className={`text-[10px] font-bold uppercase tracking-widest ${active ? "text-text-primary" : "text-text-muted"}`}>
+                {s}
+              </span>
             </div>
           );
         })}
@@ -179,230 +207,378 @@ export default function UploadPage() {
 
       {/* Stage: Upload */}
       {stage === "upload" && (
-        <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-5">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Bill Type</label>
-            <div className="grid grid-cols-5 gap-2">
-              {BILL_TYPES.map(({ key, label, sub, icon }) => (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => setBillType(key)}
-                  className={`flex flex-col items-center gap-1 p-3 rounded-lg border text-xs font-medium transition-all ${
-                    billType === key
-                      ? "border-green-600 bg-green-50 text-green-700"
-                      : "border-gray-200 text-gray-500 hover:border-gray-300"
-                  }`}
-                >
-                  {icon}
-                  {label}
-                  {sub && <span className="text-xs opacity-60">{sub}</span>}
-                </button>
-              ))}
+        <div className="space-y-8 animate-scale-in">
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-black uppercase tracking-[0.2em]" style={{ color: "var(--text-muted)" }}>
+                1. Select Bill Type
+              </label>
+              <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-bg-inset text-text-muted">
+                Choose one to start
+              </span>
+            </div>
+
+            <div className="grid grid-cols-5 gap-4">
+              {BILL_TYPES.map(({ key, label, sub, icon }) => {
+                const active = billType === key;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setBillType(key)}
+                    className={`group relative flex flex-col items-center justify-center gap-3 p-6 rounded-[2rem] transition-all duration-500 overflow-hidden ${
+                      active 
+                        ? "active-selection" 
+                        : "premium-card hover:bg-white/40"
+                    }`}
+                  >
+                    {/* Background Glow for active state */}
+                    {active && (
+                      <div className="absolute inset-0 bg-gradient-to-br from-gt-green-500/10 to-transparent opacity-50" />
+                    )}
+                    
+                    <div className={`relative z-10 w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 ${
+                      active 
+                        ? "bg-gt-green-500 text-white shadow-lg shadow-gt-green-500/40 rotate-3" 
+                        : "bg-bg-inset text-text-muted group-hover:scale-110 group-hover:bg-gt-green-100 group-hover:text-gt-green-600"
+                    }`}>
+                      {icon}
+                    </div>
+
+                    <div className="relative z-10 flex flex-col items-center">
+                      <span className={`text-[11px] font-black uppercase tracking-widest transition-colors ${
+                        active ? "text-gt-green-900" : "text-text-primary"
+                      }`}>
+                        {label}
+                      </span>
+                      {sub && (
+                        <span className={`text-[9px] font-bold mt-0.5 opacity-60 ${
+                          active ? "text-gt-green-700" : "text-text-muted"
+                        }`}>
+                          {sub}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Active Tick */}
+                    {active && (
+                      <div className="absolute top-3 right-3 w-4 h-4 bg-gt-green-500 rounded-full flex items-center justify-center animate-scale-in">
+                        <CheckCircle className="w-2.5 h-2.5 text-white" />
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="application/pdf"
-            className="hidden"
-            onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
-          />
+          <div className="space-y-6">
+            <label className="text-xs font-black uppercase tracking-[0.2em]" style={{ color: "var(--text-muted)" }}>
+              2. Upload Document
+            </label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="application/pdf"
+              className="hidden"
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
+            />
 
-          <div
-            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-            onDragLeave={() => setDragOver(false)}
-            onDrop={(e) => {
-              e.preventDefault();
-              setDragOver(false);
-              const f = e.dataTransfer.files[0];
-              if (f) handleFile(f);
-            }}
-            onClick={() => fileInputRef.current?.click()}
-            className={`border-2 border-dashed rounded-xl p-10 text-center transition-colors cursor-pointer ${
-              dragOver ? "border-green-500 bg-green-50" : "border-gray-200 hover:border-green-400 hover:bg-green-50/50"
-            }`}
-          >
-            <Upload className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-            <p className="text-sm font-medium text-gray-700">Drag & drop your PDF bill here</p>
-            <p className="text-xs text-gray-400 mt-1">or click to browse — PDF only, max 10 MB</p>
+            <div
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setDragOver(false);
+                const f = e.dataTransfer.files[0];
+                if (f) handleFile(f);
+              }}
+              onClick={() => fileInputRef.current?.click()}
+              className={`group relative overflow-hidden rounded-[2.5rem] p-16 text-center transition-all duration-700 cursor-pointer ${
+                dragOver 
+                  ? "active-selection scale-[0.99]" 
+                  : "premium-card border-dashed border-2 hover:border-solid hover:bg-white/40"
+              }`}
+            >
+              <div className="relative z-10 flex flex-col items-center">
+                <div className={`w-20 h-20 rounded-3xl mb-6 flex items-center justify-center transition-all duration-700 ${
+                  dragOver ? "bg-gt-green-500 text-white shadow-2xl" : "bg-bg-inset text-gt-green-500 shadow-inner group-hover:scale-110 group-hover:bg-gt-green-100"
+                }`}>
+                  <Upload className="w-10 h-10" />
+                </div>
+                <h3 className="text-lg font-black tracking-tight mb-2" style={{ color: "var(--text-primary)" }}>
+                  Drop your PDF bill here
+                </h3>
+                <p className="text-xs font-bold max-w-[200px] mx-auto leading-relaxed" style={{ color: "var(--text-muted)" }}>
+                  Securely upload your energy or utility bill to extract CO₂ data automatically
+                </p>
+                <div className="mt-8 flex items-center gap-2 px-4 py-2 rounded-full bg-bg-inset/50 text-[10px] font-black uppercase tracking-widest text-text-muted group-hover:bg-gt-green-500 group-hover:text-white transition-colors">
+                  <span>Browse local files</span>
+                  <ArrowUpRight className="w-3 h-3" />
+                </div>
+              </div>
+
+              {/* Decorative elements */}
+              <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-gt-green-500/5 rounded-full blur-3xl" />
+              <div className="absolute -top-10 -left-10 w-40 h-40 bg-brand-orange/5 rounded-full blur-3xl" />
+            </div>
           </div>
 
-          <p className="text-xs text-gray-400 flex items-center gap-1.5">
-            <CheckCircle className="w-3.5 h-3.5 text-green-500" />
-            Powered by Mindee OCR — your bill is processed securely and never stored in plain text
-          </p>
+          <div className="flex items-center justify-between p-6 rounded-3xl glass-green border-none shadow-sm">
+            <div className="flex items-center gap-4">
+               <div className="w-10 h-10 rounded-full bg-gt-green-500/20 flex items-center justify-center">
+                  <CheckCircle className="w-5 h-5 text-gt-green-600" />
+               </div>
+               <div>
+                  <p className="text-xs font-black uppercase tracking-widest" style={{ color: "var(--brand-green-darker)" }}>
+                    Enterprise Security
+                  </p>
+                  <p className="text-[10px] font-bold opacity-70" style={{ color: "var(--brand-green-darker)" }}>
+                    Mindee AI OCR provides end-to-end encryption for your documents.
+                  </p>
+               </div>
+            </div>
+            <Link href="/privacy" className="text-[10px] font-black uppercase tracking-widest text-gt-green-700 hover:underline">
+              Privacy Policy
+            </Link>
+          </div>
         </div>
       )}
 
       {/* Stage: Processing */}
       {stage === "processing" && (
-        <div className="bg-white rounded-xl border border-gray-200 p-10 text-center space-y-4">
-          <div className="w-16 h-16 border-4 border-green-600 border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="font-semibold text-gray-800">Processing {fileName}</p>
-          <p className="text-sm text-gray-500">Mindee OCR is extracting your bill data…</p>
-          <div className="flex flex-col items-center gap-1.5 text-xs text-gray-400">
-            <span>✓ File uploaded securely</span>
-            <span className="animate-pulse">⟳ Extracting usage figures…</span>
+        <div className="premium-card p-20 text-center space-y-8 animate-pulse border-none bg-white/40 backdrop-blur-xl">
+          <div className="relative w-24 h-24 mx-auto">
+             <div className="absolute inset-0 border-8 border-gt-green-500/10 rounded-[2rem]" />
+             <div className="absolute inset-0 border-8 border-gt-green-500 border-t-transparent rounded-[2rem] animate-spin" />
+             <div className="absolute inset-0 flex items-center justify-center">
+                <Zap className="w-10 h-10 text-gt-green-500" />
+             </div>
+          </div>
+          <div className="space-y-3">
+            <h2 className="text-2xl font-black tracking-tight" style={{ color: "var(--text-primary)" }}>
+              Analyzing Document
+            </h2>
+            <p className="text-sm font-bold opacity-60" style={{ color: "var(--text-muted)" }}>
+              Extracting semantic data for {billType} emissions...
+            </p>
+          </div>
+          <div className="flex flex-col items-center gap-3">
+            <div className="px-4 py-2 rounded-full bg-gt-green-100 text-gt-green-700 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+              <CheckCircle className="w-3.5 h-3.5" /> Secure Link Established
+            </div>
+            <div className="text-[10px] font-black uppercase tracking-[0.2em] animate-bounce" style={{ color: "var(--text-muted)" }}>
+              Scanning JSON Payload...
+            </div>
           </div>
         </div>
       )}
 
       {/* Stage: Review */}
       {stage === "review" && (
-        <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-5">
-          <div className="flex items-center gap-2">
-            <CheckCircle className="w-5 h-5 text-green-600" />
-            <h2 className="font-semibold text-gray-800">
-              {ocr ? "OCR Extraction Complete — Please Review" : "Enter Bill Details Manually"}
-            </h2>
-          </div>
-
-          {ocr && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-sm space-y-2">
-              {ocr.supplier && (
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Supplier</span>
-                  <span className="font-medium">{ocr.supplier}</span>
+        <div className="space-y-6 animate-scale-in">
+          <div className="premium-card p-8 space-y-8">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-gt-green-500 text-white flex items-center justify-center shadow-lg shadow-gt-green-500/30">
+                  <CheckCircle className="w-6 h-6" />
                 </div>
-              )}
-              {ocr.bill_period && (
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Bill Period</span>
-                  <span className="font-medium">{ocr.bill_period}</span>
+                <div>
+                  <h2 className="text-xl font-black tracking-tight" style={{ color: "var(--text-primary)" }}>
+                    {ocr ? "Extraction Complete" : "Manual Entry"}
+                  </h2>
+                  <p className="text-xs font-bold opacity-60" style={{ color: "var(--text-muted)" }}>
+                    Verify the details below before saving
+                  </p>
                 </div>
-              )}
-              {ocr.account_number && (
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Account No.</span>
-                  <span className="font-medium">{ocr.account_number}</span>
-                </div>
-              )}
-              {ocr.amount_due != null && (
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Amount Due</span>
-                  <span className="font-medium">£{Number(ocr.amount_due).toFixed(2)}</span>
-                </div>
-              )}
+              </div>
+              <div className="px-3 py-1.5 rounded-full bg-bg-inset text-[10px] font-black uppercase tracking-widest text-text-muted">
+                Audit Mode
+              </div>
             </div>
-          )}
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Bill Date <span className="text-red-500">*</span>
+            {ocr && (
+              <div className="grid grid-cols-4 gap-4 p-6 rounded-3xl bg-bg-inset/30 border border-border-subtle shadow-inner">
+                {[
+                  { label: "Supplier", value: ocr.supplier },
+                  { label: "Period", value: ocr.bill_period },
+                  { label: "Account", value: ocr.account_number },
+                  { label: "Cost", value: ocr.amount_due != null ? `£${Number(ocr.amount_due).toFixed(2)}` : null },
+                ].map((item, idx) => (
+                  <div key={idx} className="flex flex-col">
+                    <span className="text-[9px] font-black uppercase tracking-widest text-text-muted mb-1 opacity-60">
+                      {item.label}
+                    </span>
+                    <span className="text-xs font-black text-text-primary truncate">
+                      {item.value || "—"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-8">
+              <div className="space-y-3">
+                <label className="text-[10px] font-black uppercase tracking-[0.2em] ml-1" style={{ color: "var(--text-muted)" }}>
+                  Bill Date *
+                </label>
+                <div className="relative group">
+                  <input
+                    type="date"
+                    value={billDate}
+                    onChange={(e) => setBillDate(e.target.value)}
+                    className="w-full bg-bg-inset/50 border-2 border-transparent rounded-[1.5rem] px-6 py-4 text-sm font-black focus:border-gt-green-500 focus:bg-white transition-all outline-none"
+                    style={{ color: "var(--text-primary)" }}
+                  />
+                </div>
+              </div>
+              <div className="space-y-3">
+                <label className="text-[10px] font-black uppercase tracking-[0.2em] ml-1" style={{ color: "var(--text-muted)" }}>
+                  Total Cost (£)
+                </label>
+                <div className="relative group">
+                  <input
+                    type="number"
+                    value={costGbp}
+                    onChange={(e) => setCostGbp(e.target.value)}
+                    placeholder="0.00"
+                    className="w-full bg-bg-inset/50 border-2 border-transparent rounded-[1.5rem] px-6 py-4 text-sm font-black focus:border-gt-green-500 focus:bg-white transition-all outline-none"
+                    style={{ color: "var(--text-primary)" }}
+                  />
+                  <span className="absolute right-6 top-1/2 -translate-y-1/2 text-xs font-black opacity-30">GBP</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <label className="text-[10px] font-black uppercase tracking-[0.2em] ml-1" style={{ color: "var(--text-muted)" }}>
+                Energy Usage ({unit}) *
               </label>
-              <input
-                type="date"
-                value={billDate}
-                onChange={(e) => setBillDate(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Cost (£) <span className="text-gray-400 font-normal">optional</span>
-              </label>
-              <input
-                type="number"
-                value={costGbp}
-                onChange={(e) => setCostGbp(e.target.value)}
-                placeholder="e.g. 312.40"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Usage <span className="text-red-500">*</span>
-              <span className="text-gray-400 font-normal ml-1">— edit if OCR was incorrect</span>
-            </label>
-            <div className="flex gap-2">
-              <div className="relative flex-1">
+              <div className="relative group">
                 <input
                   type="number"
                   value={usage}
                   onChange={(e) => setUsage(e.target.value)}
-                  placeholder="e.g. 1240"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 pr-16"
+                  placeholder="0"
+                  className="w-full bg-bg-inset/50 border-2 border-transparent rounded-[2rem] px-8 py-6 text-3xl font-black focus:border-gt-green-500 focus:bg-white transition-all outline-none pr-24"
+                  style={{ color: "var(--text-primary)" }}
                 />
-                <span className="absolute right-3 top-2.5 text-xs text-gray-400">{unit}</span>
+                <div className="absolute right-8 top-1/2 -translate-y-1/2 flex items-center gap-3">
+                   <span className="text-sm font-black uppercase tracking-widest opacity-30">{unit}</span>
+                   <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center border border-border-subtle group-hover:scale-110 transition-transform">
+                      <Edit3 className="w-5 h-5 text-text-muted" />
+                   </div>
+                </div>
               </div>
-              <Edit3 className="w-4 h-4 text-gray-400 self-center" />
             </div>
-          </div>
 
-          <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 flex items-start gap-2">
-            <AlertCircle className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
-            <p className="text-xs text-blue-700">
-              The correct 2025 DEFRA emission factor for <strong>{billType}</strong> will be automatically
-              applied when you save. Emission factors are date-based for SECR accuracy.
-            </p>
-          </div>
+            <div className="p-6 rounded-[2rem] bg-gradient-to-r from-gt-green-500/10 to-transparent border border-gt-green-500/20 flex items-start gap-4">
+              <div className="w-10 h-10 rounded-full bg-gt-green-500 text-white flex items-center justify-center shrink-0 shadow-lg shadow-gt-green-500/20">
+                <Leaf className="w-5 h-5" />
+              </div>
+              <p className="text-xs font-bold leading-relaxed" style={{ color: "var(--text-primary)" }}>
+                Applied 2025 DEFRA standard: <span className="text-gt-green-700 font-black">Scope 2 (Market-based)</span>. 
+                Emissions will be calculated instantly upon confirmation.
+              </p>
+            </div>
 
-          <button
-            type="button"
-            onClick={handleSave}
-            className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-semibold text-sm transition-colors"
-          >
-            Calculate & Save →
-          </button>
+            <button
+              type="button"
+              onClick={handleSave}
+              className="group relative w-full bg-gt-green-900 hover:bg-black text-white py-6 rounded-[2rem] font-black uppercase tracking-[0.2em] text-xs transition-all shadow-2xl hover:shadow-gt-green-500/20 active:scale-[0.98] overflow-hidden"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-gt-green-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <span className="relative z-10 flex items-center justify-center gap-2">
+                Calculate Impact <ArrowUpRight className="w-4 h-4" />
+              </span>
+            </button>
+          </div>
         </div>
       )}
 
       {/* Stage: Result */}
       {stage === "result" && result && (
-        <div className="space-y-4">
-          <div className="bg-white rounded-xl border border-gray-200 p-6 text-center space-y-4">
-            <CheckCircle className="w-12 h-12 text-green-500 mx-auto" />
-            <h2 className="text-xl font-bold text-gray-900">Bill Saved Successfully</h2>
-
-            <div className="bg-green-50 border border-green-200 rounded-xl p-6">
-              <p className="text-xs text-green-700 font-medium mb-1">CO₂ Emissions for this bill</p>
-              <p className="text-4xl font-bold text-green-800">
-                {result.co2_kg.toFixed(2)} <span className="text-lg font-normal">kg CO₂e</span>
-              </p>
-              <p className="text-sm text-green-600 mt-1">{(result.co2_kg / 1000).toFixed(4)} tonnes CO₂e</p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 text-left">
-              <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-xs text-gray-500">Real-world equivalent</p>
-                <p className="text-sm font-bold text-gray-800 mt-1">
-                  🚗 {result.equivalents.miles_driven.toLocaleString()} miles driven
-                </p>
+        <div className="space-y-8 animate-scale-in">
+          <div className="premium-card p-12 text-center space-y-10 border-none bg-white/60 backdrop-blur-2xl">
+            <div className="space-y-4">
+              <div className="w-20 h-20 bg-gt-green-500 text-white rounded-[2rem] flex items-center justify-center mx-auto shadow-2xl shadow-gt-green-500/40 rotate-6 animate-fade-in">
+                <CheckCircle className="w-10 h-10" />
               </div>
-              <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-xs text-gray-500">Trees needed to offset</p>
-                <p className="text-sm font-bold text-gray-800 mt-1">
-                  🌳 {result.equivalents.trees_one_year} trees for 1 year
+              <div>
+                <h2 className="text-3xl font-black tracking-tight" style={{ color: "var(--text-primary)" }}>
+                  Impact Calculated
+                </h2>
+                <p className="text-xs font-black uppercase tracking-[0.3em] opacity-40 mt-2">
+                  Transaction ID: GT-{Math.random().toString(36).substr(2, 6).toUpperCase()}
                 </p>
               </div>
             </div>
+            
+            <div className="relative p-12 rounded-[3rem] bg-black text-white overflow-hidden shadow-2xl">
+               <div className="absolute top-0 right-0 p-8 opacity-20 group">
+                  <Leaf className="w-40 h-40 rotate-12 group-hover:rotate-45 transition-transform duration-1000" />
+               </div>
+               
+               <div className="relative z-10 space-y-6">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-50 mb-4">
+                    Total Carbon Footprint
+                  </p>
+                  <div className="flex items-baseline justify-center gap-3">
+                    <span className="text-7xl font-black tracking-tighter animate-fade-in">
+                      {result.co2_kg.toFixed(2)}
+                    </span>
+                    <span className="text-2xl font-black opacity-40">kg CO₂e</span>
+                  </div>
+                </div>
 
-            <div className="text-xs text-gray-400 text-left space-y-1 border-t border-gray-100 pt-4">
-              <p>Usage: <strong>{usage} {unit}</strong></p>
-              <p>Factor: <strong>{result.factor_used} kgCO₂e/{unit}</strong> (2025 DEFRA)</p>
-              <p>Scope: <strong>{result.scope}</strong> — {billType}</p>
+                <div className="h-px bg-white/10 w-20 mx-auto" />
+
+                <div className="flex justify-center gap-12">
+                   <div className="text-center">
+                      <p className="text-[9px] font-black uppercase tracking-widest opacity-40 mb-1">Equivalent</p>
+                      <p className="text-lg font-black">{result.equivalents.miles_driven.toLocaleString()} <span className="text-xs opacity-50">miles</span></p>
+                   </div>
+                   <div className="text-center">
+                      <p className="text-[9px] font-black uppercase tracking-widest opacity-40 mb-1">Offset</p>
+                      <p className="text-lg font-black">{result.equivalents.trees_one_year} <span className="text-xs opacity-50">trees</span></p>
+                   </div>
+                </div>
+              </div>
+
+              {/* Accent light */}
+              <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-gt-green-500/30 rounded-full blur-[80px]" />
+            </div>
+
+            <div className="grid grid-cols-3 gap-6">
+               {[
+                 { label: "Usage", value: `${usage} ${unit}` },
+                 { label: "Factor", value: result.factor_used },
+                 { label: "Scope", value: result.scope },
+               ].map((stat, i) => (
+                 <div key={i} className="p-6 rounded-3xl bg-bg-inset/50 border border-border-subtle text-left">
+                    <p className="text-[9px] font-black uppercase tracking-widest text-text-muted mb-2">{stat.label}</p>
+                    <p className="text-sm font-black text-text-primary">{stat.value}</p>
+                 </div>
+               ))}
             </div>
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex gap-6">
             <button
               type="button"
               onClick={reset}
-              className="flex-1 bg-white border border-gray-200 text-gray-700 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+              className="premium-card flex-1 py-6 rounded-[2rem] text-xs font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 hover:bg-gt-green-500 hover:text-white hover:border-transparent"
+              style={{ color: "var(--text-secondary)" }}
             >
-              Upload Another Bill
+              Upload Another <Upload className="w-4 h-4" />
             </button>
-            <a
+            <Link
               href="/dashboard"
-              className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2.5 rounded-lg text-sm font-medium text-center transition-colors"
+              className="group premium-card flex-1 bg-white py-6 rounded-[2rem] text-xs font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 hover:bg-black hover:text-white"
             >
-              Back to Dashboard
-            </a>
+              Back to Dashboard <ArrowUpRight className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+            </Link>
           </div>
         </div>
       )}

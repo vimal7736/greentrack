@@ -1,511 +1,104 @@
-# GreenTrack AI — Full Project README
+# GreenTrack AI — Project Overview & User Guide
 
-Carbon footprint tracking platform for UK Small & Medium Businesses (SMEs).
-Built with Next.js 16 · Supabase · Stripe · Mindee OCR · Resend · Vercel
-
----
-
-## Current State
-
-The UI is fully built with **mock data** across all 9 pages:
-Login / Signup / Dashboard / Upload / History / Reports / Team / Billing / Admin
-
-**What's left:** Replace every mock import with real API calls, Supabase database, and third-party services.
+Welcome to **GreenTrack AI**, a premium carbon management platform designed for UK businesses to track, report, and reduce their environmental impact.
 
 ---
 
-## Tech Stack
+## 🌍 Important Terms (Full Forms)
+To understand this project, here are the core industry terms explained in simple English:
 
-| Layer | Tool | Purpose |
-|-------|------|---------|
-| Frontend | Next.js 16 (App Router) | Pages, routing, server components |
-| Styling | Tailwind CSS v4 | UI styling |
-| Charts | Recharts | CO2 trend charts |
-| Database | Supabase (PostgreSQL) | All data storage |
-| Auth | Supabase Auth | Login, signup, email verification |
-| File Storage | Supabase Storage | PDF bill uploads |
-| OCR | Mindee API | Extract data from PDF bills |
-| Payments | Stripe + Stripe Tax | Subscriptions + 20% UK VAT |
-| Email | Resend | Email verification + report delivery |
-| PDF Reports | react-pdf | Generate SECR-compliant PDFs |
-| Deployment | Vercel | Production hosting |
+*   **CO2e (Carbon Dioxide Equivalent):** A single number used to measure the total warming effect of all different greenhouse gases (like methane and nitrous oxide) as if they were all Carbon Dioxide.
+*   **SECR (Streamlined Energy and Carbon Reporting):** A UK government requirement that mandates large businesses to report their annual energy use and carbon emissions.
+*   **SBTi (Science Based Targets initiative):** A global organization that provides a "Gold Standard" pathway for companies to set carbon reduction goals that align with climate science.
+*   **DEFRA (Department for Environment, Food & Rural Affairs):** The UK government body that provides the official "math" (Conversion Factors) used to turn 1 kWh of electricity or 1 Litre of fuel into exact kilograms of carbon.
+*   **Net Zero:** The state where the greenhouse gases going into the atmosphere are balanced by the gases being taken out.
 
 ---
 
-## Environment Variables Needed
+## 📂 Detailed Page Functionality & Real-World Examples
 
-Create a `.env.local` file in the project root:
+### 1. Carbon Dashboard (The Operational Launchpad)
+**The "What":** This is your daily command center. It doesn't just show numbers; it interprets them. It uses a "Bento-style" layout to separate different streams of data like Electricity vs. Gas.
+*   **Key Features:**
+    *   **Live Pulse Gauge:** Shows your current carbon status relative to your monthly average.
+    *   **Interactive Trend Charts:** Visualizes your carbon output over the last 6 months using **Line Charts** and **Area Graphs**.
+    *   **Comparative Insight:** Automatically calculates if you are "Up" or "Down" compared to the previous month.
+*   **Real-World Example:** A Sustainability Manager logs in and notices a 15% spike in **Carbon Dioxide Equivalent (CO2e)**. They quickly see it was caused by the "Gas" category and can investigate if a heater was left on in the warehouse.
 
-```env
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+### 2. Upload Bill (AI-Powered Data Extraction)
+**The "What":** This page eliminates manual data entry. It uses **Mindee OCR (Optical Character Recognition)**—a type of Artificial Intelligence that "reads" your PDF bills like a human would.
+*   **Key Features:**
+    *   **Drag-and-Drop Interface:** A premium, interactive zone to drop PDF utility statements.
+    *   **AI Validation:** After uploading, the AI shows you what it "read" (like the Billing Date or the Meter Reading) so you can verify it.
+    *   **Automated Calculation:** Once verified, the app uses the **DEFRA (Department for Environment, Food & Rural Affairs)** math engine to convert those units into carbon instantly.
+*   **Real-World Example:** An Office Administrator uploads a complex 12-page invoice from **SSE Energy**. Instead of spending 20 minutes typing numbers into Excel, they spend 5 seconds uploading, and the app tells them: *"This bill created 450.2 kg of CO2e."*
 
-# Mindee OCR
-MINDEE_API_KEY=your_mindee_api_key
+### 3. Archive & History (The Immutable Carbon Ledger)
+**The "What":** A permanent, searchable record of every piece of energy data your company has ever consumed. This is your "Audit Trail" for government inspectors.
+*   **Key Features:**
+    *   **Granular Filtering:** Filter your entire history by **Fuel Type** (Electricity, Gas, Diesel), **Date Range**, or **Vendor**.
+    *   **PDF Storage:** Every record is linked back to the original PDF bill stored in our secure vault, so you never lose your receipts.
+    *   **Bulk Actions:** Ability to select multiple bills and export them as a **CSV (Comma Separated Values)** file for your accountant.
+*   **Real-World Example:** During a high-stakes meeting, the Board of Directors asks: *"How much did we spend on Petrol for company cars in Q3 of last year?"* You filter by "Fuel - Petrol" and "2024-Q3" and provide the answer in under 10 seconds.
 
-# Stripe
-STRIPE_SECRET_KEY=sk_test_...
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
-STRIPE_WEBHOOK_SECRET=whsec_...
-STRIPE_STARTER_PRICE_ID=price_...
-STRIPE_BUSINESS_PRICE_ID=price_...
+### 4. Audit Reports (The Professional Compliance Center)
+**The "What":** This page turns your raw data into "Bank-Ready" and "Government-Ready" documents. It focuses on **SECR (Streamlined Energy and Carbon Reporting)** standards.
+*   **Key Features:**
+    *   **Live Report Preview:** A real-time window showing what your PDF will look like before you download it.
+    *   **Direct-to-Stakeholder Email:** A "Quick-Send" feature to email the report directly to your CEO or an external auditor using **Resend**.
+    *   **SECR Compliance Data:** Automatically includes required sections like "Intensity Ratios" (Carbon per £ of revenue) and "Year-on-Year Comparison".
+*   **Real-World Example:** A company is applying for a **B-Corp Certification**. They need to provide an official carbon report. They go to this page, click "Generate SECR Report", and receive a professional 3-page PDF with their logo and all the necessary math verified.
 
-# Resend
-RESEND_API_KEY=re_...
-RESEND_FROM_EMAIL=noreply@greentrack.ai
+### 5. Performance Compare (The Side-by-Side Audit)
+**The "What":** This page is for deep-dive analysis. It puts two different time periods next to each other to find inefficiencies.
+*   **Key Features:**
+    *   **Side-by-Side Bento Layout:** Visualizes "Period A" vs "Period B" with high-contrast color coding (Green for improvement, Orange for increase).
+    *   **Variance Tracking:** Shows the exact percentage (%) change for every single fuel type.
+    *   **Comparative Charts:** Overlays two different years on one chart to show where your "Seasonal Peaks" are happening.
+*   **Real-World Example:** A restaurant owner compares "December 2023" with "December 2024". They see that while their **Electricity** stayed the same, their **Gas** usage doubled. This helps them realize the kitchen's heating system might be broken.
 
-# App
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-```
+### 6. Strategy & Targets (The Reduction Roadmap)
+**The "What":** This is where you plan the future. It uses **SBTi (Science Based Targets initiative)** logic to help you set realistic goals to reach Net Zero.
+*   **Key Features:**
+    *   **Trajectory Audit:** A line chart that shows your current path vs. your "Goal Path" to reach Net Zero by 2030 or 2050.
+    *   **Reduction Strategy Sliders:** Interactive sliders that let you model scenarios: *"What if I switch all heating to Heat Pumps?"* or *"What if I reduce travel by 20%?"*
+    *   **Milestone Tracking:** A checklist of specific targets your team needs to hit to stay on track with climate science.
+*   **Real-World Example:** A logistics company sets a target to reduce carbon by 40% by 2028. This page shows them they are currently 5% "Behind Schedule" and helps them decide to switch to Electric Vans sooner.
 
-> All keys above will be provided by the client (Suhail). Work on staging only — never touch production keys.
+### 7. Governance & Team (The Permission Matrix)
+**The "What":** Manages the "Human Element" of carbon tracking. It ensures that only the right people can see or change your environmental data.
+*   **Key Features:**
+    *   **Role-Based Access Control:** Assign roles like **Owner** (full control), **Admin** (can manage bills), and **Member** (view-only access).
+    *   **Seat Utilization:** Shows how many "User Seats" you are using out of your plan's total limit.
+    *   **Secure Invitations:** Send encrypted links to staff members to join the organisation safely.
+*   **Real-World Example:** You hire an external **Environmental Consultant**. You don't want them to see your company's credit card info, so you invite them as a "Member". They can analyze the carbon data without accessing the **Billing** section.
 
----
-
-## Database Schema (Supabase)
-
-Run these SQL migrations in Supabase SQL editor in order.
-
-### 1. Organisations
-```sql
-CREATE TABLE organisations (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL,
-  logo_url TEXT,
-  tier TEXT NOT NULL DEFAULT 'free' CHECK (tier IN ('free', 'starter', 'business')),
-  stripe_customer_id TEXT UNIQUE,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-```
-
-### 2. Profiles (extends Supabase auth.users)
-```sql
-CREATE TABLE profiles (
-  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  org_id UUID REFERENCES organisations(id) ON DELETE CASCADE,
-  full_name TEXT,
-  role TEXT NOT NULL DEFAULT 'member' CHECK (role IN ('owner', 'member', 'super_admin')),
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-```
-
-### 3. Bills (core table)
-```sql
-CREATE TABLE bills (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  org_id UUID NOT NULL REFERENCES organisations(id) ON DELETE CASCADE,
-  uploaded_by UUID REFERENCES profiles(id),
-  bill_type TEXT NOT NULL CHECK (bill_type IN ('electricity', 'gas', 'water', 'fuel_diesel', 'fuel_petrol')),
-  bill_date DATE NOT NULL,
-  usage_amount NUMERIC NOT NULL,
-  usage_unit TEXT NOT NULL,
-  co2_kg NUMERIC NOT NULL,
-  cost_gbp NUMERIC,
-  supplier TEXT,
-  account_number TEXT,
-  pdf_url TEXT,
-  ocr_raw JSONB,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-```
-
-### 4. Emission Factors (admin-editable, DEFRA 2025)
-```sql
-CREATE TABLE emission_factors (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  fuel_type TEXT NOT NULL,
-  unit TEXT NOT NULL,
-  kg_co2e_per_unit NUMERIC NOT NULL,
-  scope INTEGER NOT NULL CHECK (scope IN (1, 2, 3)),
-  valid_from DATE NOT NULL,
-  valid_to DATE NOT NULL,
-  source TEXT DEFAULT 'DEFRA 2025',
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Seed with official 2025 DEFRA factors (non-negotiable)
-INSERT INTO emission_factors (fuel_type, unit, kg_co2e_per_unit, scope, valid_from, valid_to) VALUES
-('electricity', 'kWh',   0.177, 2, '2025-01-01', '2025-12-31'),
-('gas',         'kWh',   0.182, 1, '2025-01-01', '2025-12-31'),
-('gas',         'm3',    2.066, 1, '2025-01-01', '2025-12-31'),
-('fuel_diesel', 'litre', 2.571, 1, '2025-01-01', '2025-12-31'),
-('fuel_petrol', 'litre', 2.31,  1, '2025-01-01', '2025-12-31');
-```
-
-### 5. Subscriptions
-```sql
-CREATE TABLE subscriptions (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  org_id UUID NOT NULL REFERENCES organisations(id) ON DELETE CASCADE,
-  stripe_subscription_id TEXT UNIQUE,
-  stripe_price_id TEXT,
-  status TEXT NOT NULL DEFAULT 'inactive',
-  current_period_start TIMESTAMPTZ,
-  current_period_end TIMESTAMPTZ,
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-```
-
-### 6. Invitations
-```sql
-CREATE TABLE invitations (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  org_id UUID NOT NULL REFERENCES organisations(id) ON DELETE CASCADE,
-  email TEXT NOT NULL,
-  role TEXT NOT NULL DEFAULT 'member',
-  token TEXT UNIQUE NOT NULL DEFAULT gen_random_uuid()::TEXT,
-  expires_at TIMESTAMPTZ DEFAULT NOW() + INTERVAL '7 days',
-  accepted_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-```
-
-### 7. Row Level Security — MANDATORY (UK GDPR)
-```sql
-ALTER TABLE organisations   ENABLE ROW LEVEL SECURITY;
-ALTER TABLE profiles        ENABLE ROW LEVEL SECURITY;
-ALTER TABLE bills           ENABLE ROW LEVEL SECURITY;
-ALTER TABLE subscriptions   ENABLE ROW LEVEL SECURITY;
-
--- Users can only see data belonging to their own org
-CREATE POLICY "org_isolation_bills" ON bills
-  USING (org_id = (SELECT org_id FROM profiles WHERE id = auth.uid()));
-
-CREATE POLICY "org_isolation_profiles" ON profiles
-  USING (org_id = (SELECT org_id FROM profiles WHERE id = auth.uid()));
-```
+### 8. Financial Settlement (The Billing Suite)
+**The "What":** Managing your partnership with GreenTrack AI. This is where you handle your subscription and professional account settings.
+*   **Key Features:**
+    *   **Stripe Financial Portal:** A direct connection to **Stripe** to update payment methods, download invoices, or change your plan.
+    *   **Tier Enforcement:** Clearly shows what features are unlocked (e.g., "Business Tier" unlocks Branded Reports).
+    *   **GDPR Data Wipe:** A secure button to request a complete deletion of all personal and corporate data, adhering to **Article 17 of the UK GDPR**.
+*   **Real-World Example:** A small business starts on the **Free Plan** to test the app. After uploading 3 bills, they decide they want the **SECR Reports** for their board meeting. They go to the Billing page, click "Upgrade to Business", and instantly unlock the professional reporting tools.
 
 ---
 
-## Supabase Setup Checklist
+## 🛠️ Technical Implementation (The "Under the Hood" View)
 
-- [ ] Create Supabase project — Region: **eu-west-2 (London)** — mandatory for UK GDPR
-- [ ] Run all 7 SQL migrations above
-- [ ] Enable Email Auth + Email Confirmation in Auth settings
-- [ ] Create Storage bucket named `bills` — set to **private**
-- [ ] Add storage RLS policy: org members can only access their own org's files
+### Project State
+The UI is built with a **Premium Bento Design System**. All pages are optimized for **Dark Mode** and follow high-end "Innovative" UI patterns (Glassmorphism, Micro-interactions, Adaptive Skeletons).
 
----
-
-## What to Replace: Mock Data to Real API
-
-Every page currently imports from `app/mock-data.ts`. Here is what each page needs:
-
----
-
-### Dashboard (`app/dashboard/page.tsx`)
-**Replace:**
-- `mockBills` — Supabase query: bills for this org, last 6 months
-- `mockMonthlyData` — Supabase aggregation: `SUM(co2_kg)` grouped by month
-
-**New API route:** `GET /api/dashboard/summary`
-Returns: total CO2, this month CO2, total kWh, monthly chart data, recent 5 bills
+### Tech Stack
+*   **Frontend:** Next.js (App Router)
+*   **Styling:** Tailwind CSS v4 (with custom premium utility classes)
+*   **Database & Auth:** Supabase (PostgreSQL + RLS Security)
+*   **Payments:** Stripe (with UK VAT support)
+*   **OCR (AI Reading):** Mindee API
+*   **Charts:** Recharts (High-performance data visualization)
 
 ---
 
-### Upload Bill (`app/upload/page.tsx`)
-**Replace mock OCR with real 3-step flow:**
-
-**Step 1 — Upload PDF to Supabase Storage:**
-```
-POST /api/bills/upload
-Body: FormData with PDF file
-Returns: { storagePath, publicUrl }
-```
-
-**Step 2 — Mindee OCR:**
-```
-POST /api/bills/ocr
-Body: { storagePath }
-Calls: Mindee InvoiceV4 API
-Returns: { supplier, usage, unit, amount_due, bill_period, account_number }
-```
-
-**Step 3 — Save + Calculate CO2:**
-```
-POST /api/bills/save
-Body: { orgId, billType, billDate, usage, unit, supplier, pdfUrl }
-Logic: SELECT kg_co2e_per_unit FROM emission_factors
-       WHERE fuel_type = $billType
-       AND valid_from <= $billDate AND valid_to >= $billDate
-       co2_kg = usage * factor
-Returns: saved bill with co2_kg
-```
-
-**Tier enforcement (check before upload):**
-```typescript
-if (org.tier === 'free' && billsThisMonth >= 3) → 403 + upgrade prompt
-if (org.tier === 'free' && billType !== 'electricity') → 403 + upgrade prompt
-```
-
----
-
-### History (`app/history/page.tsx`)
-**Replace:**
-- `mockBills` — `GET /api/bills?page=1&filter=all` with Supabase pagination
-- CSV Export button — `GET /api/bills/export` streams CSV file (Business tier only)
-
----
-
-### Reports (`app/reports/page.tsx`)
-**Replace:**
-- Static preview — live data from `GET /api/reports/summary`
-- Download PDF — `POST /api/reports/generate` using react-pdf, streams PDF file
-- Email Report — `POST /api/reports/email` sends PDF via Resend
-- Benchmark chart — `GET /api/benchmarks?sector=` (anonymous, 5+ orgs minimum)
-
-**PDF must include for SECR compliance:**
-- Company name + logo (Business tier)
-- Total CO2e in tonnes (Scope 1 + Scope 2 separate)
-- Total energy consumption in kWh
-- DEFRA factor version and source
-- Year-on-Year comparison table
-
----
-
-### Team (`app/team/page.tsx`)
-**Replace:**
-- `mockTeamMembers` — `GET /api/team`
-- Send Invite — `POST /api/team/invite` inserts into `invitations` table + sends email via Resend
-- Accept invite link — `GET /api/team/accept?token=` validates token, creates profile
-- Remove member — `DELETE /api/team/member/:userId`
-
----
-
-### Billing (`app/billing/page.tsx`)
-**Replace:**
-- Current plan banner — read from `subscriptions` table
-- Plan cards upgrade/downgrade — `POST /api/billing/checkout` creates Stripe Checkout Session
-- Invoice history — Stripe API: `stripe.invoices.list({ customer: stripeCustomerId })`
-- Cancel — `POST /api/billing/cancel`
-
-**Stripe Webhooks (`POST /api/webhooks/stripe`):**
-```
-checkout.session.completed      → set org.tier, create subscription record
-customer.subscription.updated   → update tier if plan changed  
-customer.subscription.deleted   → downgrade org to 'free'
-invoice.payment_failed          → send email alert via Resend
-```
-
----
-
-### Admin (`app/admin/page.tsx`)
-**Replace:**
-- `mockAdminStats` — `GET /api/admin/stats` (super_admin role check required)
-- `mockAdminOrgs` — `GET /api/admin/orgs`
-- Suspend org — `PATCH /api/admin/orgs/:id` `{ status: 'suspended' }`
-- Emission factors save — `PATCH /api/admin/factors/:id` `{ kg_co2e_per_unit }`
-
----
-
-## All API Routes to Build
-
-```
-app/api/
-├── auth/
-│   └── callback/route.ts            ← Supabase email verification redirect
-├── bills/
-│   ├── upload/route.ts              ← Upload PDF to Supabase Storage
-│   ├── ocr/route.ts                 ← Call Mindee API
-│   ├── save/route.ts                ← Save bill + calculate CO2
-│   ├── export/route.ts              ← CSV export (Business tier only)
-│   └── route.ts                     ← GET paginated bill list
-├── dashboard/
-│   └── summary/route.ts             ← Aggregated stats + chart data
-├── reports/
-│   ├── generate/route.ts            ← Build and stream PDF
-│   ├── email/route.ts               ← Send PDF via Resend
-│   └── summary/route.ts             ← Data for report preview
-├── benchmarks/
-│   └── route.ts                     ← Anonymous industry comparison
-├── team/
-│   ├── route.ts                     ← GET members, POST invite
-│   ├── accept/route.ts              ← Accept invite token
-│   └── [userId]/route.ts            ← DELETE member
-├── billing/
-│   ├── checkout/route.ts            ← Create Stripe Checkout Session
-│   ├── portal/route.ts              ← Stripe Customer Portal
-│   └── cancel/route.ts              ← Cancel subscription
-├── webhooks/
-│   └── stripe/route.ts              ← All Stripe webhook events
-├── account/
-│   └── delete/route.ts              ← GDPR erasure (anonymise + delete)
-└── admin/
-    ├── stats/route.ts               ← KPI overview
-    ├── orgs/route.ts                ← List + suspend orgs
-    └── factors/[id]/route.ts        ← Edit emission factors
-```
-
----
-
-## Packages to Install
-
-```bash
-# Supabase
-npm install @supabase/supabase-js @supabase/ssr
-
-# Stripe
-npm install stripe @stripe/stripe-js
-
-# Mindee OCR
-npm install mindee
-
-# Email
-npm install resend
-
-# PDF generation
-npm install @react-pdf/renderer
-
-# Cookie consent (PECR)
-npm install react-cookie-consent
-```
-
----
-
-## Key Files to Create
-
-### `lib/supabase/client.ts` — browser client
-```typescript
-import { createBrowserClient } from '@supabase/ssr'
-export const supabase = createBrowserClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
-```
-
-### `lib/supabase/server.ts` — server components
-```typescript
-import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
-export async function createClient() {
-  const cookieStore = await cookies()
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll: () => cookieStore.getAll(),
-        setAll: (c) => c.forEach(({ name, value, options }) =>
-          cookieStore.set(name, value, options))
-      }
-    }
-  )
-}
-```
-
-### `lib/stripe.ts`
-```typescript
-import Stripe from 'stripe'
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-12-18.acacia'
-})
-```
-
-### `middleware.ts` — protect all routes
-```typescript
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
-import { createServerClient } from '@supabase/ssr'
-
-export async function middleware(request: NextRequest) {
-  // Refresh Supabase session
-  // Redirect unauthenticated users to /login
-  // Redirect non-super_admin users away from /admin
-}
-
-export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|login|signup).*)']
-}
-```
-
----
-
-## Milestone Build Order
-
-### Milestone 1 — Foundation (Week 1–2)
-- [ ] Supabase project setup (London region)
-- [ ] Run all SQL migrations + seed emission factors
-- [ ] Install Supabase packages
-- [ ] Replace Login page — real Supabase signInWithPassword
-- [ ] Replace Signup page — real Supabase signUp + org creation
-- [ ] Add middleware.ts — session refresh + route protection
-- [ ] Replace mockUser/mockOrg — pull from profiles + organisations tables
-- [ ] Deploy to Vercel staging
-
-### Milestone 2 — Core Feature: Bills (Week 2–3)
-- [ ] Build POST /api/bills/upload — Supabase Storage
-- [ ] Build POST /api/bills/ocr — Mindee API
-- [ ] Build POST /api/bills/save — CO2 calculation + DB insert
-- [ ] Replace Upload page — real API calls
-- [ ] Replace Dashboard — real Supabase queries
-- [ ] Replace History — paginated Supabase query
-- [ ] Add tier enforcement on upload
-
-### Milestone 3 — Billing + Teams (Week 3–5)
-- [ ] Create Stripe products + prices (enable Stripe Tax)
-- [ ] Build POST /api/billing/checkout
-- [ ] Build POST /api/webhooks/stripe — all 4 events
-- [ ] Update org.tier on webhook
-- [ ] Build team invite flow (Resend email + token)
-- [ ] Build DELETE /api/team/member/:id
-- [ ] Replace Billing page — real Stripe data + invoices
-
-### Milestone 4 — Reports (Week 5–6)
-- [ ] Build PDF template with react-pdf (SECR fields)
-- [ ] Build POST /api/reports/generate — stream PDF
-- [ ] Build POST /api/reports/email — Resend attachment
-- [ ] Build benchmark query (GROUP BY sector HAVING COUNT >= 5)
-- [ ] Build GET /api/bills/export — CSV stream (Business only)
-
-### Milestone 5 — Admin + QA (Week 6–8)
-- [ ] Build all /api/admin/* routes with role checks
-- [ ] Replace Admin page mock data
-- [ ] Build DELETE /api/account — GDPR erasure
-- [ ] Add PECR cookie consent banner to layout
-- [ ] Add /privacy and /terms pages
-- [ ] Write integration tests (upload → calculate, billing, reports)
-- [ ] Record Loom walkthrough for client
-- [ ] Final QA — test all 3 tiers, all roles
-
----
-
-## Compliance Checklist (Mandatory — Do Not Skip)
-
-- [ ] Supabase in eu-west-2 (London) region
-- [ ] Row Level Security on all tables
-- [ ] /privacy page (UK GDPR privacy policy)
-- [ ] /terms page (Terms of service)
-- [ ] Cookie consent banner (PECR)
-- [ ] Account deletion endpoint (anonymise personal data)
-- [ ] Emission factors in DB — never hardcoded
-- [ ] Factor lookup uses bill date (not always latest factor)
-- [ ] Benchmarks anonymised — minimum 5 orgs per sector
-
----
-
-## Important Client Rules
-
-1. Work on **staging environment only** — never access production DB
-2. Use **fake/anonymised test data** — never real customer bills
-3. GitHub repo is in **client's (Suhail's) name** — push to his repo
-4. Client handles **all Vercel production deployments**
-5. All API keys provided by client — do not create your own production accounts
-6. Sign **NDA + DPA + UK IDTA** before starting any work
-
----
-
-## Post-MVP (Not in this contract — future phases)
-
-- Gmail auto-forward (bills emailed directly to the app)
-- Full Scope 3 emissions breakdown
-- Accountant white-label portal
-- Multi-currency support
-- Mobile app
-
----
-
-*Client: Suhail — GreenTrack AI*
-*Developer: Rizan*
-*Timeline: 4–8 weeks*
+## 🔐 Compliance & Security (UK Standards)
+*   **GDPR:** All data is stored in the **London (eu-west-2)** region.
+*   **Data Erasure:** A "Data Wipe" feature is available in the Billing section for Article 17 compliance (Right to be Forgotten).
+*   **RLS (Row Level Security):** Ensures that Company A can **never** see the data of Company B, even if they share the same database server.

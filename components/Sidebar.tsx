@@ -140,7 +140,7 @@ export default function Sidebar({ userName, userEmail, userRole, orgName, orgTie
 
   return (
     <aside
-      className="fixed left-0 top-0 h-screen flex flex-col z-40 overflow-x-hidden"
+      className="fixed left-0 top-0 h-screen flex flex-col z-40"
       style={{
         background: BG,
         width: collapsed ? "4rem" : "16rem",
@@ -276,45 +276,30 @@ export default function Sidebar({ userName, userEmail, userRole, orgName, orgTie
           )}
         </div>
 
-        <div className="mt-3 pt-3" style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}>
-          <button
-            type="button"
-            onClick={() => setCollapsed((c) => !c)}
-            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: collapsed ? "center" : "flex-start",
-              gap: "0.5rem",
-              width: collapsed ? 40 : "100%",
-              height: 36,
-              margin: collapsed ? "0 auto" : undefined,
-              borderRadius: 10,
-              paddingLeft: collapsed ? 0 : "0.75rem",
-              background: "rgba(0,0,0,0.18)",
-              boxShadow: inset,
-              color: "rgba(255,255,255,0.40)",
-              fontSize: "0.75rem",
-              fontWeight: 600,
-              cursor: "pointer",
-              border: "none",
-              transition: "color 150ms, background 150ms",
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.80)";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.40)";
-            }}
-          >
-            {collapsed
-              ? <ChevronRight className="w-4 h-4" />
-              : <><ChevronLeft className="w-4 h-4" /><span>Collapse</span></>
-            }
-          </button>
-        </div>
+        <div className="mt-3 pt-3" style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }} />
       </nav>
+
+      {/* Floating Toggle Button */}
+      <button
+        type="button"
+        onClick={() => setCollapsed((c) => !c)}
+        className="absolute top-[40%] -right-6 w-7 h-12 flex items-center justify-center group z-50 transition-all duration-300 hover:scale-110"
+        style={{
+          background: BG,
+          borderRadius: "0 100px 100px 0",
+          boxShadow: "6px 0 12px rgba(0,0,0,0.3), inset 1px 1px 0 rgba(255,255,255,0.1)",
+          border: "1px solid rgba(255,255,255,0.1)",
+          borderLeft: "none",
+          cursor: "pointer",
+        }}
+        aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+      >
+        <Leaf 
+          className={`w-4 h-4 text-gt-green-400 transition-all duration-500 ease-in-out ${
+            collapsed ? "rotate-180 scale-x-[-1]" : "rotate-0"
+          }`} 
+        />
+      </button>
 
       <div
         className="shrink-0 p-3"

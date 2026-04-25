@@ -113,7 +113,18 @@
   --shadow-inset:     inset 6px 6px 14px var(--neu-dark), inset -6px -6px 14px var(--neu-light);
   --shadow-inset-sm:  inset 3px 3px 7px var(--neu-dark), inset -3px -3px 7px var(--neu-light);
   --shadow-inset-xs:  inset 2px 2px 4px var(--neu-dark), inset -2px -2px 4px var(--neu-light);
-  --card-border:      none;
+  
+  /* — Premium Layered Shadows — */
+  --shadow-premium: 
+    0 2px 4px rgba(0,0,0,0.02),
+    0 10px 20px rgba(0,0,0,0.04),
+    0 20px 40px rgba(0,0,0,0.04);
+  --shadow-premium-hover:
+    0 2px 4px rgba(0,0,0,0.02),
+    0 15px 30px rgba(0,0,0,0.08),
+    0 30px 60px rgba(0,0,0,0.08);
+
+  --card-border:      1px solid var(--border-subtle);
 
   /* ── SIDEBAR WIDTH (updated by Sidebar.tsx JS) ── */
   --sidebar-w: 16rem;
@@ -418,7 +429,34 @@ body {
   border-top: 1px solid var(--border-subtle);
 }
 
-/* Badge base */
+/* ================================================================
+   PREMIUM MODERN UTILITIES
+   ================================================================ */
+
+.premium-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  box-shadow: var(--shadow-premium);
+  border-radius: var(--radius-xl);
+  transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
+}
+
+.premium-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-premium-hover);
+  border-color: var(--brand-green-light);
+}
+
+/* Glassy Selection State */
+.active-selection {
+  background: linear-gradient(135deg, var(--bg-surface), var(--gt-green-50));
+  border: 2px solid var(--brand-green);
+  box-shadow: 
+    0 0 0 4px rgba(34, 197, 94, 0.1),
+    inset 0 1px 1px rgba(255,255,255,0.8);
+  transform: scale(0.98);
+}
+
 .badge {
   display: inline-flex;
   align-items: center;

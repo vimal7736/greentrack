@@ -41,6 +41,7 @@ export default function DashboardCharts({ monthlyChart, byType, totalCo2, chartO
   useEffect(() => setMounted(true), []);
 
   const isDark = mounted && resolvedTheme === "dark";
+  if (!mounted) return null;
 
   /* Theme-aware chart tokens */
   const grid    = isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)";

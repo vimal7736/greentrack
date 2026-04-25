@@ -7,7 +7,7 @@ import {
   Tooltip, ResponsiveContainer, Legend,
 } from "recharts";
 import { useTheme } from "next-themes";
-import { Scale, ArrowDown, ArrowUp, Minus } from "lucide-react";
+import { Scale, ArrowDown, ArrowUp, Minus, Calendar } from "lucide-react";
 
 /* ── Types ────────────────────────────────────────────────────── */
 type BillRow = {
@@ -46,8 +46,6 @@ function delta(a: number, b: number) {
 
 /* ── Component ───────────────────────────────────────────────── */
 export default function ComparePage() {
-  const { resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
   const [bills,   setBills]   = useState<BillRow[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -56,8 +54,6 @@ export default function ComparePage() {
   const [toA,   setToA]   = useState(() => `${now.getFullYear()}-${String(now.getMonth()).padStart(2, "0") || "01"}`);
   const [fromB, setFromB] = useState(() => `${now.getFullYear()}-${String(now.getMonth() - 5).padStart(2, "0") || "01"}`);
   const [toB,   setToB]   = useState(() => `${now.getFullYear()}-${String(now.getMonth() - 3).padStart(2, "0") || "01"}`);
-
-  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     (async () => {
@@ -80,19 +76,9 @@ export default function ComparePage() {
     })();
   }, []);
 
-  const isDark = mounted && resolvedTheme === "dark";
-  const base   = isDark ? "#1c1c1c" : "#e4e0d6";
-  const dark   = isDark ? "#0e0e0e" : "#b6b3aa";
-  const light  = isDark ? "#2c2c2c" : "#ffffff";
-  const text   = isDark ? "#f5f0e8" : "#0a0a0a";
-  const muted  = isDark ? "#7a7570" : "#9a9590";
-  const raised = `6px 6px 14px ${dark}, -6px -6px 14px ${light}`;
-  const inset  = `inset 5px 5px 10px ${dark}, inset -5px -5px 10px ${light}`;
-
   const sA = useMemo(() => aggregate(billsInRange(bills, fromA, toA)), [bills, fromA, toA]);
   const sB = useMemo(() => aggregate(billsInRange(bills, fromB, toB)), [bills, fromB, toB]);
 
-  /* Type-by-type comparison chart data */
   const allTypes = Array.from(new Set([...Object.keys(sA.byType), ...Object.keys(sB.byType)]));
   const typeChart = allTypes.map((t) => ({
     name:  TYPE_LABELS[t] ?? t,
@@ -101,71 +87,68 @@ export default function ComparePage() {
     color: TYPE_COLORS[t] ?? "#6b7280",
   }));
 
-  const tooltipStyle = {
-    background: isDark ? "#1c1c1c" : "#f5f0e8",
-    border:     `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}`,
-    borderRadius: 8, color: text, fontSize: 11, fontWeight: 600,
-  };
-
   function DeltaChip({ a, b }: { a: number; b: number }) {
     const d   = delta(a, b);
     const abs = Math.abs(d);
-    if (abs < 0.1) return <span style={{ color: muted }}><Minus className="w-3 h-3 inline" /> —</span>;
+    if (abs < 0.1) return <span className="text-[10px] font-black uppercase text-text-muted opacity-40">—</span>;
     const down = d < 0;
     return (
-      <span className="inline-flex items-center gap-0.5 text-xs font-bold"
-            style={{ color: down ? "#22c55e" : "#f97316" }}>
-        {down ? <ArrowDown className="w-3 h-3" /> : <ArrowUp className="w-3 h-3" />}
+      <div className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase flex items-center gap-0.5 shadow-sm border ${
+        down ? "bg-gt-green-500/10 text-gt-green-700 border-gt-green-500/20" : "bg-brand-orange/10 text-brand-orange-dark border-brand-orange/20"
+      }`}>
+        {down ? <ArrowDown className="w-2.5 h-2.5" /> : <ArrowUp className="w-2.5 h-2.5" />}
         {abs.toFixed(1)}%
-      </span>
+      </div>
     );
   }
 
   return (
-    <div className="space-y-6 animate-fade-in" style={{ color: text }}>
+    <div className="relative space-y-8 animate-fade-in pb-20">
+      {/* Background Decorations */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gt-green-500/5 rounded-full blur-[140px] -translate-y-1/2 translate-x-1/4" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-brand-orange/5 rounded-full blur-[120px] translate-y-1/4 -translate-x-1/4" />
+      </div>
 
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center"
-             style={{ background: base, boxShadow: raised }}>
-          <Scale className="w-5 h-5" style={{ color: "var(--brand-green)" }} />
+      <div className="flex items-center gap-4">
+        <div className="w-12 h-12 rounded-2xl bg-bg-surface shadow-premium flex items-center justify-center">
+          <Scale className="w-6 h-6 text-gt-green-600" />
         </div>
         <div>
-          <h1 className="text-2xl font-black tracking-tight">Period Comparison</h1>
-          <p className="text-sm" style={{ color: muted }}>Compare any two date ranges side by side</p>
+          <h1 className="text-2xl font-black tracking-tight text-text-primary">Comparative Audit</h1>
+          <p className="text-sm font-bold text-text-muted opacity-60">Side-by-side performance analysis of any two reporting periods</p>
         </div>
       </div>
 
       {/* Range pickers */}
-      <div className="grid grid-cols-2 gap-5">
+      <div className="grid grid-cols-2 gap-8">
         {([
-          { period: "A", color: "#22c55e", from: fromA, to: toA, setFrom: setFromA, setTo: setToA },
-          { period: "B", color: "#f97316", from: fromB, to: toB, setFrom: setFromB, setTo: setToB },
+          { period: "A", color: "var(--brand-green)", from: fromA, to: toA, setFrom: setFromA, setTo: setToA },
+          { period: "B", color: "var(--brand-orange)", from: fromB, to: toB, setFrom: setFromB, setTo: setToB },
         ] as const).map(({ period, color, from, to, setFrom, setTo }) => (
-          <div key={period}
-               className="rounded-2xl p-5"
-               style={{ background: base, boxShadow: raised, borderTop: `3px solid ${color}` }}>
-            <p className="text-xs font-black uppercase tracking-widest mb-4" style={{ color }}>
-              Period {period}
-            </p>
-            <div className="grid grid-cols-2 gap-3">
-              {[["From", from, setFrom], ["To", to, setTo]].map(([lbl, val, set]) => (
+          <div key={period} className="premium-card p-6 border-none relative overflow-hidden group">
+            <div className="absolute top-0 left-0 w-1 h-full opacity-60" style={{ background: color }} />
+            <div className="flex items-center justify-between mb-6">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color }}>
+                Observation Period {period}
+              </p>
+              <div className="w-8 h-8 rounded-lg bg-bg-inset flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Calendar className="w-4 h-4 text-text-muted" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              {[["Start Month", from, setFrom], ["End Month", to, setTo]].map(([lbl, val, set]) => (
                 <div key={String(lbl)}>
-                  <p className="text-[10px] font-bold uppercase tracking-widest mb-1.5" style={{ color: muted }}>
+                  <p className="text-[9px] font-black uppercase tracking-widest mb-2 text-text-muted opacity-50">
                     {String(lbl)}
                   </p>
                   <input
                     type="month"
                     value={String(val)}
                     onChange={(e) => (set as (v: string) => void)(e.target.value)}
-                    className="w-full text-sm font-semibold px-3 py-2 rounded-xl outline-none"
-                    style={{
-                      background: base,
-                      boxShadow:  `inset 3px 3px 6px ${dark}, inset -3px -3px 6px ${light}`,
-                      color: text,
-                      border: `1.5px solid ${color}35`,
-                      colorScheme: isDark ? "dark" : "light",
-                    }}
+                    className="w-full bg-bg-inset/50 border-2 border-transparent rounded-xl px-4 py-3 text-sm font-black text-text-primary focus:border-gt-green-500 focus:bg-white transition-all outline-none"
+                    style={{ colorScheme: "light dark" }}
                   />
                 </div>
               ))}
@@ -175,34 +158,38 @@ export default function ComparePage() {
       </div>
 
       {loading ? (
-        <div className="text-center py-16" style={{ color: muted }}>Loading bills…</div>
+        <div className="py-20 text-center animate-pulse">
+           <div className="w-12 h-12 border-4 border-gt-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+           <p className="text-[10px] font-black uppercase tracking-widest text-text-muted">Analyzing Historical Streams...</p>
+        </div>
       ) : (
-        <>
+        <div className="space-y-8 animate-scale-in">
           {/* Summary metric cards */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 gap-6">
             {[
-              { label: "CO₂ Emissions", a: sA.co2,  b: sB.co2,  unit: "kg",  fmt: (v: number) => v.toFixed(1) },
-              { label: "Energy Used",   a: sA.kwh,  b: sB.kwh,  unit: "kWh", fmt: (v: number) => v.toFixed(0) },
-              { label: "Total Cost",    a: sA.cost, b: sB.cost,  unit: "£",   fmt: (v: number) => `£${v.toFixed(0)}` },
+              { label: "Carbon Footprint", a: sA.co2,  b: sB.co2,  unit: "kgCO₂e",  fmt: (v: number) => v.toLocaleString(undefined, { maximumFractionDigits: 1 }) },
+              { label: "Energy Intensity",   a: sA.kwh,  b: sB.kwh,  unit: "kWh", fmt: (v: number) => v.toLocaleString() },
+              { label: "Aggregate Cost",    a: sA.cost, b: sB.cost,  unit: "GBP",   fmt: (v: number) => `£${v.toLocaleString(undefined, { maximumFractionDigits: 0 })}` },
             ].map(({ label, a, b, unit, fmt }) => (
-              <div key={label} className="rounded-2xl p-5"
-                   style={{ background: base, boxShadow: raised }}>
-                <p className="text-[10px] font-bold uppercase tracking-widest mb-3" style={{ color: muted }}>
+              <div key={label} className="premium-card p-6 border-none shadow-xl">
+                <p className="text-[10px] font-black uppercase tracking-widest mb-6 text-text-muted opacity-50 text-center">
                   {label}
                 </p>
-                <div className="grid grid-cols-3 gap-2 items-end">
-                  <div>
-                    <p className="text-[10px] font-bold uppercase" style={{ color: "#22c55e" }}>A</p>
-                    <p className="text-lg font-black leading-tight">{fmt(a)}</p>
-                    <p className="text-[10px]" style={{ color: muted }}>{unit}</p>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="text-center space-y-1">
+                    <p className="text-[9px] font-black uppercase tracking-widest text-gt-green-600">Period A</p>
+                    <p className="text-2xl font-black text-text-primary tracking-tighter">{fmt(a)}</p>
+                    <p className="text-[9px] font-bold text-text-muted uppercase opacity-40">{unit}</p>
                   </div>
-                  <div className="text-center pb-1">
+                  
+                  <div className="mb-2">
                     <DeltaChip a={a} b={b} />
                   </div>
-                  <div className="text-right">
-                    <p className="text-[10px] font-bold uppercase" style={{ color: "#f97316" }}>B</p>
-                    <p className="text-lg font-black leading-tight">{fmt(b)}</p>
-                    <p className="text-[10px]" style={{ color: muted }}>{unit}</p>
+
+                  <div className="text-center space-y-1">
+                    <p className="text-[9px] font-black uppercase tracking-widest text-brand-orange-dark">Period B</p>
+                    <p className="text-2xl font-black text-text-primary tracking-tighter">{fmt(b)}</p>
+                    <p className="text-[9px] font-bold text-text-muted uppercase opacity-40">{unit}</p>
                   </div>
                 </div>
               </div>
@@ -210,64 +197,100 @@ export default function ComparePage() {
           </div>
 
           {/* Type-by-type chart */}
-          <div className="rounded-2xl p-6"
-               style={{ background: base, boxShadow: inset }}>
-            <p className="text-xs font-bold uppercase tracking-widest mb-5" style={{ color: muted }}>
-              CO₂ by Emission Type — A vs B
-            </p>
+          <div className="premium-card p-8 border-none shadow-2xl">
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h2 className="text-sm font-black uppercase tracking-widest text-text-primary">Resource Comparison Matrix</h2>
+                <p className="text-[10px] font-bold text-text-muted mt-1 uppercase tracking-widest opacity-40">Period A vs Period B Impact (kgCO₂e)</p>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-gt-green-600" />
+                  <span className="text-[9px] font-black uppercase tracking-widest text-text-muted">Period A</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-brand-orange-dark" />
+                  <span className="text-[9px] font-black uppercase tracking-widest text-text-muted">Period B</span>
+                </div>
+              </div>
+            </div>
+            
             {typeChart.length === 0 ? (
-              <p className="text-center py-8 text-sm" style={{ color: muted }}>No data in selected ranges</p>
+              <div className="h-[240px] flex items-center justify-center bg-bg-inset/30 rounded-3xl border border-dashed border-border-subtle">
+                <p className="text-[10px] font-black uppercase tracking-widest text-text-muted">No overlapping data detected</p>
+              </div>
             ) : (
-              <ResponsiveContainer width="100%" height={240}>
-                <BarChart data={typeChart} barGap={6} barSize={28}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false}
-                                 stroke={isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)"} />
-                  <XAxis dataKey="name" tick={{ fontSize: 11, fill: muted }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: muted }} axisLine={false} tickLine={false} width={40} />
-                  <Tooltip contentStyle={tooltipStyle} />
-                  <Legend wrapperStyle={{ fontSize: 11, color: muted }} />
-                  <Bar dataKey="A" name="Period A" fill="#22c55e" radius={[4, 4, 0, 0]} opacity={0.9} />
-                  <Bar dataKey="B" name="Period B" fill="#f97316" radius={[4, 4, 0, 0]} opacity={0.9} />
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart data={typeChart} barGap={12} barSize={32}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-subtle)" />
+                  <XAxis 
+                    dataKey="name" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fontSize: 9, fontWeight: 900, fill: "var(--text-muted)" }} 
+                    dy={10}
+                  />
+                  <YAxis 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fontSize: 9, fontWeight: 900, fill: "var(--text-muted)" }} 
+                  />
+                  <Tooltip 
+                    cursor={{ fill: "var(--bg-inset)", opacity: 0.4 }}
+                    contentStyle={{ 
+                      borderRadius: "16px", 
+                      border: "none", 
+                      boxShadow: "var(--shadow-premium)",
+                      fontSize: "10px",
+                      fontWeight: "900",
+                      background: "var(--bg-surface)",
+                      color: "var(--text-primary)"
+                    }}
+                  />
+                  <Bar dataKey="A" name="Period A" fill="var(--brand-green-dark)" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="B" name="Period B" fill="var(--brand-orange-dark)" radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             )}
           </div>
 
           {/* Per-type delta table */}
-          <div className="rounded-2xl p-6"
-               style={{ background: base, boxShadow: raised }}>
-            <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: muted }}>
-              Detailed Breakdown
-            </p>
-            <table className="w-full text-sm">
-              <thead>
-                <tr style={{ borderBottom: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}` }}>
-                  {["Emission Type", "Period A (kg)", "Period B (kg)", "Change"].map((h, i) => (
-                    <th key={h}
-                        className={`pb-3 text-[10px] font-black uppercase tracking-widest ${i > 0 ? "text-right" : "text-left"}`}
-                        style={{ color: muted }}>
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {allTypes.map((t) => {
-                  const a = sA.byType[t] ?? 0;
-                  const b = sB.byType[t] ?? 0;
-                  return (
-                    <tr key={t} style={{ borderBottom: `1px solid ${isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"}` }}>
-                      <td className="py-3 font-semibold">{TYPE_LABELS[t] ?? t}</td>
-                      <td className="py-3 text-right" style={{ color: "#22c55e" }}>{a.toFixed(1)}</td>
-                      <td className="py-3 text-right" style={{ color: "#f97316" }}>{b.toFixed(1)}</td>
-                      <td className="py-3 text-right"><DeltaChip a={a} b={b} /></td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+          <div className="premium-card overflow-hidden border-none shadow-xl">
+            <div className="p-6 border-b border-border-subtle/50 bg-bg-inset/10">
+              <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted">Granular Stream Breakdown</h2>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-text-primary">
+                <thead>
+                  <tr className="bg-bg-inset/20 text-[10px] font-black uppercase tracking-[0.2em] text-text-muted border-b border-border-subtle">
+                    <th className="text-left px-8 py-5">Emission Source</th>
+                    <th className="text-right px-6 py-5">Period A (kg)</th>
+                    <th className="text-right px-6 py-5">Period B (kg)</th>
+                    <th className="text-right px-8 py-5">Efficiency Delta</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border-subtle/50">
+                  {allTypes.map((t) => {
+                    const a = sA.byType[t] ?? 0;
+                    const b = sB.byType[t] ?? 0;
+                    return (
+                      <tr key={t} className="group hover:bg-bg-inset/30 transition-all duration-300">
+                        <td className="px-8 py-4 font-black text-xs">{TYPE_LABELS[t] ?? t}</td>
+                        <td className="px-6 py-4 text-right font-black text-gt-green-600">{a.toLocaleString(undefined, { maximumFractionDigits: 1 })}</td>
+                        <td className="px-6 py-4 text-right font-black text-brand-orange-dark">{b.toLocaleString(undefined, { maximumFractionDigits: 1 })}</td>
+                        <td className="px-8 py-4 text-right">
+                          <div className="flex justify-end">
+                            <DeltaChip a={a} b={b} />
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </>
+        </div>
       )}
     </div>
   );
