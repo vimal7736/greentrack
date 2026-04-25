@@ -63,21 +63,34 @@ export interface Subscription {
 
 // ─── API response shapes ─────────────────────────────────────────────────────
 
+export interface BillsSummary {
+  total_co2_kg:  number;
+  total_cost_gbp: number;
+}
+
+export interface BillsApiResponse {
+  bills:       Bill[];
+  total:       number;
+  page:        number;
+  total_pages: number;
+  summary:     BillsSummary;
+}
+
 export interface DashboardSummary {
-  total_co2_kg: number;
+  total_co2_kg:      number;
   this_month_co2_kg: number;
   last_month_co2_kg: number;
-  total_kwh: number;
-  monthly_chart: { month: string; co2: number; kwh: number }[];
-  by_type: { type: string; co2_kg: number }[];
-  recent_bills: Bill[];
+  total_kwh:         number;
+  monthly_chart:     { month: string; co2: number; kwh: number }[];
+  by_type:           { type: string; co2_kg: number }[];
+  recent_bills:      Bill[];
 }
 
 export interface OcrResult {
-  supplier: string | null;
-  bill_period: string | null;
-  usage: number | null;
-  unit: string | null;
-  amount_due: number | null;
+  supplier:       string | null;
+  bill_period:    string | null;
+  usage:          number | null;
+  unit:           string | null;
+  amount_due:     number | null;
   account_number: string | null;
 }
