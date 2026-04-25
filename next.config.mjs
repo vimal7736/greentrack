@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: false,
+  allowedDevOrigins: ['192.168.31.48', 'localhost:3000'],
+
   images: {
     formats: ["image/avif", "image/webp"],
   },
@@ -21,7 +23,6 @@ const nextConfig = {
           },
         ],
       },
-      // Do not cache-control API routes — let each route decide
       {
         source: "/api/(.*)",
         headers: [
