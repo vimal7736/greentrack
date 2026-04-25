@@ -6,27 +6,20 @@ import { CheckCircle, CreditCard, AlertCircle, ExternalLink } from "lucide-react
 import type { Organisation } from "@/types";
 import { PLANS } from "@/lib/billing/plans";
 import { formatPriceWithVat } from "@/lib/utils/format";
-import { PageBackground } from "@/components/ui/PageBackground";
-import { PageHeader } from "@/components/ui/PageHeader";
+import { PageLayout } from "@/components/ui/PageLayout";
 import { Button } from "@/components/ui/Button";
 import { AlertBanner } from "@/components/ui/AlertBanner";
 import { HeroBanner } from "@/components/ui/HeroBanner";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { useApi } from "@/hooks/useApi";
+import { useFetch } from "@/hooks/useFetch";
 
 export default function BillingPage() {
   const searchParams = useSearchParams();
-  const [org, setOrg] = useState<Organisation | null>(null);
+  const { data: org, loading: orgLoading } = useFetch<Organisation>("/api/billing");
   const [upgrading, setUpgrading] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
   const { call, error } = useApi();
-
-  useEffect(() => {
-    fetch("/api/billing")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => { if (data) setOrg(data); })
-      .catch(() => {});
-  }, []);
 
   const successParam = searchParams.get("success");
   const cancelledParam = searchParams.get("cancelled");
@@ -55,22 +48,21 @@ export default function BillingPage() {
   const currentTier = org?.tier ?? "free";
 
   return (
-    <div className="relative space-y-10 animate-fade-in pb-24">
-      <PageBackground />
-
-      <PageHeader
-        icon={<CreditCard className="w-6 h-6" />}
-        title="Financial Settlement"
-        subtitle="Audit your plan, manage subscription cycles, and secure invoices"
-      />
-
-      {/* Alerts */}
-      <div className="space-y-4">
-        {successParam && <AlertBanner variant="success" message="Subscription Activated — Deployment complete" />}
-        {cancelledParam && <AlertBanner variant="warning" message="Transaction Interrupted — No resources were committed" />}
-        {error && <AlertBanner variant="error" message={error} />}
-      </div>
-
+    <PageLayout
+      icon={<CreditCard className="w-6 h-6" />}
+      title="Financial Settlement"
+      subtitle="Audit your plan, manage subscription cycles, and secure invoices"
+      loading={orgLoading}
+      loadingLabel="Loading billing data..."
+      error={error}
+      className="space-y-10 pb-24"
+      alerts={
+        <>
+          {successParam && <AlertBanner variant="success" message="Subscription Activated — Deployment complete" />}
+          {cancelledParam && <AlertBanner variant="warning" message="Transaction Interrupted — No resources were committed" />}
+        </>
+      }
+    >
       {/* Current plan banner */}
       {currentTier !== "free" && (
         <HeroBanner
@@ -206,6 +198,6 @@ export default function BillingPage() {
           </div>
         </div>
       </div>
-    </div>
+    </PageLayout>
   );
 }

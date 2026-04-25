@@ -9,9 +9,7 @@ import {
 import { Target, TrendingDown, Leaf, AlertTriangle, CheckCircle } from "lucide-react";
 
 import { formatCarbonTonnes } from "@/lib/utils/format";
-import { PageBackground } from "@/components/ui/PageBackground";
-import { PageHeader } from "@/components/ui/PageHeader";
-import { Spinner } from "@/components/ui/Spinner";
+import { PageLayout } from "@/components/ui/PageLayout";
 import { Button } from "@/components/ui/Button";
 import { StatCard } from "@/components/ui/StatCard";
 import { SectionHeader } from "@/components/ui/SectionHeader";
@@ -100,21 +98,13 @@ export default function TargetsPage() {
     : null;
 
   return (
-    <div className="relative space-y-8 animate-fade-in pb-20">
-      <PageBackground />
-
-      <PageHeader
-        icon={<Target className="w-6 h-6" />}
-        title="Reduction Strategy"
-        subtitle="Science-based trajectories and climate action goals"
-      />
-
-      {loading ? (
-        <div className="py-20">
-          <Spinner label="Calculating Pathways..." />
-        </div>
-      ) : (
-        <div className="space-y-8 animate-scale-in">
+    <PageLayout
+      icon={<Target className="w-6 h-6" />}
+      title="Reduction Strategy"
+      subtitle="Science-based trajectories and climate action goals"
+      loading={loading}
+      loadingLabel="Calculating Pathways..."
+    >
           {/* Status Grid */}
           <div className="grid grid-cols-4 gap-6">
             {
@@ -248,9 +238,7 @@ export default function TargetsPage() {
               </Button>
             }
           />
-        </div>
-      )}
-    </div>
+    </PageLayout>
   );
 }
 

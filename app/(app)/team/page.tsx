@@ -4,38 +4,27 @@ import { UserPlus, Trash2, Crown, User, AlertCircle, ChevronDown } from "lucide-
 
 import type { TeamMember, TeamApiResponse } from "@/types";
 import { formatDate } from "@/lib/utils/format";
-import { PageBackground } from "@/components/ui/PageBackground";
-import { PageHeader } from "@/components/ui/PageHeader";
+import { PageLayout } from "@/components/ui/PageLayout";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { DataTable, type ColumnDef } from "@/components/ui/DataTable";
 import { AlertBanner } from "@/components/ui/AlertBanner";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { useApi } from "@/hooks/useApi";
+import { useFetch } from "@/hooks/useFetch";
 
 export default function TeamPage() {
-  const [members, setMembers] = useState<TeamMember[]>([]);
-  const [org, setOrg] = useState<TeamApiResponse["org"] | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data: teamData, loading, error: fetchError, refetch: fetchTeam } = useFetch<TeamApiResponse>("/api/team");
+  const members = teamData?.members ?? [];
+  const org = teamData?.org ?? null;
+
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviting, setInviting] = useState(false);
   const [inviteStatus, setInviteStatus] = useState<"idle" | "success" | "error">("idle");
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const { call, error } = useApi();
+  const { call, error: actionError } = useApi();
   const { call: inviteCall, error: inviteError } = useApi();
-
-  async function fetchTeam() {
-    setLoading(true);
-    const { ok, data } = await call<TeamApiResponse>("/api/team");
-    if (ok && data) {
-      setMembers(data.members);
-      setOrg(data.org);
-    }
-    setLoading(false);
-  }
-
-  useEffect(() => { fetchTeam(); }, []);
 
   async function handleInvite() {
     if (!inviteEmail) return;
@@ -167,19 +156,13 @@ export default function TeamPage() {
   ) : undefined;
 
   return (
-    <div className="relative space-y-8 animate-fade-in pb-20">
-      <PageBackground />
-
-      <PageHeader
-        icon={<UserPlus className="w-6 h-6" />}
-        title="Collaborators"
-        subtitle={`Managing governance and access for ${org?.name ?? "your organisation"}`}
-        right={seatWidget}
-      />
-
-      {error && (
-        <AlertBanner variant="error" message={error} />
-      )}
+    <PageLayout
+      icon={<UserPlus className="w-6 h-6" />}
+      title="Collaborators"
+      subtitle={`Managing governance and access for ${org?.name ?? "your organisation"}`}
+      headerRight={seatWidget}
+      error={fetchError || actionError}
+    >
 
       <div className="grid grid-cols-3 gap-8">
         {/* Invite Section */}
@@ -277,6 +260,6 @@ export default function TeamPage() {
           />
         </div>
       </div>
-    </div>
+    </PageLayout>
   );
 }
