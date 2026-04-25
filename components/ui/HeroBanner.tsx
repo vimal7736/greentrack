@@ -24,7 +24,7 @@ export function HeroBanner({ icon, bgIcon, title, subtitle, action }: HeroBanner
               {title}
             </p>
             {subtitle && (
-              <p className="text-xs font-bold text-white/50 uppercase tracking-widest mt-1">
+              <p className="text-xs font-bold text-white/50  tracking-widest mt-1">
                  {subtitle}
               </p>
             )}

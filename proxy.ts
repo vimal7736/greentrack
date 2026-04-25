@@ -29,12 +29,19 @@ export async function proxy(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  const publicPaths = [
+  // Landing page: logged-in → dashboard, guest → show landing page
+  if (pathname === "/") {
+    if (user) return NextResponse.redirect(new URL("/dashboard", request.url));
+    return supabaseResponse;
+  }
+
+  const publicPrefixes = [
     "/login", "/signup", "/auth/callback",
     "/privacy", "/terms",
     "/api/webhooks/stripe",
+    "/api/auth",
   ];
-  const isPublic = publicPaths.some((p) => pathname.startsWith(p));
+  const isPublic = publicPrefixes.some((p) => pathname.startsWith(p));
 
   if (!user && !isPublic) {
     return NextResponse.redirect(new URL("/login", request.url));

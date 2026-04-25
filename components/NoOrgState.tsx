@@ -2,35 +2,37 @@
 
 import { useState } from "react";
 import { TrendingDown, Building2, Loader2, ArrowRight } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { createOrganisationAction } from "@/app/(app)/dashboard/actions";
 
 export default function NoOrgState() {
-  const router = useRouter();
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.SyntheticEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
-    const formData = new FormData();
-    formData.append("name", name);
+    try {
+      const res = await fetch("/api/org/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      });
 
-    const result = await createOrganisationAction(formData);
+      const data = await res.json();
 
-    if (result.error) {
-      setError(result.error);
+      if (!res.ok || data.error) {
+        setError(data.error ?? "Something went wrong. Please try again.");
+        setLoading(false);
+        return;
+      }
+
+      // Hard reload so the server re-fetches profile with the new org
+      window.location.href = "/dashboard";
+    } catch {
+      setError("Network error. Please try again.");
       setLoading(false);
-    } else {
-      // Success - the action revalidated paths, so we just need to refresh to see the dashboard
-      router.refresh();
-      // Force a hard refresh if the soft refresh doesn't trigger the server component to re-render
-      setTimeout(() => {
-        window.location.reload();
-      }, 500);
     }
   }
 

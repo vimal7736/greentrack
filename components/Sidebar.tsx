@@ -1,12 +1,11 @@
 "use client";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Upload, History, FileText,
   Users, CreditCard, LogOut, Leaf, Shield,
-  Scale, Target, ChevronLeft, ChevronRight,
+  Scale, Target,
 } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
 import { ThemeToggle } from "./ThemeToggle";
 import { useState, useEffect } from "react";
 
@@ -76,18 +75,14 @@ interface SidebarProps {
 
 export default function Sidebar({ userName, userEmail, userRole, orgName, orgTier }: SidebarProps) {
   const pathname  = usePathname();
-  const router    = useRouter();
   const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
     document.documentElement.style.setProperty("--sidebar-w", collapsed ? "4rem" : "16rem");
   }, [collapsed]);
 
-  async function handleSignOut() {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.push("/login");
-    router.refresh();
+  function handleSignOut() {
+    window.location.href = "/api/auth/signout";
   }
 
   const initials = (userName || "User")

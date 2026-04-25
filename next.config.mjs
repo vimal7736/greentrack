@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: false,
+  serverExternalPackages: ['mindee'],
   allowedDevOrigins: ['192.168.31.48', 'localhost:3000'],
 
   images: {

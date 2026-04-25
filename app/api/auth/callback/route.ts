@@ -1,14 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-/**
- * Supabase calls this URL after:
- * - Email verification (signup)
- * - Team invite link click
- * We exchange the code for a session, then redirect to dashboard.
- *
- * For invited users, the invite metadata contains org_id — we assign it.
- */
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
@@ -19,16 +11,41 @@ export async function GET(request: Request) {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error && data.user) {
-      // If the user was invited, their auth metadata has an org_id
-      const inviteOrgId = data.user.user_metadata?.org_id as string | undefined;
+      const user = data.user;
+      const inviteOrgId = user.user_metadata?.org_id as string | undefined;
 
       if (inviteOrgId) {
-        // Assign the invited user to the org (their profile was created by the DB trigger)
+        // Invited user — link their auto-created profile to the existing org
         await supabase
           .from("profiles")
           .update({ org_id: inviteOrgId })
-          .eq("id", data.user.id)
-          .is("org_id", null); // only set if not already assigned
+          .eq("id", user.id)
+          .is("org_id", null);
+      } else {
+        // New signup — check if org already exists (avoid duplicates on re-click)
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("org_id")
+          .eq("id", user.id)
+          .single();
+
+        if (!profile?.org_id) {
+          const companyName =
+            (user.user_metadata?.company_name as string) || "My Organisation";
+
+          const { data: org } = await supabase
+            .from("organisations")
+            .insert({ name: companyName, tier: "free", seats_limit: 1 })
+            .select("id")
+            .single();
+
+          if (org) {
+            await supabase
+              .from("profiles")
+              .update({ org_id: org.id })
+              .eq("id", user.id);
+          }
+        }
       }
 
       return NextResponse.redirect(`${origin}${next}`);
