@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { CheckCircle, CreditCard, AlertCircle, ExternalLink } from "lucide-react";
 
@@ -53,22 +53,12 @@ const PLANS = [
 export default function BillingPage() {
   const searchParams = useSearchParams();
   const [org, setOrg] = useState<OrgData | null>(null);
-  const [loading, setLoading] = useState(true);
   const [upgrading, setUpgrading] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const successParam = searchParams.get("success");
   const cancelledParam = searchParams.get("cancelled");
-
-  useEffect(() => {
-    async function load() {
-      const res = await fetch("/api/billing");
-      if (res.ok) setOrg(await res.json());
-      setLoading(false);
-    }
-    load();
-  }, []);
 
   async function handleUpgrade(plan: string) {
     setError(null);
@@ -130,7 +120,7 @@ export default function BillingPage() {
       )}
 
       {/* Current plan banner */}
-      {!loading && currentTier !== "free" && (
+      {currentTier !== "free" && (
         <div className="bg-green-50 border border-green-200 rounded-xl p-5 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <CheckCircle className="w-6 h-6 text-green-600" />
@@ -234,7 +224,7 @@ export default function BillingPage() {
       </div>
 
       {/* Manage billing via Stripe portal */}
-      {!loading && currentTier !== "free" && (
+      {currentTier !== "free" && (
         <div className="bg-white rounded-xl border border-gray-200 p-6">
           <h2 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
             <CreditCard className="w-4 h-4" /> Payment & Invoices
