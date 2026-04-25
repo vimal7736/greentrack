@@ -40,7 +40,7 @@ export function DataTable<T>({
   const alignClass = { left: "text-left", right: "text-right", center: "text-center" };
 
   return (
-    <div className="premium-card overflow-hidden border-none shadow-xl">
+    <div className="premium-card overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>

@@ -1,6 +1,6 @@
 "use client";
-import { useState, useEffect } from "react";
-import { UserPlus, Trash2, Crown, User, AlertCircle, ChevronDown } from "lucide-react";
+import { useState } from "react";
+import { UserPlus, Trash2, Crown, User, ChevronDown } from "lucide-react";
 
 import type { TeamMember, TeamApiResponse } from "@/types";
 import { formatDate } from "@/lib/utils/format";
@@ -8,7 +8,6 @@ import { PageLayout } from "@/components/ui/PageLayout";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { DataTable, type ColumnDef } from "@/components/ui/DataTable";
-import { AlertBanner } from "@/components/ui/AlertBanner";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { useApi } from "@/hooks/useApi";
 import { useFetch } from "@/hooks/useFetch";
@@ -131,7 +130,7 @@ export default function TeamPage() {
 
   /* ── Seat utilization widget (header right slot) ──────────────── */
   const seatWidget = org ? (
-    <div className="premium-card px-6 py-4 border-none shadow-xl flex items-center gap-6">
+    <div className="premium-card px-6 py-4 flex items-center gap-6">
       <div className="text-right">
         <p className="text-[10px] font-black uppercase tracking-widest text-text-muted opacity-40 mb-1">
           Seat Utilization
@@ -167,7 +166,7 @@ export default function TeamPage() {
       <div className="grid grid-cols-3 gap-8">
         {/* Invite Section */}
         <div className="col-span-1 space-y-6">
-          <div className="premium-card p-8 border-none space-y-6">
+          <div className="premium-card p-8 space-y-6">
             <SectionHeader
               title="Provision Access"
               subtitle="Invite a new climate auditor"
@@ -217,7 +216,7 @@ export default function TeamPage() {
           </div>
 
           {/* Role Specs */}
-          <div className="premium-card p-6 border-none bg-bg-inset/30">
+          <div className="premium-card p-6" style={{ boxShadow: "var(--shadow-inset)" }}>
             <h3 className="text-[10px] font-black uppercase tracking-widest text-text-muted mb-6 flex items-center gap-2">
                <User className="w-4 h-4" /> Permission Matrix
             </h3>

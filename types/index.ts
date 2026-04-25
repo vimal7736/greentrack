@@ -115,3 +115,37 @@ export interface OcrResult {
   amount_due:     number | null;
   account_number: string | null;
 }
+
+export interface MonthStat {
+  month:  string;
+  co2:    number;
+  target: number;
+}
+
+export interface BillRow {
+  bill_date:     string;
+  bill_type:     string;
+  co2_kg:        number;
+  usage_amount:  number;
+  usage_unit:    string;
+  cost_gbp:      number | null;
+}
+
+export interface AggregatedPeriod {
+  co2:    number;
+  kwh:    number;
+  cost:   number;
+  byType: Record<string, number>;
+}
+
+export interface ReportSummary {
+  org:           { name: string; tier: string };
+  year:          string;
+  total_co2_kg:  number;
+  total_kwh:     number;
+  total_cost_gbp: number;
+  by_type:       { type: string; co2_kg: number }[];
+  by_scope:      { scope1: number; scope2: number; scope3: number };
+  by_quarter:    { period: string; co2: number }[];
+  bill_count:    number;
+}

@@ -2,16 +2,14 @@
 import { useState, useEffect, useCallback } from "react";
 import { Search, Filter, Download, Eye, Trash2, AlertCircle } from "lucide-react";
 
-import { PageBackground }           from "@/components/ui/PageBackground";
-import { PageHeader }               from "@/components/ui/PageHeader";
-import { StatCard }                 from "@/components/ui/StatCard";
-import { BillTypeBadge }            from "@/components/ui/BillTypeBadge";
-import { EmptyState }               from "@/components/ui/EmptyState";
-import { Pagination }               from "@/components/ui/Pagination";
-import { Button }                   from "@/components/ui/Button";
-import { Input }                    from "@/components/ui/Input";
-import { DataTable, type ColumnDef }from "@/components/ui/DataTable";
-import { BILL_TYPE_FILTER_OPTIONS } from "@/lib/carbon/constants";
+import { PageLayout }                from "@/components/ui/PageLayout";
+import { StatCard }                  from "@/components/ui/StatCard";
+import { BillTypeBadge }             from "@/components/ui/BillTypeBadge";
+import { Pagination }                from "@/components/ui/Pagination";
+import { Button }                    from "@/components/ui/Button";
+import { Input }                     from "@/components/ui/Input";
+import { DataTable, type ColumnDef } from "@/components/ui/DataTable";
+import { BILL_TYPE_FILTER_OPTIONS }  from "@/lib/carbon/constants";
 import { formatCost, formatCarbonTonnes } from "@/lib/utils/format";
 import { type Bill, type BillsApiResponse } from "@/types";
 
@@ -77,7 +75,6 @@ export default function HistoryPage() {
   const totalPages = data?.total_pages ?? 1;
   const summary    = data?.summary;
 
-  /* ── Column definitions for DataTable ─────────────────────────── */
   const columns: ColumnDef<Bill>[] = [
     {
       key: "type", header: "Status / Type",
@@ -143,38 +140,28 @@ export default function HistoryPage() {
   ];
 
   return (
-    <div className="relative space-y-8 animate-fade-in pb-20">
-      <PageBackground />
-
-      <PageHeader
-        icon={<Eye className="w-5 h-5" />}
-        title="Bill History"
-        subtitle={loading ? "Refreshing records…" : `Archiving ${total} verified utility records`}
-        right={
-          <>
-            <Button variant="secondary" size="md" icon={<Download className="w-4 h-4" />} onClick={handleExportCsv}>
-              Export CSV
-            </Button>
-            <div className="neu-raised inline-flex items-center gap-2 px-4 py-2 rounded-xl" style={{ color: "var(--brand-green-dark)" }}>
-              <span className="w-1.5 h-1.5 rounded-full bg-gt-green-500 animate-pulse-green inline-block" />
-              <span className="text-xs font-bold uppercase tracking-widest">Live Sync</span>
-            </div>
-          </>
-        }
-      />
-
+    <PageLayout
+      icon={<Eye className="w-5 h-5" />}
+      title="Bill History"
+      subtitle={loading ? "Refreshing records…" : `Archiving ${total} verified utility records`}
+      error={error}
+      headerRight={
+        <>
+          <Button variant="secondary" size="md" icon={<Download className="w-4 h-4" />} onClick={handleExportCsv}>
+            Export CSV
+          </Button>
+          <div className="neu-raised inline-flex items-center gap-2 px-4 py-2 rounded-xl" style={{ color: "var(--brand-green-dark)" }}>
+            <span className="w-1.5 h-1.5 rounded-full bg-gt-green-500 animate-pulse-green inline-block" />
+            <span className="text-xs font-bold uppercase tracking-widest">Live Sync</span>
+          </div>
+        </>
+      }
+    >
       <div className="grid grid-cols-3 gap-6">
-        <StatCard label="Total Records"    value={total}                                          unit="Bills"  icon={<Eye className="w-4 h-4" />} />
-        <StatCard label="Carbon Footprint" value={formatCarbonTonnes(summary?.total_co2_kg ?? 0)} unit="tCO₂e" icon={<AlertCircle className="w-4 h-4" />} />
-        <StatCard label="Aggregate Cost"   value={formatCost(summary?.total_cost_gbp)}            unit="GBP"   icon={<Download className="w-4 h-4" />} />
+        <StatCard label="Total Records"    value={total}                                          unit="Bills"  icon={<Eye className="w-4 h-4" />}           accent="green"  />
+        <StatCard label="Carbon Footprint" value={formatCarbonTonnes(summary?.total_co2_kg ?? 0)} unit="tCO₂e" icon={<AlertCircle className="w-4 h-4" />}   accent="orange" />
+        <StatCard label="Aggregate Cost"   value={formatCost(summary?.total_cost_gbp)}            unit="GBP"   icon={<Download className="w-4 h-4" />}       accent="green"  />
       </div>
-
-      {error && (
-        <div className="glass-orange rounded-2xl p-4 flex items-center gap-3 text-xs font-bold border-none">
-          <AlertCircle className="w-4 h-4 shrink-0 text-brand-orange-dark" />
-          <span style={{ color: "var(--brand-orange-dark)" }}>{error}</span>
-        </div>
-      )}
 
       {/* Filters */}
       <div className="flex items-center justify-between gap-6">
@@ -203,7 +190,6 @@ export default function HistoryPage() {
         </div>
       </div>
 
-      {/* DataTable */}
       <DataTable<Bill>
         columns={columns}
         data={bills}
@@ -227,6 +213,6 @@ export default function HistoryPage() {
           />
         }
       />
-    </div>
+    </PageLayout>
   );
 }

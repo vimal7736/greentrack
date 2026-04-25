@@ -30,3 +30,19 @@ export const BILL_TYPE_FILTER_OPTIONS = [
   { key: "fuel_diesel", label: "Diesel"      },
   { key: "fuel_petrol", label: "Petrol"      },
 ];
+
+export const BILL_TYPE_RGBA: Record<string, { bg: string; text: string }> = {
+  electricity: { bg: "rgba(34,197,94,0.12)",  text: "var(--brand-green-dark)" },
+  gas:         { bg: "rgba(59,130,246,0.12)", text: "#2563eb" },
+  water:       { bg: "rgba(6,182,212,0.12)",  text: "#0891b2" },
+  fuel_diesel: { bg: "rgba(249,115,22,0.12)", text: "var(--brand-orange-dark)" },
+  fuel_petrol: { bg: "rgba(249,115,22,0.12)", text: "var(--brand-orange-dark)" },
+};
+
+export const SCOPE_LABELS: Record<string, string> = {
+  electricity: "Scope 2",
+  gas:         "Scope 1",
+  fuel_diesel: "Scope 1",
+  fuel_petrol: "Scope 1",
+  water:       "Scope 3",
+};

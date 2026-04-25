@@ -1,22 +1,31 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 interface StatCardProps {
-  label: string;
-  value: ReactNode;
-  unit?: string;
-  sub?: string;
-  icon: ReactNode;
-  iconBg?: string;
+  label:       string;
+  value:       ReactNode;
+  unit?:       string;
+  sub?:        ReactNode;
+  icon:        ReactNode;
+  iconBg?:     string;
   valueColor?: string;
+  accent?:     "green" | "orange";
 }
 
-export function StatCard({ 
-  label, value, unit, sub, icon, 
-  iconBg = "bg-bg-inset group-hover:bg-gt-green-500", 
-  valueColor = "text-text-primary" 
+export function StatCard({
+  label, value, unit, sub, icon,
+  iconBg     = "bg-bg-inset group-hover:bg-gt-green-500",
+  valueColor = "text-text-primary",
+  accent,
 }: StatCardProps) {
+  const accentStyle: CSSProperties | undefined = accent
+    ? { borderTop: `3px solid var(--brand-${accent === "green" ? "green" : "orange"})` }
+    : undefined;
+
   return (
-    <div className="premium-card p-6 flex flex-col justify-between h-auto min-h-[8rem] relative overflow-hidden group border-none">
+    <div
+      className="premium-card p-6 flex flex-col justify-between h-auto min-h-[8rem] relative overflow-hidden group"
+      style={accentStyle}
+    >
       <div className="flex items-start justify-between relative z-10 mb-4">
         <span className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted opacity-50">
           {label}

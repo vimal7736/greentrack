@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { CheckCircle, CreditCard, AlertCircle, ExternalLink } from "lucide-react";
 
@@ -93,7 +93,7 @@ export default function BillingPage() {
           return (
             <div
               key={plan.id}
-              className={`premium-card p-8 border-none flex flex-col relative transition-all duration-500 overflow-hidden ${isCurrent ? "shadow-2xl ring-2 ring-gt-green-500" : "hover:shadow-2xl"
+              className={`premium-card p-8 flex flex-col relative transition-all duration-500 overflow-hidden ${isCurrent ? "ring-2 ring-gt-green-500" : ""
                 }`}
             >
               {plan.popular && !isCurrent && (
@@ -171,7 +171,7 @@ export default function BillingPage() {
 
       {/* Support / Security Section */}
       <div className="grid grid-cols-2 gap-8 mt-4">
-        <div className="premium-card p-8 border-none bg-bg-inset/30 flex gap-6">
+        <div className="premium-card p-8 flex gap-6" style={{ boxShadow: "var(--shadow-inset)" }}>
           <div className="w-14 h-14 rounded-2xl bg-white shadow-premium flex items-center justify-center shrink-0">
             <CreditCard className="w-7 h-7 text-text-muted" />
           </div>
@@ -183,7 +183,7 @@ export default function BillingPage() {
           </div>
         </div>
 
-        <div className="premium-card p-8 border-none bg-red-500/5 flex gap-6 border-l-4 border-l-red-500">
+        <div className="premium-card p-8 bg-red-500/5 flex gap-6 border-l-4 border-l-red-500 border-solid">
           <div className="w-14 h-14 rounded-2xl bg-white shadow-premium flex items-center justify-center shrink-0">
             <AlertCircle className="w-7 h-7 text-red-500" />
           </div>

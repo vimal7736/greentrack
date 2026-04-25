@@ -1,7 +1,14 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import CookieBanner from "@/components/CookieBanner";
 import { ThemeProvider } from "@/components/ThemeProvider";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
 import { Analytics } from "@vercel/analytics/next";
 
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://greentrack.ai";
@@ -134,7 +141,7 @@ const jsonLd = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en-GB" suppressHydrationWarning>
+    <html lang="en-GB" className={inter.variable} suppressHydrationWarning>
       <head>
         <script
           type="application/ld+json"
