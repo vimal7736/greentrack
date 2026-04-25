@@ -22,7 +22,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const org = (Array.isArray(profile?.organisations) ? profile.organisations[0] : profile?.organisations) as { name: string; tier: string } | null;
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen" style={{ background: "var(--bg-base)" }}>
       <Sidebar
         userName={profile?.full_name ?? user.email ?? "User"}
         userEmail={user.email ?? ""}
@@ -30,7 +30,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         orgName={org?.name ?? "Your Organisation"}
         orgTier={org?.tier ?? "free"}
       />
-      <main id="main-content" className="flex-1 ml-64 p-8" tabIndex={-1}>
+      <main
+        id="main-content"
+        className="flex-1 p-8"
+        tabIndex={-1}
+        style={{ marginLeft: "var(--sidebar-w, 16rem)", color: "var(--text-primary)", transition: "margin-left 0.28s cubic-bezier(.4,0,.2,1)" }}
+      >
         {children}
       </main>
     </div>

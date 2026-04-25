@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import CookieBanner from "@/components/CookieBanner";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import { Analytics } from "@vercel/analytics/next";
 
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://greentrack.ai";
@@ -140,15 +141,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className="bg-gray-50 text-gray-900 antialiased" suppressHydrationWarning>
-        <a
-          href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-green-700 focus:text-white focus:rounded-lg focus:font-medium"
-        >
-          Skip to main content
-        </a>
-        {children}
-        <CookieBanner />
+      <body className="antialiased" suppressHydrationWarning>
+        <ThemeProvider>
+          <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-gt-green-700 focus:text-cream-200 focus:rounded-lg focus:font-medium"
+          >
+            Skip to main content
+          </a>
+          {children}
+          <CookieBanner />
+        </ThemeProvider>
         <Analytics />
       </body>
     </html>
