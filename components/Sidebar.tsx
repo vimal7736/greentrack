@@ -233,7 +233,7 @@ export default function Sidebar({ userName, userEmail, userRole, orgName, orgTie
             );
           })}
 
-          {(userRole === "admin" || userRole === "superadmin") && (
+          {(userRole === "admin" || userRole === "superadmin" || userRole === "super_admin") && (
             <div
               className="pt-2 mt-2"
               style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}
@@ -241,25 +241,25 @@ export default function Sidebar({ userName, userEmail, userRole, orgName, orgTie
               <Link
                 href="/admin"
                 title={collapsed ? "Admin Panel" : undefined}
-                aria-current={pathname === "/admin" ? "page" : undefined}
+                aria-current={pathname.startsWith("/admin") ? "page" : undefined}
                 style={
                   collapsed
                     ? {
                         display: "flex", alignItems: "center", justifyContent: "center",
                         width: 40, height: 40, borderRadius: 12, margin: "0 auto",
-                        background: pathname === "/admin" ? "rgba(249,115,22,0.20)" : "transparent",
-                        boxShadow: pathname === "/admin" ? inset : "none",
-                        color: pathname === "/admin" ? "#fdba74" : "rgba(249,115,22,0.70)",
+                        background: pathname.startsWith("/admin") ? "rgba(249,115,22,0.20)" : "transparent",
+                        boxShadow: pathname.startsWith("/admin") ? inset : "none",
+                        color: pathname.startsWith("/admin") ? "#fdba74" : "rgba(249,115,22,0.70)",
                         transition: "background 150ms",
                       }
                     : {
                         display: "flex", alignItems: "center", gap: "0.75rem",
                         paddingTop: "0.6rem", paddingBottom: "0.6rem",
                         paddingLeft: "calc(0.75rem - 3px)",
-                        borderLeft: `3px solid ${pathname === "/admin" ? "#f97316" : "transparent"}`,
+                        borderLeft: `3px solid ${pathname.startsWith("/admin") ? "#f97316" : "transparent"}`,
                         borderRadius: "0 12px 12px 0",
-                        background: pathname === "/admin" ? "rgba(249,115,22,0.16)" : "transparent",
-                        color: pathname === "/admin" ? "#fff" : "rgba(249,115,22,0.70)",
+                        background: pathname.startsWith("/admin") ? "rgba(249,115,22,0.16)" : "transparent",
+                        color: pathname.startsWith("/admin") ? "#fff" : "rgba(249,115,22,0.70)",
                         fontSize: "0.875rem", fontWeight: 500, transition: "all 150ms",
                       }
                 }

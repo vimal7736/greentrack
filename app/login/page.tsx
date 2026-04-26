@@ -29,7 +29,7 @@ export default function LoginPage() {
     }
 
     // Middleware will handle redirect, but push as fallback
-    router.push("/dashboard");
+      router.push("/dashboard");
     router.refresh();
   }
 

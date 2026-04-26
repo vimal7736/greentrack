@@ -1,17 +1,15 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 /**
- * GET /api/admin/orgs
- * Returns all organisations with user count and bill count.
- * Requires superadmin role.
+ * Shared superadmin auth check. Returns the admin Supabase client or an error response.
  */
-export async function GET() {
+async function requireSuperadmin() {
   const supabase = await createClient();
-
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
+  if (!user) return { error: NextResponse.json({ error: "Unauthorised" }, { status: 401 }) };
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -20,16 +18,41 @@ export async function GET() {
     .single();
 
   if (profile?.role !== "superadmin") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return { error: NextResponse.json({ error: "Forbidden" }, { status: 403 }) };
   }
 
-  const admin = createAdminClient();
+  return { admin: createAdminClient() };
+}
 
-  const { data: orgs } = await admin
+/**
+ * GET /api/admin/orgs?search=&tier=
+ * Returns all organisations with user count and bill count.
+ * Supports optional search and tier filter.
+ * Requires superadmin role.
+ */
+export async function GET(request: NextRequest) {
+  const result = await requireSuperadmin();
+  if ("error" in result) return result.error;
+  const admin = result.admin;
+
+  const { searchParams } = new URL(request.url);
+  const search = searchParams.get("search")?.trim() ?? "";
+  const tier = searchParams.get("tier") ?? "";
+
+  let query = admin
     .from("organisations")
     .select("id, name, tier, created_at")
     .order("created_at", { ascending: false })
-    .limit(100);
+    .limit(200);
+
+  if (search) {
+    query = query.ilike("name", `%${search}%`);
+  }
+  if (tier && tier !== "all") {
+    query = query.eq("tier", tier);
+  }
+
+  const { data: orgs } = await query;
 
   if (!orgs) return NextResponse.json({ orgs: [] });
 
@@ -58,4 +81,41 @@ export async function GET() {
       bill_count: billsByOrg[o.id] ?? 0,
     })),
   });
+}
+
+/**
+ * PATCH /api/admin/orgs
+ * Update an organisation's tier or suspend status.
+ * Body: { id: string, tier?: string }
+ * Requires superadmin role.
+ */
+export async function PATCH(request: Request) {
+  const result = await requireSuperadmin();
+  if ("error" in result) return result.error;
+  const admin = result.admin;
+
+  const body = await request.json();
+  const { id, tier } = body;
+
+  if (!id) {
+    return NextResponse.json({ error: "Organisation ID is required" }, { status: 400 });
+  }
+
+  const updates: Record<string, string> = {};
+  if (tier && ["free", "starter", "business"].includes(tier)) {
+    updates.tier = tier;
+  }
+
+  if (Object.keys(updates).length === 0) {
+    return NextResponse.json({ error: "No valid updates provided" }, { status: 400 });
+  }
+
+  const { error } = await admin
+    .from("organisations")
+    .update(updates)
+    .eq("id", id);
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  return NextResponse.json({ success: true });
 }

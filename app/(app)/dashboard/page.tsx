@@ -37,9 +37,13 @@ export default async function DashboardPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("org_id, organisations(name)")
+    .select("org_id, role, organisations(name)")
     .eq("id", user.id)
     .single();
+
+  if (profile?.role === "superadmin" || profile?.role === "super_admin") {
+    redirect("/admin");
+  }
 
   if (!profile?.org_id) return <NoOrgState />;
 
