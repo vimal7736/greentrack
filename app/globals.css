@@ -126,8 +126,13 @@
 
   --card-border:      1px solid var(--border-subtle);
 
-  /* ── SIDEBAR WIDTH (updated by Sidebar.tsx JS) ── */
-  --sidebar-w: 16rem;
+  /* ── SIDEBAR WIDTH (updated by AppShell.tsx JS) ── */
+  --sidebar-w: 0px;   /* mobile-first: sidebar is overlay, no layout shift */
+}
+
+/* Desktop default before JS hydrates */
+@media (min-width: 1024px) {
+  :root { --sidebar-w: 16rem; }
 }
 
 /* ── 3. DARK MODE OVERRIDES ──────────────────────────────────── */

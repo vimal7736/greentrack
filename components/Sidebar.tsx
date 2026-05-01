@@ -1,13 +1,13 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
 import {
   LayoutDashboard, Upload, History, FileText,
   Users, CreditCard, LogOut, Leaf, Shield,
   Scale, Target,
 } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
-import { useState, useEffect } from "react";
 
 const NAV_ITEMS = [
   { label: "Dashboard",  href: "/dashboard", icon: LayoutDashboard },
@@ -71,15 +71,29 @@ interface SidebarProps {
   userRole:  string;
   orgName:   string;
   orgTier:   string;
+  collapsed: boolean;
+  onCollapseToggle: () => void;
+  mobileOpen: boolean;
+  onMobileClose: () => void;
 }
 
-export default function Sidebar({ userName, userEmail, userRole, orgName, orgTier }: SidebarProps) {
-  const pathname  = usePathname();
-  const [collapsed, setCollapsed] = useState(false);
+export default function Sidebar({
+  userName, userEmail, userRole, orgName, orgTier,
+  collapsed, onCollapseToggle,
+  mobileOpen, onMobileClose,
+}: SidebarProps) {
+  const pathname = usePathname();
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    document.documentElement.style.setProperty("--sidebar-w", collapsed ? "4rem" : "16rem");
-  }, [collapsed]);
+    function check() { setIsMobile(window.innerWidth < 1024); }
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  // On mobile/tablet: always icon-only rail; on desktop: respect collapsed prop
+  const iconOnly = isMobile || collapsed;
 
   function handleSignOut() {
     window.location.href = "/api/auth/signout";
@@ -96,7 +110,7 @@ export default function Sidebar({ userName, userEmail, userRole, orgName, orgTie
   const tierCfg  = TIER_CFG[safeTier] ?? TIER_CFG.free;
 
   function activeStyle(active: boolean): React.CSSProperties {
-    if (collapsed) {
+    if (iconOnly) {
       return {
         display: "flex", alignItems: "center", justifyContent: "center",
         width: 40, height: 40, borderRadius: 12, margin: "0 auto",
@@ -135,39 +149,39 @@ export default function Sidebar({ userName, userEmail, userRole, orgName, orgTie
 
   return (
     <aside
-      className="fixed left-0 top-0 h-screen flex flex-col z-40"
+      className={`fixed left-0 top-0 h-screen flex flex-col z-40 ${
+        mobileOpen ? "translate-x-0" : "-translate-x-full"
+      } lg:translate-x-0`}
       style={{
         background: BG,
-        width: collapsed ? "4rem" : "16rem",
-        transition: "width 0.28s cubic-bezier(.4,0,.2,1)",
+        width: iconOnly ? "4rem" : "16rem",
+        transition: "width 0.28s cubic-bezier(.4,0,.2,1), transform 0.28s cubic-bezier(.4,0,.2,1)",
       }}
       aria-label="Application sidebar"
     >
+      {/* ── Logo / Brand ────────────────────────────────────────── */}
       <div
         className="px-3 py-4 flex items-center shrink-0"
         style={{
           borderBottom: "1px solid rgba(255,255,255,0.08)",
-          justifyContent: collapsed ? "center" : "space-between",
+          justifyContent: iconOnly ? "center" : "space-between",
           gap: "0.5rem",
         }}
       >
         <Link
           href="/dashboard"
           className="flex items-center gap-3 group min-w-0"
+          onClick={onMobileClose}
           aria-label="GreenTrack AI home"
         >
           <div
             className="w-9 h-9 flex items-center justify-center shrink-0 transition-transform group-hover:scale-105"
-            style={{
-              borderRadius: 12,
-              background: "rgba(255,255,255,0.06)",
-              boxShadow: inset,
-            }}
+            style={{ borderRadius: 12, background: "rgba(255,255,255,0.06)", boxShadow: inset }}
           >
             <Leaf className="w-5 h-5" style={{ color: "#4ade80" }} />
           </div>
 
-          {!collapsed && (
+          {!iconOnly && (
             <div className="overflow-hidden">
               <p className="font-bold text-white text-sm leading-tight tracking-tight whitespace-nowrap">
                 GreenTrack AI
@@ -179,10 +193,11 @@ export default function Sidebar({ userName, userEmail, userRole, orgName, orgTie
           )}
         </Link>
 
-        {!collapsed && <ThemeToggle buttonStyle={toggleBtnStyle} />}
+        {!iconOnly && <ThemeToggle buttonStyle={toggleBtnStyle} />}
       </div>
 
-      {!collapsed && (
+      {/* ── Org / Tier strip ────────────────────────────────────── */}
+      {!iconOnly && (
         <div
           className="px-4 py-2.5 flex items-center justify-between gap-2 shrink-0"
           style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
@@ -197,9 +212,10 @@ export default function Sidebar({ userName, userEmail, userRole, orgName, orgTie
         </div>
       )}
 
+      {/* ── Nav items ───────────────────────────────────────────── */}
       <nav
         className="flex-1 py-2 overflow-y-auto overflow-x-hidden"
-        style={{ paddingLeft: collapsed ? 0 : "0.5rem", paddingRight: collapsed ? 0 : "0.5rem" }}
+        style={{ paddingLeft: iconOnly ? 0 : "0.5rem", paddingRight: iconOnly ? 0 : "0.5rem" }}
         aria-label="Main navigation"
       >
         <div className="space-y-0.5">
@@ -209,7 +225,8 @@ export default function Sidebar({ userName, userEmail, userRole, orgName, orgTie
               <Link
                 key={href}
                 href={href}
-                title={collapsed ? label : undefined}
+                onClick={onMobileClose}
+                title={iconOnly ? label : undefined}
                 aria-current={active ? "page" : undefined}
                 style={activeStyle(active)}
                 onMouseEnter={(e) => {
@@ -228,7 +245,7 @@ export default function Sidebar({ userName, userEmail, userRole, orgName, orgTie
                 }}
               >
                 <Icon className="w-4 h-4 shrink-0" aria-hidden="true" />
-                {!collapsed && label}
+                {!iconOnly && label}
               </Link>
             );
           })}
@@ -240,10 +257,11 @@ export default function Sidebar({ userName, userEmail, userRole, orgName, orgTie
             >
               <Link
                 href="/admin"
-                title={collapsed ? "Admin Panel" : undefined}
+                onClick={onMobileClose}
+                title={iconOnly ? "Admin Panel" : undefined}
                 aria-current={pathname.startsWith("/admin") ? "page" : undefined}
                 style={
-                  collapsed
+                  iconOnly
                     ? {
                         display: "flex", alignItems: "center", justifyContent: "center",
                         width: 40, height: 40, borderRadius: 12, margin: "0 auto",
@@ -265,7 +283,7 @@ export default function Sidebar({ userName, userEmail, userRole, orgName, orgTie
                 }
               >
                 <Shield className="w-4 h-4 shrink-0" aria-hidden="true" />
-                {!collapsed && "Admin Panel"}
+                {!iconOnly && "Admin Panel"}
               </Link>
             </div>
           )}
@@ -274,11 +292,11 @@ export default function Sidebar({ userName, userEmail, userRole, orgName, orgTie
         <div className="mt-3 pt-3" style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }} />
       </nav>
 
-      {/* Floating Toggle Button */}
+      {/* ── Desktop collapse toggle (hidden on mobile) ──────────── */}
       <button
         type="button"
-        onClick={() => setCollapsed((c) => !c)}
-        className="absolute top-[40%] -right-6 w-7 h-12 flex items-center justify-center group z-50 transition-all duration-300 hover:scale-110"
+        onClick={onCollapseToggle}
+        className="hidden lg:flex absolute top-[40%] -right-6 w-7 h-12 items-center justify-center group z-50 transition-all duration-300 hover:scale-110"
         style={{
           background: BG,
           borderRadius: "0 100px 100px 0",
@@ -287,31 +305,25 @@ export default function Sidebar({ userName, userEmail, userRole, orgName, orgTie
           borderLeft: "none",
           cursor: "pointer",
         }}
-        aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        aria-label={iconOnly ? "Expand sidebar" : "Collapse sidebar"}
       >
-        <Leaf 
+        <Leaf
           className={`w-4 h-4 text-gt-green-400 transition-all duration-500 ease-in-out ${
-            collapsed ? "rotate-180 scale-x-[-1]" : "rotate-0"
-          }`} 
+            iconOnly ? "rotate-180 scale-x-[-1]" : "rotate-0"
+          }`}
         />
       </button>
 
+      {/* ── User profile footer ─────────────────────────────────── */}
       <div
         className="shrink-0 p-3"
-        style={{
-          borderTop: "1px solid rgba(255,255,255,0.08)",
-          background: "rgba(0,0,0,0.20)",
-        }}
+        style={{ borderTop: "1px solid rgba(255,255,255,0.08)", background: "rgba(0,0,0,0.20)" }}
       >
-        {collapsed ? (
+        {iconOnly ? (
           <div className="flex flex-col items-center gap-2">
             <div
               className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
-              style={{
-                background: "linear-gradient(145deg, #16a34a, #22c55e)",
-                boxShadow: raised,
-                color: "#fff",
-              }}
+              style={{ background: "linear-gradient(145deg, #16a34a, #22c55e)", boxShadow: raised, color: "#fff" }}
               title={userName}
             >
               {initials}
@@ -323,11 +335,7 @@ export default function Sidebar({ userName, userEmail, userRole, orgName, orgTie
             <div className="flex items-center gap-3 mb-3">
               <div
                 className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
-                style={{
-                  background: "linear-gradient(145deg, #16a34a, #22c55e)",
-                  boxShadow: raised,
-                  color: "#fff",
-                }}
+                style={{ background: "linear-gradient(145deg, #16a34a, #22c55e)", boxShadow: raised, color: "#fff" }}
               >
                 {initials}
               </div>

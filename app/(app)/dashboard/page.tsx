@@ -162,34 +162,34 @@ export default async function DashboardPage() {
   const recentBills = bills.slice(0, 5);
 
   return (
-    <div className="space-y-5 animate-fade-in">
+    <div className="space-y-4 lg:space-y-5 animate-fade-in">
 
       {/* ── Header ──────────────────────────────────────────────── */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <Leaf className="w-5 h-5" style={{ color: "var(--brand-green)" }} />
-            <h1 className="text-2xl font-black tracking-tight" style={{ color: "var(--text-primary)" }}>
+            <Leaf className="w-4 h-4 lg:w-5 lg:h-5" style={{ color: "var(--brand-green)" }} />
+            <h1 className="text-base lg:text-2xl font-black tracking-tight" style={{ color: "var(--text-primary)" }}>
               Carbon Dashboard
             </h1>
           </div>
-          <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+          <p className="text-xs lg:text-sm" style={{ color: "var(--text-muted)" }}>
             Overview for{" "}
             <span style={{ color: "var(--text-brand)", fontWeight: 700 }}>{orgName}</span>
           </p>
         </div>
 
         <div
-          className="neu-raised inline-flex items-center gap-2 px-4 py-2 rounded-xl"
+          className="neu-raised inline-flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-4 py-1.5 lg:py-2 rounded-xl shrink-0"
           style={{ color: "var(--brand-green-dark)" }}
         >
           <span className="w-1.5 h-1.5 rounded-full bg-gt-green-500 animate-pulse-green inline-block" />
-          <span className="text-xs font-bold uppercase tracking-widest">2025 DEFRA Active</span>
+          <span className="text-[10px] lg:text-xs font-bold uppercase tracking-widest">DEFRA Active</span>
         </div>
       </div>
 
       {/* ── 5 Stat cards ─────────────────────────────────────────── */}
-      <div className="grid grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 lg:gap-4">
         <StatCard
           label="Total CO₂"
           value={`${(totalCo2 / 1000).toFixed(2)}`}
@@ -227,21 +227,23 @@ export default async function DashboardPage() {
           icon={<Flame className="w-4 h-4" />}
           accent="orange"
         />
-        <StatCard
-          label="Equivalent To"
-          value={`${milesDriven.toLocaleString()}`}
-          unit="miles"
-          sub="Avg petrol car driven"
-          icon={<Fuel className="w-4 h-4" />}
-          accent="green"
-        />
+        <div className="col-span-2 sm:col-span-1">
+          <StatCard
+            label="Equivalent To"
+            value={`${milesDriven.toLocaleString()}`}
+            unit="miles"
+            sub="Avg petrol car driven"
+            icon={<Fuel className="w-4 h-4" />}
+            accent="green"
+          />
+        </div>
       </div>
 
       {/* ── Row: CO₂ trend chart + Budget Ring ───────────────────── */}
-      <div className="grid grid-cols-12 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-4">
         {/* Chart in a deep inset well */}
         <div
-          className="col-span-8 rounded-2xl p-6 min-h-[350px]"
+          className="lg:col-span-8 rounded-2xl p-4 lg:p-6 min-h-[260px] lg:min-h-[350px]"
           style={{
             background: "var(--neu-base)",
             boxShadow:  "var(--shadow-inset)",
@@ -257,7 +259,7 @@ export default async function DashboardPage() {
 
         {/* Budget Ring */}
         <div
-          className="col-span-4 rounded-2xl p-6"
+          className="lg:col-span-4 rounded-2xl p-4 lg:p-6"
           style={{
             background: "var(--neu-base)",
             boxShadow:  "var(--shadow-raised)",
@@ -269,11 +271,11 @@ export default async function DashboardPage() {
       </div>
 
       {/* ── Row: Period Comparison + Emissions Breakdown + AI ────── */}
-      <div className="grid grid-cols-12 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-3 lg:gap-4">
 
         {/* Period Comparison */}
         <div
-          className="col-span-5 rounded-2xl p-6"
+          className="md:col-span-2 lg:col-span-5 rounded-2xl p-4 lg:p-6"
           style={{
             background: "var(--neu-base)",
             boxShadow:  "var(--shadow-raised)",
@@ -285,7 +287,7 @@ export default async function DashboardPage() {
 
         {/* Emissions by type */}
         <div
-          className="col-span-4 rounded-2xl p-6 flex flex-col gap-4"
+          className="lg:col-span-4 rounded-2xl p-4 lg:p-6 flex flex-col gap-4"
           style={{
             background: "var(--neu-base)",
             boxShadow:  "var(--shadow-raised)",
@@ -326,7 +328,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* AI Insights */}
-        <div className="col-span-3 rounded-2xl p-5 flex flex-col gap-3"
+        <div className="lg:col-span-3 rounded-2xl p-4 lg:p-5 flex flex-col gap-3"
              style={{
                background: "var(--neu-base)",
                boxShadow:  "var(--shadow-raised)",
@@ -346,7 +348,7 @@ export default async function DashboardPage() {
 
       {/* ── Energy consumption chart (full width, inset well) ───── */}
       <div
-        className="rounded-2xl p-6 min-h-[300px]"
+        className="rounded-2xl p-4 lg:p-6 min-h-[220px] lg:min-h-[300px]"
         style={{
           background: "var(--neu-base)",
           boxShadow:  "var(--shadow-inset)",
@@ -368,30 +370,28 @@ export default async function DashboardPage() {
           <div className="h-[1px] flex-1 bg-border-subtle/30 mx-4" />
         </div>
         
-        <div className="grid grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 lg:gap-4">
           {[
             { label: "Upload Bill",     href: "/upload",   Icon: Upload,   color: "var(--brand-green)", bg: "bg-gt-green-500/10" },
             { label: "Compare Periods", href: "/compare",  Icon: Scale,    color: "var(--brand-green-dark)", bg: "bg-gt-green-700/10" },
             { label: "Set Targets",     href: "/targets",  Icon: Target,   color: "var(--brand-orange)", bg: "bg-brand-orange/10" },
             { label: "Generate Report", href: "/reports",  Icon: FileText, color: "var(--brand-orange-dark)", bg: "bg-brand-orange-dark/10" },
             { label: "Manage Team",     href: "/team",     Icon: Users,    color: "var(--text-secondary)", bg: "bg-bg-inset" },
-          ].map(({ label, href, Icon, color, bg }) => (
+          ].map(({ label, href, Icon, color, bg }, i) => (
             <Link
               key={href}
               href={href}
-              className="premium-card group relative overflow-hidden flex flex-col items-center gap-4 py-8 px-4 text-center border-none transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl"
+              className={`premium-card group relative overflow-hidden flex flex-col items-center gap-3 lg:gap-4 py-6 px-3 lg:py-8 lg:px-4 text-center border-none transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl${i === 4 ? " col-span-2 sm:col-span-1" : ""}`}
             >
-              <div className={`w-14 h-14 rounded-2xl ${bg} flex items-center justify-center transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3`}>
-                <Icon className="w-6 h-6 transition-colors duration-500" style={{ color }} />
+              <div className={`w-11 h-11 lg:w-14 lg:h-14 rounded-xl lg:rounded-2xl ${bg} flex items-center justify-center transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3`}>
+                <Icon className="w-5 h-5 lg:w-6 lg:h-6 transition-colors duration-500" style={{ color }} />
               </div>
               <div className="space-y-1">
-                <span className="text-[10px] font-black uppercase tracking-[0.15em] text-text-primary group-hover:text-gt-green-600 transition-colors">
+                <span className="text-[9px] lg:text-[10px] font-black uppercase tracking-[0.12em] lg:tracking-[0.15em] text-text-primary group-hover:text-gt-green-600 transition-colors leading-tight">
                   {label}
                 </span>
                 <div className="w-4 h-0.5 bg-gt-green-500 mx-auto rounded-full opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-2 group-hover:translate-y-0" />
               </div>
-              
-              {/* Decorative background glow on hover */}
               <div className="absolute inset-0 bg-gradient-to-br from-white/0 to-white/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
             </Link>
           ))}
@@ -400,7 +400,7 @@ export default async function DashboardPage() {
 
       {/* ── Recent Bills ─────────────────────────────────────────── */}
       <div className="premium-card border-none overflow-hidden shadow-2xl">
-        <div className="px-8 py-6 border-b border-border-subtle/30 bg-bg-inset/10 flex items-center justify-between">
+        <div className="px-4 lg:px-8 py-4 lg:py-6 border-b border-border-subtle/30 bg-bg-inset/10 flex items-center justify-between">
           <div className="flex items-center gap-3">
              <div className="w-2 h-2 rounded-full bg-gt-green-500 animate-pulse" />
              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted">Ledger Activity</p>
@@ -438,59 +438,94 @@ export default async function DashboardPage() {
               </div>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-[10px] font-black uppercase tracking-widest text-text-muted opacity-40">
-                    <th className="px-8 py-4 text-left font-black">Instrument</th>
-                    <th className="px-6 py-4 text-left font-black">Date</th>
-                    <th className="px-6 py-4 text-left font-black">Vendor</th>
-                    <th className="px-6 py-4 text-right font-black">Consumption</th>
-                    <th className="px-8 py-4 text-right font-black">Carbon Impact</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border-subtle/20">
-                  {recentBills.map((bill) => {
-                    const bs = BADGE_STYLES[bill.bill_type] ?? { bg: "rgba(0,0,0,0.06)", text: "var(--text-muted)" };
-                    return (
-                      <tr key={bill.id} className="group hover:bg-bg-inset/30 transition-all duration-300">
-                        <td className="px-8 py-5">
-                          <div className="flex items-center gap-3">
-                             <div className="w-8 h-8 rounded-xl bg-white shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
-                               {bill.bill_type === 'electricity' ? <Zap className="w-4 h-4 text-gt-green-500" /> : <Flame className="w-4 h-4 text-brand-orange" />}
-                             </div>
-                             <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: bs.text }}>
-                               {TYPE_LABELS[bill.bill_type] ?? bill.bill_type}
-                             </span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-5">
-                           <p className="text-[11px] font-bold text-text-muted uppercase tracking-widest">{bill.bill_date}</p>
-                        </td>
-                        <td className="px-6 py-5">
-                           <p className="text-[10px] font-black text-text-primary uppercase tracking-tighter opacity-60">
-                             {bill.supplier ?? "Verified Protocol"}
-                           </p>
-                        </td>
-                        <td className="px-6 py-5 text-right">
-                           <div className="flex flex-col items-end">
+            <>
+              {/* ── Mobile card list (hidden on lg+) ─────────────── */}
+              <div className="lg:hidden divide-y divide-border-subtle/20">
+                {recentBills.map((bill) => {
+                  const bs = BADGE_STYLES[bill.bill_type] ?? { bg: "rgba(0,0,0,0.06)", text: "var(--text-muted)" };
+                  return (
+                    <div key={bill.id} className="flex items-center gap-3 px-3 py-3.5">
+                      <div className="w-9 h-9 rounded-xl bg-white shadow-sm flex items-center justify-center shrink-0">
+                        {bill.bill_type === "electricity"
+                          ? <Zap className="w-4 h-4 text-gt-green-500" />
+                          : <Flame className="w-4 h-4 text-brand-orange" />}
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <span className="text-[11px] font-black uppercase tracking-wider" style={{ color: bs.text }}>
+                          {TYPE_LABELS[bill.bill_type] ?? bill.bill_type}
+                        </span>
+                        <p className="text-[10px] text-text-muted font-medium mt-0.5 truncate">
+                          {bill.bill_date}
+                          {" · "}{bill.usage_amount.toLocaleString()} {bill.usage_unit}
+                          {bill.supplier ? ` · ${bill.supplier}` : ""}
+                        </p>
+                      </div>
+
+                      <div className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-gt-green-500/8 border border-gt-green-500/15">
+                        <span className="text-xs font-black text-gt-green-700 tracking-tight">{bill.co2_kg}</span>
+                        <span className="text-[9px] font-bold text-text-muted opacity-50 uppercase">kg</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* ── Desktop table (hidden below lg) ──────────────── */}
+              <div className="hidden lg:block overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-[10px] font-black uppercase tracking-widest text-text-muted opacity-40">
+                      <th className="px-8 py-4 text-left font-black">Instrument</th>
+                      <th className="px-6 py-4 text-left font-black">Date</th>
+                      <th className="px-6 py-4 text-left font-black">Vendor</th>
+                      <th className="px-6 py-4 text-right font-black">Consumption</th>
+                      <th className="px-8 py-4 text-right font-black">Carbon Impact</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border-subtle/20">
+                    {recentBills.map((bill) => {
+                      const bs = BADGE_STYLES[bill.bill_type] ?? { bg: "rgba(0,0,0,0.06)", text: "var(--text-muted)" };
+                      return (
+                        <tr key={bill.id} className="group hover:bg-bg-inset/30 transition-all duration-300">
+                          <td className="px-8 py-5">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-xl bg-white shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
+                                {bill.bill_type === "electricity" ? <Zap className="w-4 h-4 text-gt-green-500" /> : <Flame className="w-4 h-4 text-brand-orange" />}
+                              </div>
+                              <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: bs.text }}>
+                                {TYPE_LABELS[bill.bill_type] ?? bill.bill_type}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-5">
+                            <p className="text-[11px] font-bold text-text-muted uppercase tracking-widest">{bill.bill_date}</p>
+                          </td>
+                          <td className="px-6 py-5">
+                            <p className="text-[10px] font-black text-text-primary uppercase tracking-tighter opacity-60">
+                              {bill.supplier ?? "Verified Protocol"}
+                            </p>
+                          </td>
+                          <td className="px-6 py-5 text-right">
+                            <div className="flex flex-col items-end">
                               <span className="text-xs font-black text-text-primary tracking-tight">{bill.usage_amount.toLocaleString()}</span>
                               <span className="text-[9px] font-bold text-text-muted uppercase tracking-widest opacity-40">{bill.usage_unit}</span>
-                           </div>
-                        </td>
-                        <td className="px-8 py-5 text-right">
-                           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gt-green-500/5 border border-gt-green-500/10">
+                            </div>
+                          </td>
+                          <td className="px-8 py-5 text-right">
+                            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gt-green-500/5 border border-gt-green-500/10">
                               <span className="text-sm font-black text-gt-green-700 tracking-tighter">
                                 {bill.co2_kg} <span className="text-[10px] opacity-40 font-bold uppercase tracking-widest ml-1">kg</span>
                               </span>
-                           </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </div>
       </div>
@@ -507,7 +542,7 @@ function StatCard({ label, value, unit, sub, icon, accent }: {
   const iconColor   = accent === "green" ? "var(--brand-green-dark)" : "var(--brand-orange-dark)";
   return (
     <div
-      className="rounded-2xl p-5"
+      className="rounded-2xl p-3.5 lg:p-5"
       style={{
         background: "var(--neu-base)",
         boxShadow:  "var(--shadow-raised)",
@@ -515,12 +550,12 @@ function StatCard({ label, value, unit, sub, icon, accent }: {
         borderTop:  `3px solid ${accentColor}`,
       }}
     >
-      <div className="flex items-center justify-between mb-3">
-        <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+      <div className="flex items-center justify-between mb-2 lg:mb-3">
+        <p className="text-[9px] lg:text-[10px] font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
           {label}
         </p>
         <div
-          className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+          className="w-7 h-7 lg:w-8 lg:h-8 rounded-lg flex items-center justify-center shrink-0"
           style={{
             background: "var(--neu-base)",
             boxShadow:  "var(--shadow-inset-sm)",
@@ -531,12 +566,12 @@ function StatCard({ label, value, unit, sub, icon, accent }: {
         </div>
       </div>
       <div className="flex items-baseline gap-1">
-        <p className="text-3xl font-black tracking-tight leading-none" style={{ color: "var(--text-primary)" }}>
+        <p className="text-xl lg:text-3xl font-black tracking-tight leading-none" style={{ color: "var(--text-primary)" }}>
           {value}
         </p>
-        <p className="text-xs font-bold" style={{ color: "var(--text-muted)" }}>{unit}</p>
+        <p className="text-[10px] lg:text-xs font-bold" style={{ color: "var(--text-muted)" }}>{unit}</p>
       </div>
-      <div className="text-xs mt-2" style={{ color: "var(--text-muted)" }}>{sub}</div>
+      <div className="text-[10px] lg:text-xs mt-1.5 lg:mt-2" style={{ color: "var(--text-muted)" }}>{sub}</div>
     </div>
   );
 }
