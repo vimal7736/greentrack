@@ -123,6 +123,7 @@ export const GooeyMenu: React.FC<GooeyMenuProps> = ({ isOpen, onClose, userRole 
               <Link
                 key={`link-${item.href}`}
                 href={item.href}
+                prefetch={item.label === "Logout" ? false : undefined}
                 onClick={onClose}
                 className="absolute w-12 h-12 rounded-full flex flex-col items-center justify-center text-white transition-all duration-500 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] hover:scale-110 active:scale-90"
                 style={{
@@ -143,23 +144,23 @@ export const GooeyMenu: React.FC<GooeyMenuProps> = ({ isOpen, onClose, userRole 
                 </span>
               </Link>
             ))}
-
-            {/* Central Control Button */}
-            <button
-              type="button"
-              onClick={onClose}
-              className="relative z-20 w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 shadow-xl bg-[#1a4731] border-4 border-[#1a4731] hover:scale-105 active:scale-95"
-              aria-label="Close menu"
-            >
-              <div className="w-full h-full rounded-full flex items-center justify-center bg-gt-green-500/10 backdrop-blur-sm border border-white/10">
-                {isOpen ? (
-                  <X className="w-7 h-7 text-white transition-all duration-500" />
-                ) : (
-                  <Leaf className="w-7 h-7 text-white transition-all duration-500" />
-                )}
-              </div>
-            </button>
           </div>
+
+          {/* Central Control Button */}
+          <button
+            type="button"
+            onClick={onClose}
+            className="relative z-20 w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 shadow-xl bg-[#1a4731] border-4 border-[#1a4731] hover:scale-105 active:scale-95"
+            aria-label="Close menu"
+          >
+            <div className="w-full h-full rounded-full flex items-center justify-center bg-gt-green-500/10 backdrop-blur-sm border border-white/10">
+              {isOpen ? (
+                <X className="w-7 h-7 text-white transition-all duration-500" />
+              ) : (
+                <Leaf className="w-7 h-7 text-white transition-all duration-500" />
+              )}
+            </div>
+          </button>
         </div>
       </nav>
 
