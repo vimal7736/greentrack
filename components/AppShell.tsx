@@ -1,10 +1,11 @@
 "use client";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { Menu, Leaf } from "lucide-react";
+import { Leaf } from "lucide-react";
 import Sidebar from "./Sidebar";
 import MobileBottomNav from "./MobileBottomNav";
 import { ThemeToggle } from "./ThemeToggle";
+import { GooeyMenu } from "./ui/GooeyMenu";
 
 const BG  = "#1a4731";
 const ND  = "rgba(0,0,0,0.45)";
@@ -76,18 +77,11 @@ export default function AppShell({
           borderBottom: "1px solid rgba(255,255,255,0.10)",
         }}
       >
-        <button
-          type="button"
-          onClick={() => setMobileOpen(true)}
-          style={mobileBtnStyle}
-          aria-label="Open navigation menu"
-        >
-          <Menu className="w-5 h-5" />
-        </button>
+        <div className="w-9" /> {/* Spacer for symmetry */}
 
         <Link
           href="/dashboard"
-          className="flex items-center gap-2 flex-1 min-w-0"
+          className="flex items-center gap-2 flex-1 justify-center min-w-0"
           aria-label="GreenTrack AI home"
         >
           <div
@@ -104,16 +98,16 @@ export default function AppShell({
         <ThemeToggle buttonStyle={{ ...mobileBtnStyle }} />
       </header>
 
-      {/* ── Mobile backdrop ────────────────────────────────────── */}
-      <div
-        className={`lg:hidden fixed inset-0 z-30 bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${
-          mobileOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-        }`}
-        onClick={() => setMobileOpen(false)}
-        aria-hidden="true"
-      />
+      {/* ── Mobile Circular Gooey Menu (only on mobile) ────────── */}
+      <div className="lg:hidden">
+        <GooeyMenu 
+          isOpen={mobileOpen} 
+          onClose={() => setMobileOpen(false)} 
+          userRole={userRole}
+        />
+      </div>
 
-      {/* ── Sidebar ────────────────────────────────────────────── */}
+      {/* ── Sidebar (Visible only on desktop or when sidebar is active) ── */}
       <Sidebar
         userName={userName}
         userEmail={userEmail}
@@ -122,7 +116,7 @@ export default function AppShell({
         orgTier={orgTier}
         collapsed={collapsed}
         onCollapseToggle={() => setCollapsed((c) => !c)}
-        mobileOpen={mobileOpen}
+        mobileOpen={false} // Disable sidebar trigger for mobile, handled by GooeyMenu
         onMobileClose={() => setMobileOpen(false)}
       />
 
@@ -142,7 +136,10 @@ export default function AppShell({
       </main>
 
       {/* ── Mobile bottom nav (hidden on lg+) ─────────────────── */}
-      <MobileBottomNav />
+      <MobileBottomNav 
+        isOpen={mobileOpen} 
+        onMenuToggle={() => setMobileOpen(!mobileOpen)} 
+      />
     </div>
   );
 }

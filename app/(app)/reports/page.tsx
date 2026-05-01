@@ -1,8 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   FileText, Download, TrendingDown, BarChart2,
-  Zap, Leaf, CheckCircle, Calendar,
+  Zap, Leaf, CheckCircle, Calendar, ChevronDown,
 } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
@@ -19,36 +19,69 @@ const CURRENT_YEAR = new Date().getFullYear();
 const YEARS = [CURRENT_YEAR, CURRENT_YEAR - 1, CURRENT_YEAR - 2];
 
 export default function ReportsPage() {
+  const [mounted, setMounted] = useState(false);
+  const [isYearOpen, setIsYearOpen] = useState(false);
   const [year, setYear] = useState(String(CURRENT_YEAR));
   const { data: summary, loading, error } = useFetch<ReportSummary>(
     `/api/reports/summary?year=${year}`
   );
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const isFreePlan = summary?.org.tier === "free";
 
   const yearSelector = (
-    <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-      <div className="neu-btn bg-white border-none rounded-xl px-3 sm:px-4 py-2.5 flex items-center gap-2 group transition-all">
-        <Calendar className="w-4 h-4 text-text-muted group-hover:text-gt-green-500 transition-colors shrink-0" />
-        <select
-          value={year}
-          onChange={(e) => setYear(e.target.value)}
-          className="text-xs font-black uppercase tracking-widest text-text-primary bg-transparent focus:outline-none cursor-pointer"
+    <div className="flex items-center justify-between w-full md:w-auto">
+      <div className="relative">
+        <button
+          type="button"
+          onClick={() => setIsYearOpen(!isYearOpen)}
+          className="neu-btn bg-white border-none rounded-xl px-2 sm:px-4 py-2 flex items-center gap-2 group transition-all active:scale-95"
         >
-          {YEARS.map((y) => <option key={y} value={y}>{y} Fiscal</option>)}
-        </select>
+          <Calendar className="w-3.5 h-3.5 text-text-muted group-hover:text-gt-green-500 transition-colors shrink-0" />
+          <span className="text-[10px] font-black uppercase tracking-widest text-text-primary">
+            {year} FISCAL
+          </span>
+          <div className={`transition-transform duration-300 ${isYearOpen ? "rotate-180" : ""}`}>
+            <ChevronDown className="w-3.5 h-3.5 text-text-muted" />
+          </div>
+        </button>
+
+        {isYearOpen && (
+          <div className="absolute top-full left-0 mt-2 w-48 z-50 h-0 overflow-visible">
+            <div
+              className="animate-scale-in border shadow-2xl p-2 rounded-2xl"
+              style={{ background: "var(--bg-elevated)", borderColor: "var(--border-default)" }}
+            >
+              {YEARS.map((y) => (
+                <button
+                  key={y}
+                  onClick={() => { setYear(String(y)); setIsYearOpen(false); }}
+                  className={`w-full text-left px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                    year === String(y)
+                      ? "bg-gt-green-600 text-white shadow-lg"
+                      : "text-text-muted hover:text-text-primary"
+                  }`}
+                  style={year !== String(y) ? { background: "transparent" } : {}}
+                >
+                  {y} FISCAL
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
       <button
         type="button"
         disabled={isFreePlan || loading}
         onClick={() => window.open(`/api/reports/print?year=${year}`, "_blank")}
-        className="group relative px-4 sm:px-6 py-3 rounded-xl bg-gt-green-900 text-white text-[11px] font-black uppercase tracking-[0.2em] transition-all hover:bg-black disabled:opacity-30 overflow-hidden"
+        className="group relative w-10 h-10 sm:w-auto sm:px-6 sm:py-3 rounded-xl bg-gt-green-900 text-white text-[11px] font-black uppercase tracking-[0.2em] transition-all hover:bg-black disabled:opacity-30 flex items-center justify-center overflow-hidden shrink-0"
       >
         <div className="absolute inset-0 bg-gradient-to-r from-gt-green-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-        <span className="relative z-10 flex items-center gap-2">
-          <Download className="w-4 h-4" />
-          <span className="hidden sm:inline">Download PDF</span>
-        </span>
+        <Download className="w-4 h-4 relative z-10" />
+        <span className="hidden sm:inline ml-2 relative z-10">Download PDF</span>
       </button>
     </div>
   );
@@ -61,6 +94,10 @@ export default function ReportsPage() {
       headerRight={yearSelector}
       error={error}
     >
+      {/* Year Selector Backdrop */}
+      {isYearOpen && (
+        <div className="fixed inset-0 z-40" onClick={() => setIsYearOpen(false)} />
+      )}
       {/* Free plan upgrade banner */}
       {isFreePlan && (
         <div className="premium-card p-6 border-none bg-gradient-to-br from-gt-green-900 to-black text-white overflow-hidden relative group">
@@ -92,19 +129,21 @@ export default function ReportsPage() {
         </div>
 
         {/* Card header */}
-        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 relative z-10">
-          <div className="space-y-1">
-            <h2 className="text-base sm:text-xl font-black tracking-tight flex items-center gap-3" style={{ color: "var(--text-primary)" }}>
-              <div className="w-8 h-8 rounded-lg bg-gt-green-500 text-white flex items-center justify-center shadow-lg shadow-gt-green-500/20 shrink-0">
-                <FileText className="w-4 h-4" />
-              </div>
-              SECR Annual Compliance Report
-            </h2>
-            <p className="text-xs font-bold opacity-50 ml-11" style={{ color: "var(--text-muted)" }}>
-              Fiscal Year Summary — Powered by GreenTrack AI Engine
-            </p>
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 relative z-10">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gt-green-500 text-white flex items-center justify-center shadow-lg shadow-gt-green-500/20 shrink-0">
+              <FileText className="w-5 h-5" />
+            </div>
+            <div className="space-y-1">
+              <h2 className="text-lg sm:text-xl font-black tracking-tight leading-tight" style={{ color: "var(--text-primary)" }}>
+                SECR Annual Compliance Report
+              </h2>
+              <p className="text-[10px] sm:text-xs font-bold opacity-50" style={{ color: "var(--text-muted)" }}>
+                Fiscal Year Summary · Powered by GreenTrack AI
+              </p>
+            </div>
           </div>
-          <div className="flex sm:flex-col items-center sm:items-end gap-2 ml-11 sm:ml-0">
+          <div className="flex items-center sm:items-end justify-between sm:flex-col gap-2 pl-13 sm:pl-0">
             <div className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${
               isFreePlan
                 ? "bg-bg-inset text-text-muted border-border-subtle"
@@ -112,55 +151,55 @@ export default function ReportsPage() {
             }`}>
               {summary?.org.tier ?? "—"} Member
             </div>
-            <span className="text-[9px] font-bold text-text-muted opacity-40">
-              Generated: {new Date().toLocaleDateString()}
+            <span suppressHydrationWarning className="text-[9px] font-bold text-text-muted opacity-40">
+              {new Date().toLocaleDateString()}
             </span>
           </div>
         </div>
 
         {/* Inner document */}
-        <div className="rounded-[2.5rem] bg-bg-surface shadow-2xl border border-border-subtle/50 overflow-hidden relative z-10">
-          <div className="bg-gradient-to-r from-gt-green-900 to-black px-5 sm:px-10 py-5 sm:py-8 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="rounded-3xl sm:rounded-[2.5rem] bg-bg-surface shadow-2xl border border-border-subtle/50 overflow-hidden relative z-10">
+          <div className="bg-gradient-to-r from-gt-green-900 to-black px-6 sm:px-10 py-6 sm:py-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-1">
-              <p className="text-white font-black text-2xl tracking-tighter">{summary?.org.name ?? "—"}</p>
-              <p className="text-gt-green-400 text-[10px] font-black uppercase tracking-[0.3em]">
+              <p className="text-white font-black text-2xl sm:text-3xl tracking-tighter leading-none">{summary?.org.name ?? "—"}</p>
+              <p className="text-gt-green-400 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.3em]">
                 Environmental Audit Report · {year}
               </p>
             </div>
-            <div className="text-right flex flex-col items-end">
-              <div className="px-3 py-1 rounded-md bg-white/10 backdrop-blur-md mb-2">
-                <p className="text-white text-[10px] font-black uppercase tracking-widest">SECR Compliant</p>
+            <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2">
+              <div className="px-3 py-1 rounded-md bg-white/10 backdrop-blur-md">
+                <p className="text-white text-[9px] font-black uppercase tracking-widest leading-none">SECR Compliant</p>
               </div>
-              <p className="text-gt-green-500 text-[9px] font-black uppercase tracking-[0.2em]">Verified Outcome</p>
+              <p className="text-gt-green-500 text-[8px] sm:text-[9px] font-black uppercase tracking-[0.2em] leading-none">Verified Outcome</p>
             </div>
           </div>
 
           <div className="p-4 sm:p-10 space-y-8 sm:space-y-12">
             {/* Summary bento stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+            <div className="grid grid-cols-3 gap-2 sm:gap-6">
               {[
                 {
-                  label: "Aggregate Footprint",
+                  label: "Footprint",
                   value: loading ? "—" : ((summary?.total_co2_kg ?? 0) / 1000).toFixed(3),
-                  unit: "tCO₂e", note: "Total Scopes 1, 2 & 3",
+                  unit: "tCO₂e", note: "Total Impact",
                 },
                 {
-                  label: "Energy Intensity",
+                  label: "Energy",
                   value: loading ? "—" : (summary?.total_kwh ?? 0).toLocaleString(),
-                  unit: "kWh", note: "Gross Energy Usage",
+                  unit: "kWh", note: "Gross Usage",
                 },
                 {
-                  label: "Audit Volume",
+                  label: "Volume",
                   value: loading ? "—" : String(summary?.bill_count ?? 0),
-                  unit: "Records", note: `Audited in ${year}`,
+                  unit: "Records", note: "Audited",
                 },
               ].map(({ label, value, unit, note }) => (
-                <div key={label} className="rounded-3xl p-6 text-center" style={{ background: "var(--neu-base)", boxShadow: "var(--shadow-inset)" }}>
-                  <p className="text-[9px] font-black uppercase tracking-widest text-text-muted mb-2">{label}</p>
-                  <p className="text-2xl font-black text-text-primary tracking-tighter">
-                    {value} <span className="text-xs opacity-30 ml-1">{unit}</span>
+                <div key={label} className="rounded-xl sm:rounded-3xl p-2 sm:p-6 text-center" style={{ background: "var(--neu-base)", boxShadow: "var(--shadow-inset)" }}>
+                  <p className="text-[7px] sm:text-[9px] font-black uppercase tracking-widest text-text-muted mb-1 sm:mb-2">{label}</p>
+                  <p className="text-sm sm:text-2xl font-black text-text-primary tracking-tighter leading-none">
+                    {value} <span className="text-[8px] sm:text-xs opacity-30 ml-0.5 sm:ml-1 font-bold">{unit}</span>
                   </p>
-                  <p className="text-[9px] font-bold text-text-muted mt-2 opacity-50">{note}</p>
+                  <p className="hidden sm:block text-[9px] font-bold text-text-muted mt-2 opacity-50">{note}</p>
                 </div>
               ))}
             </div>
@@ -189,14 +228,15 @@ export default function ReportsPage() {
               </div>
             )}
 
-            {/* Resource decomposition table */}
+            {/* Resource decomposition table / cards */}
             <div className="space-y-4">
               <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-text-muted px-1">
                 Resource Decomposition
               </h3>
-              <div className="rounded-2xl border border-border-subtle/50 overflow-hidden">
-                <div className="overflow-x-auto">
-                <table className="w-full text-sm min-w-[480px]">
+              
+              {/* Desktop Table View */}
+              <div className="hidden md:block rounded-2xl border border-border-subtle/50 overflow-hidden">
+                <table className="w-full text-sm">
                   <thead className="bg-bg-inset/30">
                     <tr className="text-[9px] font-black uppercase tracking-widest text-text-muted border-b border-border-subtle/50">
                       <th className="text-left px-6 py-3">Resource Source</th>
@@ -246,7 +286,51 @@ export default function ReportsPage() {
                     )}
                   </tbody>
                 </table>
-                </div>
+              </div>
+
+              {/* Mobile Card View */}
+              <div className="md:hidden space-y-3">
+                {loading ? (
+                   <div className="py-8 text-center text-[10px] font-black uppercase tracking-widest text-text-muted animate-pulse">
+                     Analyzing Streams...
+                   </div>
+                ) : (
+                  summary?.by_type.map(({ type, co2_kg }) => (
+                    <div key={type} className="bg-bg-inset/10 rounded-2xl p-4 border border-border-subtle/30 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <p className="font-black text-text-primary">{BILL_TYPE_LABELS[type] ?? type}</p>
+                        <span className="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-bg-inset text-text-muted">
+                          {SCOPE_LABELS[type] ?? "—"}
+                        </span>
+                      </div>
+                      <div className="flex items-end justify-between border-t border-border-subtle/20 pt-2">
+                        <div className="space-y-1">
+                          <p className="text-[8px] font-black uppercase tracking-widest text-text-muted opacity-50">Impact weight</p>
+                          <p className="text-sm font-black text-text-primary">
+                            {summary.total_co2_kg > 0 ? ((co2_kg / summary.total_co2_kg) * 100).toFixed(1) : "0"}%
+                          </p>
+                        </div>
+                        <div className="text-right space-y-1">
+                           <p className="text-[8px] font-black uppercase tracking-widest text-text-muted opacity-50">kgCO₂e</p>
+                           <p className="text-lg font-black text-gt-green-700 tracking-tighter">
+                             {co2_kg.toLocaleString(undefined, { minimumFractionDigits: 1 })}
+                           </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+                {summary && (
+                  <div className="bg-gt-green-900 rounded-2xl p-5 text-white shadow-lg">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs font-black uppercase tracking-widest text-white/60">Total Footprint</p>
+                      <div className="px-2 py-0.5 bg-white/10 rounded text-[8px] font-black uppercase tracking-widest">Audited</div>
+                    </div>
+                    <p className="text-2xl font-black tracking-tighter mt-1">
+                      {summary.total_co2_kg.toLocaleString(undefined, { minimumFractionDigits: 2 })} <span className="text-xs opacity-50 ml-1">kg</span>
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 
