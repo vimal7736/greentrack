@@ -161,7 +161,7 @@ export default function HistoryPage() {
     >
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
         <StatCard label="Total Records"    value={total}                                          unit="Bills"  icon={<Eye className="w-4 h-4" />}           accent="green"  />
-        <StatCard label="Carbon Footprint" value={formatCarbonTonnes(summary?.total_co2_kg ?? 0)} unit="tCO₂e" icon={<AlertCircle className="w-4 h-4" />}   accent="orange" />
+        <StatCard label="Carbon Footprint" value={formatCarbonTonnes(summary?.total_co2_kg ?? 0)} unit="tCO₂e" icon={<AlertCircle className="w-4 h-4" />}   accent="green" />
         <StatCard label="Aggregate Cost"   value={formatCost(summary?.total_cost_gbp)}            unit="GBP"   icon={<Download className="w-4 h-4" />}       accent="green"  />
       </div>
 

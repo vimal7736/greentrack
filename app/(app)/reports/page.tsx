@@ -212,9 +212,9 @@ export default function ReportsPage() {
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                   {[
-                    { label: "Scope 1", value: summary.by_scope.scope1, color: "text-brand-orange-dark bg-brand-orange/5 border-brand-orange/10",  sub: "Direct (Gas/Fuel)" },
-                    { label: "Scope 2", value: summary.by_scope.scope2, color: "text-blue-600 bg-blue-500/5 border-blue-500/10",                   sub: "Indirect (Grid)" },
-                    { label: "Scope 3", value: summary.by_scope.scope3, color: "text-cyan-600 bg-cyan-500/5 border-cyan-500/10",                   sub: "Associated (Water)" },
+                    { label: "Scope 1", value: summary.by_scope.scope1, color: "text-gt-green-700 bg-gt-green-500/5 border-gt-green-500/10", sub: "Direct (Gas/Fuel)" },
+                    { label: "Scope 2", value: summary.by_scope.scope2, color: "text-gt-green-600 bg-gt-green-400/5 border-gt-green-400/10", sub: "Indirect (Grid)" },
+                    { label: "Scope 3", value: summary.by_scope.scope3, color: "text-gt-green-500 bg-gt-green-300/5 border-gt-green-300/10", sub: "Associated (Water)" },
                   ].map(({ label, value, color, sub }) => (
                     <div key={label} className={`rounded-2xl p-5 border ${color}`}>
                       <p className="text-[10px] font-black uppercase tracking-widest opacity-60">{label}</p>
@@ -377,7 +377,7 @@ export default function ReportsPage() {
 
         <ChartCard
           title="Emission Breakdown"
-          titleIcon={<BarChart2 className="w-4 h-4 text-blue-500" />}
+          titleIcon={<BarChart2 className="w-4 h-4 text-gt-green-500" />}
           subtitle="Categorical Distribution"
           right={
             <div className="w-10 h-10 rounded-xl bg-bg-inset flex items-center justify-center">

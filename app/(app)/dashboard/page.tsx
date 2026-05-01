@@ -19,14 +19,14 @@ const TYPE_LABELS: Record<string, string> = {
 };
 const BADGE_STYLES: Record<string, { bg: string; text: string }> = {
   electricity: { bg: "rgba(34,197,94,0.12)",  text: "var(--brand-green-dark)" },
-  gas:         { bg: "rgba(59,130,246,0.12)", text: "#2563eb" },
-  water:       { bg: "rgba(6,182,212,0.12)",  text: "#0891b2" },
-  fuel_diesel: { bg: "rgba(249,115,22,0.12)", text: "var(--brand-orange-dark)" },
-  fuel_petrol: { bg: "rgba(249,115,22,0.12)", text: "var(--brand-orange-dark)" },
+  gas:         { bg: "rgba(34,197,94,0.10)",  text: "var(--brand-green-dark)" },
+  water:       { bg: "rgba(34,197,94,0.08)",  text: "var(--brand-green-dark)" },
+  fuel_diesel: { bg: "rgba(20,80,40,0.12)",   text: "var(--brand-green-darker)" },
+  fuel_petrol: { bg: "rgba(20,80,40,0.12)",   text: "var(--brand-green-darker)" },
 };
 const TYPE_COLORS: Record<string, string> = {
-  electricity: "#22c55e", gas: "#3b82f6", water: "#06b6d4",
-  fuel_diesel: "#f59e0b", fuel_petrol: "#f97316",
+  electricity: "#22c55e", gas: "#16a34a", water: "#4ade80",
+  fuel_diesel: "#15803d", fuel_petrol: "#14532d",
 };
 
 /* ── Page ─────────────────────────────────────────────────────── */
@@ -209,7 +209,7 @@ export default async function DashboardPage() {
             </span>
           }
           icon={<Zap className="w-4 h-4" />}
-          accent="orange"
+          accent="green"
         />
         <StatCard
           label="Monthly Avg"
@@ -225,7 +225,7 @@ export default async function DashboardPage() {
           unit="kWh"
           sub="Electricity + Gas"
           icon={<Flame className="w-4 h-4" />}
-          accent="orange"
+          accent="green"
         />
         <div className="col-span-2 sm:col-span-1">
           <StatCard
@@ -374,8 +374,8 @@ export default async function DashboardPage() {
           {[
             { label: "Upload Bill",     href: "/upload",   Icon: Upload,   color: "var(--brand-green)", bg: "bg-gt-green-500/10" },
             { label: "Compare Periods", href: "/compare",  Icon: Scale,    color: "var(--brand-green-dark)", bg: "bg-gt-green-700/10" },
-            { label: "Set Targets",     href: "/targets",  Icon: Target,   color: "var(--brand-orange)", bg: "bg-brand-orange/10" },
-            { label: "Generate Report", href: "/reports",  Icon: FileText, color: "var(--brand-orange-dark)", bg: "bg-brand-orange-dark/10" },
+            { label: "Set Targets",     href: "/targets",  Icon: Target,   color: "var(--brand-green-darker)", bg: "bg-gt-green-900/10" },
+            { label: "Generate Report", href: "/reports",  Icon: FileText, color: "var(--brand-green-dark)", bg: "bg-gt-green-600/10" },
             { label: "Manage Team",     href: "/team",     Icon: Users,    color: "var(--text-secondary)", bg: "bg-bg-inset" },
           ].map(({ label, href, Icon, color, bg }, i) => (
             <Link
@@ -582,8 +582,8 @@ function InsightCard({ insight }: {
 }) {
   const cfg = {
     success: { Icon: CheckCircle,   color: "#22c55e", bg: "rgba(34,197,94,0.10)"  },
-    warning: { Icon: AlertTriangle, color: "#f97316", bg: "rgba(249,115,22,0.10)" },
-    info:    { Icon: Lightbulb,     color: "#3b82f6", bg: "rgba(59,130,246,0.10)"  },
+    warning: { Icon: AlertTriangle, color: "#16a34a", bg: "rgba(22,163,74,0.10)" },
+    info:    { Icon: Lightbulb,     color: "#4ade80", bg: "rgba(74,222,128,0.10)"  },
   }[insight.type];
 
   return (
