@@ -10,8 +10,8 @@ interface ChartCardProps {
 
 export function ChartCard({ title, titleIcon, subtitle, right, children }: ChartCardProps) {
   return (
-    <div className="premium-card p-8">
-      <div className="flex items-center justify-between mb-8">
+    <div className="premium-card p-4 sm:p-8">
+      <div className="flex items-start justify-between gap-3 mb-4 sm:mb-8 flex-wrap">
         <div>
           <h2 className="text-sm font-black uppercase tracking-widest text-text-primary flex items-center gap-2">
             {titleIcon}

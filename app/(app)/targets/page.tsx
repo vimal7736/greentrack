@@ -282,7 +282,7 @@ export default function TargetsPage() {
       loadingLabel="Calculating Pathways…"
     >
       {/* ── 6 Stat Cards ──────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
         {[
           {
             label: "YTD Carbon",
@@ -347,10 +347,10 @@ export default function TargetsPage() {
       </div>
 
       {/* ── Controls + Chart ──────────────────────────────────────────────── */}
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
 
         {/* Controls panel */}
-        <div className="col-span-1 premium-card p-7 flex flex-col gap-6">
+        <div className="lg:col-span-1 premium-card p-4 sm:p-7 flex flex-col gap-5 sm:gap-6">
           <div className="flex items-center justify-between">
             <SectionHeader title="Scenario Parameters" subtitle="Model your reduction pathway" />
             {hasUnsaved && (
@@ -364,14 +364,14 @@ export default function TargetsPage() {
           {/* SBTi Pathway selector */}
           <div className="space-y-2">
             <span className="text-[9px] font-black uppercase tracking-widest text-text-muted">SBTi Pathway</span>
-            <div className="flex gap-2">
+            <div className="flex gap-1.5 sm:gap-2">
               {(["1.5c", "wbb2c", "2c"] as const).map((p) => (
                 <button key={p}
                   onClick={() => {
                     setSbtiPathway(p);
                     if (reductionPct < SBTI_MIN[p]) setReductionPct(SBTI_MIN[p]);
                   }}
-                  className="flex-1 py-2 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all"
+                  className="flex-1 py-2 px-1 rounded-xl text-[9px] font-black uppercase tracking-wide transition-all"
                   style={{
                     background:  sbtiPathway === p ? "var(--brand-green)" : "var(--bg-inset)",
                     color:       sbtiPathway === p ? "#fff" : "var(--text-muted)",
@@ -391,7 +391,7 @@ export default function TargetsPage() {
             onChange={setReductionPct} unit="% / yr" accent="var(--brand-orange)" />
 
           {/* Budget ring + year-end forecast */}
-          <div className="flex items-center gap-4 p-4 rounded-2xl"
+          <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-2xl"
             style={{ background: "var(--neu-base)", boxShadow: "var(--shadow-inset)" }}>
             <BudgetRing used={ytdCo2} total={ytdTarget} />
             <div className="space-y-1">
@@ -443,13 +443,13 @@ export default function TargetsPage() {
         </div>
 
         {/* Multi-scenario chart */}
-        <div className="col-span-2 premium-card p-7 flex flex-col gap-6">
-          <div className="flex items-start justify-between">
+        <div className="lg:col-span-2 premium-card p-4 sm:p-7 flex flex-col gap-5 sm:gap-6">
+          <div className="flex flex-col sm:flex-row sm:items-start gap-3 justify-between">
             <SectionHeader
               title="Multi-Scenario Trajectory"
               subtitle="Historical · Target pathway · Business-as-usual · 12-month projection"
             />
-            <div className="flex flex-wrap gap-4 items-center">
+            <div className="flex flex-wrap gap-2 sm:gap-4 items-center">
               {[
                 { color: "var(--brand-green)",      label: "Actual",     dash: false },
                 { color: "var(--brand-orange-dark)", label: "Target",     dash: true  },
@@ -470,7 +470,7 @@ export default function TargetsPage() {
           </div>
 
           <div className="flex-1 rounded-xl p-3" style={{ background: "var(--neu-base)", boxShadow: "var(--shadow-inset)" }}>
-            <div className="h-[320px]">
+            <div className="h-[240px] sm:h-[320px]">
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-subtle)" />
@@ -511,7 +511,7 @@ export default function TargetsPage() {
           </div>
 
           {/* Insight strip */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-2 sm:gap-3">
             {[
               {
                 label: "Current Trajectory",
@@ -544,10 +544,10 @@ export default function TargetsPage() {
       </div>
 
       {/* ── Bottom row ────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
 
         {/* Milestones */}
-        <div className="premium-card p-7 space-y-5">
+        <div className="premium-card p-4 sm:p-7 space-y-4 sm:space-y-5">
           <SectionHeader title="Reduction Milestones" subtitle="Your decarbonization roadmap" />
           <div className="space-y-3">
             {milestones.map((m) => {
@@ -586,7 +586,7 @@ export default function TargetsPage() {
         </div>
 
         {/* SBTi Gauge */}
-        <div className="premium-card p-7 flex flex-col items-center gap-6">
+        <div className="premium-card p-4 sm:p-7 flex flex-col items-center gap-5 sm:gap-6">
           <SectionHeader title="SBTi Alignment" subtitle="Science Based Targets initiative" />
           <SBTiGauge score={sbtiScore} pathway={sbtiPathway} />
           <div className="w-full space-y-3">
@@ -621,7 +621,7 @@ export default function TargetsPage() {
         </div>
 
         {/* Quick Wins */}
-        <div className="premium-card p-7 space-y-5">
+        <div className="premium-card p-4 sm:p-7 space-y-4 sm:space-y-5">
           <SectionHeader title="Quick Wins" subtitle="Top actions to accelerate your trajectory" />
           <div className="space-y-3">
             {quickWins.map((w) => (

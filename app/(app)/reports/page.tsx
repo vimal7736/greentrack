@@ -27,9 +27,9 @@ export default function ReportsPage() {
   const isFreePlan = summary?.org.tier === "free";
 
   const yearSelector = (
-    <div className="flex items-center gap-3">
-      <div className="neu-btn bg-white border-none rounded-xl px-4 py-2.5 flex items-center gap-2 group transition-all">
-        <Calendar className="w-4 h-4 text-text-muted group-hover:text-gt-green-500 transition-colors" />
+    <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+      <div className="neu-btn bg-white border-none rounded-xl px-3 sm:px-4 py-2.5 flex items-center gap-2 group transition-all">
+        <Calendar className="w-4 h-4 text-text-muted group-hover:text-gt-green-500 transition-colors shrink-0" />
         <select
           value={year}
           onChange={(e) => setYear(e.target.value)}
@@ -42,11 +42,12 @@ export default function ReportsPage() {
         type="button"
         disabled={isFreePlan || loading}
         onClick={() => window.open(`/api/reports/print?year=${year}`, "_blank")}
-        className="group relative px-6 py-3 rounded-xl bg-gt-green-900 text-white text-[11px] font-black uppercase tracking-[0.2em] transition-all hover:bg-black disabled:opacity-30 overflow-hidden"
+        className="group relative px-4 sm:px-6 py-3 rounded-xl bg-gt-green-900 text-white text-[11px] font-black uppercase tracking-[0.2em] transition-all hover:bg-black disabled:opacity-30 overflow-hidden"
       >
         <div className="absolute inset-0 bg-gradient-to-r from-gt-green-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
         <span className="relative z-10 flex items-center gap-2">
-          <Download className="w-4 h-4" /> Download PDF
+          <Download className="w-4 h-4" />
+          <span className="hidden sm:inline">Download PDF</span>
         </span>
       </button>
     </div>
@@ -66,7 +67,7 @@ export default function ReportsPage() {
           <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 group-hover:rotate-12 transition-transform duration-700">
             <Zap className="w-32 h-32" />
           </div>
-          <div className="relative z-10 flex items-center justify-between">
+          <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-2">
               <h3 className="text-lg font-black tracking-tight">Unlock SECR Reporting</h3>
               <p className="text-xs font-bold text-white/60 max-w-md leading-relaxed">
@@ -76,7 +77,7 @@ export default function ReportsPage() {
             </div>
             <a
               href="/billing"
-              className="px-6 py-3 rounded-xl bg-gt-green-500 hover:bg-white hover:text-black text-[10px] font-black uppercase tracking-widest transition-all"
+              className="self-start sm:self-auto shrink-0 px-6 py-3 rounded-xl bg-gt-green-500 hover:bg-white hover:text-black text-[10px] font-black uppercase tracking-widest transition-all"
             >
               Upgrade Now
             </a>
@@ -85,16 +86,16 @@ export default function ReportsPage() {
       )}
 
       {/* Report preview */}
-      <div className="premium-card p-10 space-y-10 relative overflow-hidden">
+      <div className="premium-card p-4 sm:p-10 space-y-6 sm:space-y-10 relative overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.02] pointer-events-none rotate-12">
           <Leaf className="w-[600px] h-[600px]" />
         </div>
 
         {/* Card header */}
-        <div className="flex items-start justify-between relative z-10">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 relative z-10">
           <div className="space-y-1">
-            <h2 className="text-xl font-black tracking-tight flex items-center gap-3" style={{ color: "var(--text-primary)" }}>
-              <div className="w-8 h-8 rounded-lg bg-gt-green-500 text-white flex items-center justify-center shadow-lg shadow-gt-green-500/20">
+            <h2 className="text-base sm:text-xl font-black tracking-tight flex items-center gap-3" style={{ color: "var(--text-primary)" }}>
+              <div className="w-8 h-8 rounded-lg bg-gt-green-500 text-white flex items-center justify-center shadow-lg shadow-gt-green-500/20 shrink-0">
                 <FileText className="w-4 h-4" />
               </div>
               SECR Annual Compliance Report
@@ -103,7 +104,7 @@ export default function ReportsPage() {
               Fiscal Year Summary — Powered by GreenTrack AI Engine
             </p>
           </div>
-          <div className="flex flex-col items-end gap-2">
+          <div className="flex sm:flex-col items-center sm:items-end gap-2 ml-11 sm:ml-0">
             <div className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${
               isFreePlan
                 ? "bg-bg-inset text-text-muted border-border-subtle"
@@ -119,7 +120,7 @@ export default function ReportsPage() {
 
         {/* Inner document */}
         <div className="rounded-[2.5rem] bg-bg-surface shadow-2xl border border-border-subtle/50 overflow-hidden relative z-10">
-          <div className="bg-gradient-to-r from-gt-green-900 to-black px-10 py-8 flex items-center justify-between">
+          <div className="bg-gradient-to-r from-gt-green-900 to-black px-5 sm:px-10 py-5 sm:py-8 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="space-y-1">
               <p className="text-white font-black text-2xl tracking-tighter">{summary?.org.name ?? "—"}</p>
               <p className="text-gt-green-400 text-[10px] font-black uppercase tracking-[0.3em]">
@@ -134,9 +135,9 @@ export default function ReportsPage() {
             </div>
           </div>
 
-          <div className="p-10 space-y-12">
+          <div className="p-4 sm:p-10 space-y-8 sm:space-y-12">
             {/* Summary bento stats */}
-            <div className="grid grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
               {[
                 {
                   label: "Aggregate Footprint",
@@ -170,7 +171,7 @@ export default function ReportsPage() {
                 <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-text-muted px-1">
                   Compliance Distribution
                 </h3>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                   {[
                     { label: "Scope 1", value: summary.by_scope.scope1, color: "text-brand-orange-dark bg-brand-orange/5 border-brand-orange/10",  sub: "Direct (Gas/Fuel)" },
                     { label: "Scope 2", value: summary.by_scope.scope2, color: "text-blue-600 bg-blue-500/5 border-blue-500/10",                   sub: "Indirect (Grid)" },
@@ -194,7 +195,8 @@ export default function ReportsPage() {
                 Resource Decomposition
               </h3>
               <div className="rounded-2xl border border-border-subtle/50 overflow-hidden">
-                <table className="w-full text-sm">
+                <div className="overflow-x-auto">
+                <table className="w-full text-sm min-w-[480px]">
                   <thead className="bg-bg-inset/30">
                     <tr className="text-[9px] font-black uppercase tracking-widest text-text-muted border-b border-border-subtle/50">
                       <th className="text-left px-6 py-3">Resource Source</th>
@@ -244,11 +246,12 @@ export default function ReportsPage() {
                     )}
                   </tbody>
                 </table>
+                </div>
               </div>
             </div>
 
             {/* Document footer */}
-            <div className="pt-8 border-t border-border-subtle/50 flex items-center justify-between">
+            <div className="pt-6 sm:pt-8 border-t border-border-subtle/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <p className="text-[9px] font-bold text-text-muted opacity-40 max-w-sm leading-relaxed">
                 Derived from HM Government conversion factors. This document is digitally verified
                 against SECR / TCFD disclosure standards for UK reporting periods.
@@ -263,7 +266,7 @@ export default function ReportsPage() {
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
         <ChartCard
           title="Quarterly Impact"
           titleIcon={<TrendingDown className="w-4 h-4 text-gt-green-500" />}

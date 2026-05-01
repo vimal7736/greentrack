@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { Search, Filter, Download, Eye, Trash2, AlertCircle } from "lucide-react";
+import { Search, Filter, Download, Eye, Trash2, AlertCircle, Zap, Flame } from "lucide-react";
 
 import { PageLayout }                from "@/components/ui/PageLayout";
 import { StatCard }                  from "@/components/ui/StatCard";
@@ -148,24 +148,24 @@ export default function HistoryPage() {
       headerRight={
         <>
           <Button variant="secondary" size="md" icon={<Download className="w-4 h-4" />} onClick={handleExportCsv}>
-            Export CSV
+            <span className="hidden sm:inline">Export CSV</span>
           </Button>
-          <div className="neu-raised inline-flex items-center gap-2 px-4 py-2 rounded-xl" style={{ color: "var(--brand-green-dark)" }}>
+          <div className="neu-raised hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-xl" style={{ color: "var(--brand-green-dark)" }}>
             <span className="w-1.5 h-1.5 rounded-full bg-gt-green-500 animate-pulse-green inline-block" />
             <span className="text-xs font-bold uppercase tracking-widest">Live Sync</span>
           </div>
         </>
       }
     >
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
         <StatCard label="Total Records"    value={total}                                          unit="Bills"  icon={<Eye className="w-4 h-4" />}           accent="green"  />
         <StatCard label="Carbon Footprint" value={formatCarbonTonnes(summary?.total_co2_kg ?? 0)} unit="tCO₂e" icon={<AlertCircle className="w-4 h-4" />}   accent="orange" />
         <StatCard label="Aggregate Cost"   value={formatCost(summary?.total_cost_gbp)}            unit="GBP"   icon={<Download className="w-4 h-4" />}       accent="green"  />
       </div>
 
       {/* Filters */}
-      <div className="flex items-center justify-between gap-6">
-        <div className="flex-1 max-w-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
+        <div className="w-full sm:flex-1 sm:max-w-sm">
           <Input
             icon={<Search className="w-4 h-4" />}
             placeholder="Search archive..."
@@ -174,15 +174,15 @@ export default function HistoryPage() {
           />
         </div>
 
-        <div className="flex items-center gap-2 px-3 py-2 rounded-2xl bg-bg-inset/30 border border-border-subtle">
-          <Filter className="w-3.5 h-3.5 text-text-muted ml-1 mr-2" />
+        <div className="flex items-center gap-2 px-3 py-2 rounded-2xl bg-bg-inset/30 border border-border-subtle overflow-x-auto shrink-0">
+          <Filter className="w-3.5 h-3.5 text-text-muted ml-1 mr-2 shrink-0" />
           {BILL_TYPE_FILTER_OPTIONS.map(({ key, label }) => (
             <Button
               key={key}
               variant="ghost"
               size="sm"
               onClick={() => setTypeFilter(key)}
-              className={typeFilter === key ? "!bg-gt-green-600 !text-white shadow-lg shadow-gt-green-500/30 scale-[1.02]" : ""}
+              className={`shrink-0 ${typeFilter === key ? "!bg-gt-green-600 !text-white shadow-lg shadow-gt-green-500/30 scale-[1.02]" : ""}`}
             >
               {label}
             </Button>
@@ -201,6 +201,60 @@ export default function HistoryPage() {
         emptyMessage="Your archive is empty. Try adjusting your filters or upload your first utility bill to start tracking."
         emptyCtaLabel="Upload First Bill"
         emptyCtaHref="/upload"
+        mobileRender={(bill) => (
+          <div className="flex items-center gap-3 px-4 py-4">
+            {/* Type icon */}
+            <div className="w-9 h-9 rounded-xl bg-white shadow-sm flex items-center justify-center shrink-0">
+              {bill.bill_type === "electricity"
+                ? <Zap className="w-4 h-4 text-gt-green-500" />
+                : <Flame className="w-4 h-4 text-brand-orange" />}
+            </div>
+
+            {/* Main info */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-0.5">
+                <BillTypeBadge type={bill.bill_type} />
+                <span className="text-[10px] text-text-muted font-medium">{bill.bill_date}</span>
+              </div>
+              <p className="text-[10px] text-text-muted truncate">
+                {bill.supplier ?? "—"} · {bill.usage_amount.toLocaleString()} {bill.usage_unit}
+              </p>
+            </div>
+
+            {/* CO₂ + cost */}
+            <div className="shrink-0 text-right mr-1">
+              <p className="text-sm font-black text-gt-green-700 leading-tight">
+                {bill.co2_kg.toFixed(1)}{" "}
+                <span className="text-[9px] opacity-40 uppercase font-bold">kg</span>
+              </p>
+              <p className="text-[10px] text-text-muted font-medium">{formatCost(bill.cost_gbp)}</p>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-1.5 shrink-0">
+              {bill.pdf_url && (
+                <a
+                  href={`/api/bills/view?path=${encodeURIComponent(bill.pdf_url)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-8 h-8 rounded-xl bg-white shadow-sm flex items-center justify-center text-text-muted hover:bg-gt-green-500 hover:text-white transition-all"
+                  title="View Record"
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                </a>
+              )}
+              <button
+                type="button"
+                disabled={deletingId === bill.id}
+                onClick={() => handleDelete(bill.id)}
+                className="w-8 h-8 rounded-xl bg-white shadow-sm flex items-center justify-center text-red-400 hover:bg-red-500 hover:text-white transition-all disabled:opacity-40"
+                title="Delete Record"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        )}
         footer={
           <Pagination
             page={page}

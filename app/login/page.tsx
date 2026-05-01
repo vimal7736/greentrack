@@ -46,7 +46,7 @@ export default function LoginPage() {
           <p className="text-green-300 text-sm mt-1">Carbon management for UK businesses</p>
         </div>
 
-        <div className="bg-white rounded-2xl p-8 shadow-2xl">
+        <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-2xl">
           <h2 className="text-xl font-bold text-gray-900 mb-1">Welcome back</h2>
           <p className="text-gray-500 text-sm mb-6">Sign in to your account</p>
 

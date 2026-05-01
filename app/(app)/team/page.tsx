@@ -130,20 +130,20 @@ export default function TeamPage() {
 
   /* ── Seat utilization widget (header right slot) ──────────────── */
   const seatWidget = org ? (
-    <div className="premium-card px-6 py-4 flex items-center gap-6">
+    <div className="premium-card px-4 sm:px-6 py-3 sm:py-4 flex items-center gap-3 sm:gap-6">
       <div className="text-right">
-        <p className="text-[10px] font-black uppercase tracking-widest text-text-muted opacity-40 mb-1">
+        <p className="text-[10px] font-black uppercase tracking-widest text-text-muted opacity-40 mb-1 hidden sm:block">
           Seat Utilization
         </p>
-        <p className="text-lg font-black text-text-primary tracking-tighter">
-          {members.length} <span className="text-xs opacity-20">/</span> {org.seats_limit}
+        <p className="text-base sm:text-lg font-black text-text-primary tracking-tighter">
+          {members.length}<span className="text-xs opacity-20">/</span>{org.seats_limit}
         </p>
       </div>
-      <div className="flex gap-1.5">
-        {Array.from({ length: Math.min(org.seats_limit, 8) }, (_, i) => (
+      <div className="flex gap-1 sm:gap-1.5">
+        {Array.from({ length: Math.min(org.seats_limit, 6) }, (_, i) => (
           <div
             key={i}
-            className={`w-2 h-8 rounded-full transition-all duration-500 ${
+            className={`w-1.5 sm:w-2 h-6 sm:h-8 rounded-full transition-all duration-500 ${
               i < members.length
                 ? "bg-gt-green-500 shadow-[0_0_12px_rgba(34,197,94,0.3)]"
                 : "bg-bg-inset"
@@ -163,10 +163,10 @@ export default function TeamPage() {
       error={fetchError || actionError}
     >
 
-      <div className="grid grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
         {/* Invite Section */}
-        <div className="col-span-1 space-y-6">
-          <div className="premium-card p-8 space-y-6">
+        <div className="lg:col-span-1 space-y-4 sm:space-y-6">
+          <div className="premium-card p-5 sm:p-8 space-y-5 sm:space-y-6">
             <SectionHeader
               title="Provision Access"
               subtitle="Invite a new climate auditor"
@@ -239,7 +239,7 @@ export default function TeamPage() {
         </div>
 
         {/* Members List — using DataTable */}
-        <div className="col-span-2">
+        <div className="lg:col-span-2">
           <DataTable<TeamMember>
             columns={columns}
             data={members}
@@ -249,8 +249,54 @@ export default function TeamPage() {
             emptyIcon={<UserPlus className="w-10 h-10 text-gt-green-500" />}
             emptyTitle="No Team Members"
             emptyMessage="Invite your first collaborator to get started."
+            mobileRender={(member) => {
+              const initials = member.full_name.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2);
+              return (
+                <div className="flex items-center gap-3 px-4 py-4">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-gt-green-500 to-gt-green-700 flex items-center justify-center text-xs font-black text-white shadow shrink-0">
+                    {initials}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5 mb-0.5">
+                      <p className="text-sm font-black text-text-primary truncate">{member.full_name}</p>
+                      {member.role === "owner" && <Crown className="w-3 h-3 text-yellow-500 shrink-0" />}
+                    </div>
+                    <p className="text-[10px] text-text-muted truncate">{member.email}</p>
+                  </div>
+                  <div className="shrink-0 flex items-center gap-2">
+                    {member.role === "owner" ? (
+                      <span className="text-[9px] px-2 py-1 rounded-lg font-black uppercase tracking-widest bg-yellow-500/10 text-yellow-700">
+                        Owner
+                      </span>
+                    ) : (
+                      <div className="relative">
+                        <select
+                          value={member.role}
+                          onChange={(e) => handleRoleChange(member.id, e.target.value)}
+                          className="text-[9px] font-black uppercase tracking-widest pl-2 pr-6 py-1.5 rounded-lg bg-bg-inset border border-border-subtle/50 text-text-primary appearance-none cursor-pointer focus:border-gt-green-500 outline-none"
+                        >
+                          <option value="member">Member</option>
+                          <option value="admin">Admin</option>
+                        </select>
+                        <ChevronDown className="w-3 h-3 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none opacity-40 text-text-primary" />
+                      </div>
+                    )}
+                    {member.role !== "owner" && (
+                      <button
+                        type="button"
+                        disabled={deletingId === member.id}
+                        onClick={() => handleRemove(member.id)}
+                        className="w-8 h-8 rounded-xl bg-white shadow-sm flex items-center justify-center text-red-400 hover:bg-red-500 hover:text-white transition-all disabled:opacity-40"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            }}
             footer={
-              <div className="px-8 py-4 border-t border-border-subtle/50 bg-bg-inset/10 flex items-center justify-between">
+              <div className="px-4 sm:px-8 py-4 border-t border-border-subtle/50 bg-bg-inset/10 flex items-center justify-between">
                 <p className="text-[9px] font-black text-text-muted uppercase tracking-widest">
                   {members.length} Verified Accounts
                 </p>

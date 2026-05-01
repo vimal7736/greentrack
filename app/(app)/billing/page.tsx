@@ -85,7 +85,7 @@ export default function BillingPage() {
       )}
 
       {/* Plans grid */}
-      <div className="grid grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8">
         {PLANS.map((plan) => {
           const isCurrent = plan.id === currentTier;
           const { vatAmount, totalPrice } = formatPriceWithVat(plan.price, plan.vatRate);
@@ -93,8 +93,8 @@ export default function BillingPage() {
           return (
             <div
               key={plan.id}
-              className={`premium-card p-8 flex flex-col relative transition-all duration-500 overflow-hidden ${isCurrent ? "ring-2 ring-gt-green-500" : ""
-                }`}
+              className={`premium-card p-5 sm:p-8 flex flex-col relative transition-all duration-500 overflow-hidden ${isCurrent ? "ring-2 ring-gt-green-500" : ""
+                } ${plan.popular && !isCurrent ? "sm:col-span-2 lg:col-span-1" : ""}`}
             >
               {plan.popular && !isCurrent && (
                 <div className="absolute top-0 right-0 p-4">
@@ -170,10 +170,10 @@ export default function BillingPage() {
       </div>
 
       {/* Support / Security Section */}
-      <div className="grid grid-cols-2 gap-8 mt-4">
-        <div className="premium-card p-8 flex gap-6" style={{ boxShadow: "var(--shadow-inset)" }}>
-          <div className="w-14 h-14 rounded-2xl bg-white shadow-premium flex items-center justify-center shrink-0">
-            <CreditCard className="w-7 h-7 text-text-muted" />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8 mt-4">
+        <div className="premium-card p-5 sm:p-8 flex gap-4 sm:gap-6" style={{ boxShadow: "var(--shadow-inset)" }}>
+          <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-2xl bg-white shadow-premium flex items-center justify-center shrink-0">
+            <CreditCard className="w-5 h-5 sm:w-7 sm:h-7 text-text-muted" />
           </div>
           <div>
             <SectionHeader
@@ -183,9 +183,9 @@ export default function BillingPage() {
           </div>
         </div>
 
-        <div className="premium-card p-8 bg-red-500/5 flex gap-6 border-l-4 border-l-red-500 border-solid">
-          <div className="w-14 h-14 rounded-2xl bg-white shadow-premium flex items-center justify-center shrink-0">
-            <AlertCircle className="w-7 h-7 text-red-500" />
+        <div className="premium-card p-5 sm:p-8 bg-red-500/5 flex gap-4 sm:gap-6 border-l-4 border-l-red-500 border-solid">
+          <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-2xl bg-white shadow-premium flex items-center justify-center shrink-0">
+            <AlertCircle className="w-5 h-5 sm:w-7 sm:h-7 text-red-500" />
           </div>
           <div>
             <SectionHeader

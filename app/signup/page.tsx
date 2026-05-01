@@ -66,7 +66,7 @@ export default function SignupPage() {
         </div>
 
         {step === "form" ? (
-          <div className="bg-white rounded-2xl p-8 shadow-2xl">
+          <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-2xl">
             <h2 className="text-xl font-bold text-gray-900 mb-1">Create your account</h2>
             <p className="text-gray-500 text-sm mb-6">Free to start — no credit card required</p>
 
@@ -168,7 +168,7 @@ export default function SignupPage() {
           </div>
         ) : (
           /* Email verification step */
-          <div className="bg-white rounded-2xl p-8 shadow-2xl text-center">
+          <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-2xl text-center">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle className="w-9 h-9 text-green-600" />
             </div>

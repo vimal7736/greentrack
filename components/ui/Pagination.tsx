@@ -15,7 +15,7 @@ export function Pagination({ page, totalPages, total, pageSize, onPrev, onNext, 
   const end   = Math.min(page * pageSize, total);
 
   return (
-    <div className="flex items-center justify-between px-8 py-6 bg-bg-inset/10 border-t border-border-subtle/50">
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 sm:px-8 py-4 sm:py-6 bg-bg-inset/10 border-t border-border-subtle/50">
       <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted">
         Displaying{" "}
         <span className="text-text-primary">{start}–{end}</span> of{" "}

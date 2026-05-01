@@ -44,7 +44,7 @@ export default function ComparePage() {
       subtitle="Side-by-side performance analysis of any two reporting periods"
     >
       {/* Period pickers — always visible */}
-      <div className="grid grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
         <PeriodPicker
           label="Observation Period A"
           color="var(--brand-green)"
@@ -66,7 +66,7 @@ export default function ComparePage() {
       ) : (
         <div className="space-y-8 animate-scale-in">
           {/* Summary metric cards */}
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
             {([
               {
                 label: "Carbon Footprint", unit: "kgCO₂e",
@@ -84,8 +84,8 @@ export default function ComparePage() {
                 fmt: (v: number) => `£${v.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
               },
             ] as const).map(({ label, a, b, unit, fmt }) => (
-              <div key={label} className="premium-card p-6">
-                <p className="text-[10px] font-black uppercase tracking-widest mb-6 text-text-muted opacity-50 text-center">
+              <div key={label} className="premium-card p-4 sm:p-6">
+                <p className="text-[10px] font-black uppercase tracking-widest mb-4 sm:mb-6 text-text-muted opacity-50 text-center">
                   {label}
                 </p>
                 <div className="flex items-center justify-between gap-2">
@@ -110,7 +110,7 @@ export default function ComparePage() {
             title="Resource Comparison Matrix"
             subtitle="Period A vs Period B Impact (kgCO₂e)"
             right={
-              <div className="flex items-center gap-4">
+              <div className="flex flex-wrap items-center gap-3 sm:gap-4">
                 {[
                   { color: "bg-gt-green-600",     label: "Period A" },
                   { color: "bg-brand-orange-dark", label: "Period B" },
@@ -154,10 +154,10 @@ export default function ComparePage() {
               <table className="w-full text-sm text-text-primary">
                 <thead>
                   <tr className="bg-bg-inset/20 text-[10px] font-black uppercase tracking-[0.2em] text-text-muted border-b border-border-subtle">
-                    <th className="text-left px-8 py-5">Emission Source</th>
-                    <th className="text-right px-6 py-5">Period A (kg)</th>
-                    <th className="text-right px-6 py-5">Period B (kg)</th>
-                    <th className="text-right px-8 py-5">Efficiency Delta</th>
+                    <th className="text-left px-4 sm:px-8 py-4 sm:py-5">Emission Source</th>
+                    <th className="text-right px-4 sm:px-6 py-4 sm:py-5">Period A (kg)</th>
+                    <th className="text-right px-4 sm:px-6 py-4 sm:py-5">Period B (kg)</th>
+                    <th className="text-right px-4 sm:px-8 py-4 sm:py-5">Delta</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border-subtle/50">
@@ -166,14 +166,14 @@ export default function ComparePage() {
                     const b = sB.byType[t] ?? 0;
                     return (
                       <tr key={t} className="group hover:bg-bg-inset/30 transition-all duration-300">
-                        <td className="px-8 py-4 font-black text-xs">{BILL_TYPE_LABELS[t] ?? t}</td>
-                        <td className="px-6 py-4 text-right font-black text-gt-green-600">
+                        <td className="px-4 sm:px-8 py-3 sm:py-4 font-black text-xs">{BILL_TYPE_LABELS[t] ?? t}</td>
+                        <td className="px-4 sm:px-6 py-3 sm:py-4 text-right font-black text-gt-green-600">
                           {a.toLocaleString(undefined, { maximumFractionDigits: 1 })}
                         </td>
-                        <td className="px-6 py-4 text-right font-black text-brand-orange-dark">
+                        <td className="px-4 sm:px-6 py-3 sm:py-4 text-right font-black text-brand-orange-dark">
                           {b.toLocaleString(undefined, { maximumFractionDigits: 1 })}
                         </td>
-                        <td className="px-8 py-4 text-right">
+                        <td className="px-4 sm:px-8 py-3 sm:py-4 text-right">
                           <div className="flex justify-end">
                             <DeltaChip a={a} b={b} />
                           </div>

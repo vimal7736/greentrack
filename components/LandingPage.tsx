@@ -3,8 +3,9 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import {
   Leaf, BarChart3, UploadCloud, FileText, ShieldCheck,
-  Zap, ArrowRight, TrendingDown, CheckCircle, Building2,
+  Zap, ArrowRight, CheckCircle, Building2,
   Target, Users, Globe, Lock, Scale, ChevronRight, Cpu,
+  Menu, X,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
@@ -12,9 +13,25 @@ export default function LandingPage() {
   const [navExpanded, setNavExpanded] = useState(true);
   const [scrollPct, setScrollPct] = useState(0);
   const [sweeping, setSweeping] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const lastScrollY = useRef(0);
   const isHoveredRef = useRef(false);
   const sweepTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    function check() { setIsMobile(window.innerWidth < 768); }
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  // Auto-close mobile menu on desktop resize
+  useEffect(() => {
+    function onResize() { if (window.innerWidth >= 768) setMobileMenuOpen(false); }
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   useEffect(() => {
     lastScrollY.current = window.scrollY;
@@ -87,7 +104,6 @@ export default function LandingPage() {
           50%      { opacity:.4; transform:scale(.7); }
         }
 
-        /* Nav link underline slide */
         .nl { position:relative; }
         .nl::after {
           content:''; position:absolute; bottom:-3px; left:0;
@@ -98,10 +114,8 @@ export default function LandingPage() {
         .nl:hover::after { width:100%; }
         .nl:hover { opacity:.8 !important; }
 
-        /* Login hover */
         .nlogin:hover { color:#4ade80 !important; }
 
-        /* CTA button */
         .ncta {
           background:linear-gradient(135deg,#22c55e 0%,#16a34a 50%,#22c55e 100%) !important;
           background-size:200% auto !important;
@@ -114,6 +128,104 @@ export default function LandingPage() {
         }
         .ncta:active { transform:translateY(0) !important; }
       `}</style>
+
+      {/* ─── MOBILE MENU BACKDROP ────────────────────────────────── */}
+      <div
+        className={`fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm transition-opacity duration-300 ${
+          mobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
+        onClick={() => setMobileMenuOpen(false)}
+        aria-hidden="true"
+      />
+
+      {/* ─── MOBILE MENU PANEL ───────────────────────────────────── */}
+      <div
+        className={`fixed inset-y-0 right-0 z-[70] w-72 flex flex-col transition-transform duration-300 ${
+          mobileMenuOpen ? "translate-x-0" : "translate-x-full"
+        }`}
+        style={{
+          background: "linear-gradient(175deg,rgba(14,40,22,.98) 0%,rgba(7,20,11,.96) 100%)",
+          borderLeft: "1px solid rgba(34,197,94,.2)",
+        }}
+      >
+        {/* Close button */}
+        <div className="flex items-center justify-between px-6 py-5" style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+          <div className="flex items-center gap-2">
+            <div style={{ width: 28, height: 28, borderRadius: 8, background: "linear-gradient(145deg,#22c55e,#16a34a)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Leaf size={14} color="white" strokeWidth={2.2} />
+            </div>
+            <span style={{ fontSize: 14, fontWeight: 900, color: "white", letterSpacing: "-0.3px" }}>GreenTrack AI</span>
+          </div>
+          <button
+            onClick={() => setMobileMenuOpen(false)}
+            aria-label="Close menu"
+            style={{ width: 34, height: 34, borderRadius: 10, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "rgba(255,255,255,0.6)" }}
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        {/* Nav links */}
+        <nav className="flex-1 px-6 py-6 flex flex-col gap-2" aria-label="Mobile navigation">
+          {["Features", "Compliance", "Pricing"].map((item) => (
+            <a
+              key={item}
+              href={`#${item.toLowerCase()}`}
+              onClick={() => setMobileMenuOpen(false)}
+              style={{
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                padding: "14px 16px", borderRadius: 12,
+                background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)",
+                fontSize: 11, fontWeight: 900, textTransform: "uppercase" as const,
+                letterSpacing: "0.15em", textDecoration: "none",
+                color: "rgba(255,255,255,0.75)",
+              }}
+            >
+              {item}
+              <ChevronRight size={14} style={{ color: "rgba(34,197,94,0.6)" }} />
+            </a>
+          ))}
+        </nav>
+
+        {/* Mobile CTAs */}
+        <div className="px-6 pb-8 flex flex-col gap-3" style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: "1.5rem" }}>
+          <Link
+            href="/login"
+            onClick={() => setMobileMenuOpen(false)}
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "center",
+              padding: "12px 20px", borderRadius: 12,
+              background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)",
+              fontSize: 10, fontWeight: 900, textTransform: "uppercase" as const,
+              letterSpacing: "0.15em", color: "rgba(255,255,255,0.65)", textDecoration: "none",
+            }}
+          >
+            Login
+          </Link>
+          <Link
+            href="/signup"
+            onClick={() => setMobileMenuOpen(false)}
+            className="ncta"
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+              padding: "14px 20px", borderRadius: 12,
+              fontSize: 10, fontWeight: 900, textTransform: "uppercase" as const,
+              letterSpacing: "0.14em", color: "white", textDecoration: "none",
+              boxShadow: "0 4px 18px rgba(34,197,94,.38)",
+            }}
+          >
+            Get Started <ArrowRight size={12} strokeWidth={2.5} />
+          </Link>
+          <div className="flex justify-center mt-2">
+            <ThemeToggle buttonStyle={{
+              width: 36, height: 36, borderRadius: 10,
+              background: "rgba(34,197,94,.08)", border: "1px solid rgba(34,197,94,.2)",
+              color: "rgba(134,239,172,.85)", cursor: "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }} />
+          </div>
+        </div>
+      </div>
 
       {/* ─── NAVBAR ──────────────────────────────────────────────── */}
       <div
@@ -213,8 +325,11 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* ── Nav links ── */}
-            <div style={{ display: "flex", alignItems: "center", gap: 36, whiteSpace: "nowrap" }}>
+            {/* ── Nav links (desktop only) ── */}
+            <div style={{
+              display: isMobile ? "none" : "flex",
+              alignItems: "center", gap: 36, whiteSpace: "nowrap",
+            }}>
               {["Features", "Compliance", "Pricing"].map((item, i) => (
                 <a
                   key={item}
@@ -238,9 +353,10 @@ export default function LandingPage() {
               ))}
             </div>
 
-            {/* ── CTAs ── */}
+            {/* ── Desktop CTAs ── */}
             <div style={{
-              display: "flex", alignItems: "center", gap: 6, flexShrink: 0,
+              display: isMobile ? "none" : "flex",
+              alignItems: "center", gap: 6, flexShrink: 0,
               opacity: navExpanded ? 1 : 0,
               transform: navExpanded ? "translateX(0)" : "translateX(10px)",
               transition: navExpanded ? "opacity .24s .52s, transform .28s .52s" : "opacity .05s, transform .05s",
@@ -276,6 +392,24 @@ export default function LandingPage() {
                 Get Started <ArrowRight size={12} strokeWidth={2.5} />
               </Link>
             </div>
+
+            {/* ── Mobile hamburger ── */}
+            {isMobile && (
+              <button
+                onClick={() => setMobileMenuOpen(true)}
+                aria-label="Open navigation menu"
+                style={{
+                  width: 36, height: 36, borderRadius: 10,
+                  background: "rgba(34,197,94,.08)", border: "1px solid rgba(34,197,94,.2)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  cursor: "pointer", color: "rgba(134,239,172,.85)", flexShrink: 0,
+                  opacity: navExpanded ? 1 : 0,
+                  transition: navExpanded ? "opacity .24s .52s" : "opacity .05s",
+                }}
+              >
+                <Menu size={18} />
+              </button>
+            )}
           </nav>
 
           {/* ── Chevron hint beside rolled pill ── */}
@@ -332,7 +466,7 @@ export default function LandingPage() {
           </div>
 
           {/* Headline */}
-          <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.9] text-white mb-6 animate-fade-in"
+          <h1 className="text-5xl sm:text-6xl md:text-8xl font-black tracking-tighter leading-[0.9] text-white mb-6 animate-fade-in"
             style={{ animationDelay: "0.1s" }}>
             Track. Report.
             <br />
@@ -355,7 +489,7 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 animate-fade-in"
             style={{ animationDelay: "0.3s" }}>
             <Link href="/signup"
-              className="group flex items-center gap-3 px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest text-white transition-all hover:scale-105 hover:brightness-110"
+              className="group flex items-center gap-3 px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest text-white transition-all hover:scale-105 hover:brightness-110 w-full sm:w-auto justify-center"
               style={{
                 background: "linear-gradient(135deg, #22c55e, #15803d)",
                 boxShadow: "0 0 40px rgba(34,197,94,0.25), 0 4px 20px rgba(0,0,0,0.3)",
@@ -364,7 +498,7 @@ export default function LandingPage() {
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
             <Link href="/login"
-              className="flex items-center gap-3 px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all hover:scale-105"
+              className="flex items-center gap-3 px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all hover:scale-105 w-full sm:w-auto justify-center"
               style={{
                 background: "rgba(255,255,255,0.06)",
                 border: "1px solid rgba(255,255,255,0.12)",
@@ -387,23 +521,23 @@ export default function LandingPage() {
                 <div className="w-3 h-3 rounded-full" style={{ background: "rgba(255,80,80,0.6)" }} />
                 <div className="w-3 h-3 rounded-full" style={{ background: "rgba(255,200,50,0.6)" }} />
                 <div className="w-3 h-3 rounded-full" style={{ background: "rgba(34,197,94,0.6)" }} />
-                <span className="ml-4 text-[9px] font-black uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.15)" }}>
+                <span className="ml-4 text-[9px] font-black uppercase tracking-widest hidden sm:block" style={{ color: "rgba(255,255,255,0.15)" }}>
                   GreenTrack AI — Carbon Dashboard · SECR Mode
                 </span>
               </div>
 
-              <div className="p-6 grid grid-cols-12 gap-4">
-                {/* Stat cards */}
+              <div className="p-4 sm:p-6 grid grid-cols-12 gap-3 sm:gap-4">
+                {/* Stat cards — 2 per row on mobile, 4 per row on sm+ */}
                 {[
                   { label: "Total CO₂e", value: "12.4 t", tag: "−8.2% MoM", green: true },
                   { label: "Energy kWh", value: "48,200", tag: "+2.1% MoM", green: false },
                   { label: "Bills Audited", value: "84", tag: "SECR ✓", green: true },
                   { label: "Net Zero ETA", value: "2031", tag: "On Track", green: true },
                 ].map((s, i) => (
-                  <div key={i} className="col-span-3 rounded-2xl p-4"
+                  <div key={i} className="col-span-6 sm:col-span-3 rounded-2xl p-3 sm:p-4"
                     style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
                     <p className="text-[8px] font-black uppercase tracking-widest mb-2" style={{ color: "rgba(255,255,255,0.25)" }}>{s.label}</p>
-                    <p className="text-lg font-black text-white mb-1.5">{s.value}</p>
+                    <p className="text-base sm:text-lg font-black text-white mb-1.5">{s.value}</p>
                     <span className="text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider"
                       style={{
                         background: s.green ? "rgba(34,197,94,0.12)" : "rgba(249,115,22,0.12)",
@@ -414,13 +548,13 @@ export default function LandingPage() {
                   </div>
                 ))}
 
-                {/* Chart */}
-                <div className="col-span-8 rounded-2xl p-5"
+                {/* Chart — full width on mobile, 8/12 on sm+ */}
+                <div className="col-span-12 sm:col-span-8 rounded-2xl p-4 sm:p-5"
                   style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.05)" }}>
-                  <p className="text-[8px] font-black uppercase tracking-widest mb-5" style={{ color: "rgba(255,255,255,0.25)" }}>
+                  <p className="text-[8px] font-black uppercase tracking-widest mb-4 sm:mb-5" style={{ color: "rgba(255,255,255,0.25)" }}>
                     Carbon Emissions — 12 Months
                   </p>
-                  <div className="flex items-end gap-2 h-24">
+                  <div className="flex items-end gap-1 sm:gap-2 h-20 sm:h-24">
                     {[45, 68, 52, 78, 60, 42, 72, 55, 48, 65, 38, 30].map((h, i) => (
                       <div key={i} className="flex-1 rounded-t-md transition-all"
                         style={{
@@ -441,14 +575,14 @@ export default function LandingPage() {
                   </div>
                 </div>
 
-                {/* Gauge ring */}
-                <div className="col-span-4 rounded-2xl p-5 flex flex-col items-center justify-center"
+                {/* Gauge ring — full width on mobile, 4/12 on sm+ */}
+                <div className="col-span-12 sm:col-span-4 rounded-2xl p-4 sm:p-5 flex flex-col items-center justify-center"
                   style={{ background: "rgba(34,197,94,0.04)", border: "1px solid rgba(34,197,94,0.12)" }}>
-                  <p className="text-[8px] font-black uppercase tracking-widest mb-4" style={{ color: "rgba(255,255,255,0.25)" }}>
+                  <p className="text-[8px] font-black uppercase tracking-widest mb-3 sm:mb-4" style={{ color: "rgba(255,255,255,0.25)" }}>
                     Compliance Score
                   </p>
-                  <div className="relative w-24 h-24">
-                    <svg viewBox="0 0 96 96" className="w-24 h-24" style={{ transform: "rotate(-90deg)" }}>
+                  <div className="relative w-20 h-20 sm:w-24 sm:h-24">
+                    <svg viewBox="0 0 96 96" className="w-20 h-20 sm:w-24 sm:h-24" style={{ transform: "rotate(-90deg)" }}>
                       <circle cx="48" cy="48" r="38" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="10" />
                       <circle cx="48" cy="48" r="38" fill="none" stroke="url(#greenGrad)" strokeWidth="10"
                         strokeDasharray="238" strokeDashoffset="14" strokeLinecap="round" />
@@ -500,12 +634,12 @@ export default function LandingPage() {
             { value: "100%", label: "SECR Compliant", icon: ShieldCheck },
             { value: "99.8%", label: "AI Accuracy", icon: Cpu },
           ].map(({ value, label, icon: Icon }) => (
-            <div key={label} className="neu-inset p-8 text-center flex flex-col items-center gap-3 rounded-2xl">
+            <div key={label} className="neu-inset p-6 sm:p-8 text-center flex flex-col items-center gap-3 rounded-2xl">
               <div className="w-10 h-10 rounded-xl flex items-center justify-center"
                 style={{ background: "rgba(34,197,94,0.1)" }}>
                 <Icon className="w-5 h-5 text-gt-green-600" />
               </div>
-              <p className="text-3xl font-black tracking-tighter" style={{ color: "var(--text-primary)" }}>{value}</p>
+              <p className="text-2xl sm:text-3xl font-black tracking-tighter" style={{ color: "var(--text-primary)" }}>{value}</p>
               <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>{label}</p>
             </div>
           ))}
@@ -513,11 +647,11 @@ export default function LandingPage() {
       </section>
 
       {/* ─── HOW IT WORKS ────────────────────────────────────────── */}
-      <section className="py-24 px-6">
+      <section className="py-16 sm:py-24 px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
+          <div className="text-center mb-12 sm:mb-16">
             <p className="text-[10px] font-black uppercase tracking-[0.3em] mb-3" style={{ color: "var(--brand-green-dark)" }}>Process</p>
-            <h2 className="text-4xl md:text-5xl font-black tracking-tighter">From Bill to Report<br />in 3 Steps</h2>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter">From Bill to Report<br />in 3 Steps</h2>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6 relative">
@@ -548,7 +682,7 @@ export default function LandingPage() {
                 color: "green",
               },
             ].map(({ step, icon: Icon, title, desc, color }) => (
-              <div key={step} className="premium-card p-8 relative overflow-hidden group">
+              <div key={step} className="premium-card p-6 sm:p-8 relative overflow-hidden group">
                 <div className="absolute top-6 right-6 text-6xl font-black opacity-5 select-none"
                   style={{ color: color === "green" ? "var(--brand-green)" : "var(--brand-orange)" }}>
                   {step}
@@ -570,18 +704,18 @@ export default function LandingPage() {
       </section>
 
       {/* ─── FEATURES BENTO ──────────────────────────────────────── */}
-      <section id="features" className="py-24 px-6">
+      <section id="features" className="py-16 sm:py-24 px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
+          <div className="text-center mb-12 sm:mb-16">
             <p className="text-[10px] font-black uppercase tracking-[0.3em] mb-3" style={{ color: "var(--brand-green-dark)" }}>Platform</p>
-            <h2 className="text-4xl md:text-5xl font-black tracking-tighter">Everything You Need<br />for Carbon Compliance</h2>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter">Everything You Need<br />for Carbon Compliance</h2>
           </div>
 
           {/* Bento grid */}
-          <div className="grid grid-cols-6 gap-6 auto-rows-[220px]">
+          <div className="grid grid-cols-6 gap-4 sm:gap-6">
 
             {/* Large — AI Bill Extraction */}
-            <div className="col-span-6 md:col-span-4 premium-card p-8 relative overflow-hidden group flex flex-col justify-between">
+            <div className="col-span-6 md:col-span-4 premium-card p-6 sm:p-8 relative overflow-hidden group flex flex-col justify-between min-h-[220px]">
               <div className="absolute top-0 right-0 w-64 h-64 rounded-full blur-[80px] opacity-10 transition-opacity group-hover:opacity-20"
                 style={{ background: "var(--brand-green)" }} />
               <div className="flex items-start gap-5 relative z-10">
@@ -596,7 +730,7 @@ export default function LandingPage() {
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 mt-4 relative z-10">
+              <div className="flex flex-wrap items-center gap-2 mt-4 relative z-10">
                 {["SSE", "British Gas", "EDF", "Octopus", "+40 more"].map(sup => (
                   <span key={sup} className="text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-wider"
                     style={{ background: "rgba(34,197,94,0.1)", color: "var(--brand-green-dark)" }}>
@@ -607,7 +741,7 @@ export default function LandingPage() {
             </div>
 
             {/* Live Dashboard */}
-            <div className="col-span-6 md:col-span-2 premium-card p-8 relative overflow-hidden group"
+            <div className="col-span-6 sm:col-span-3 md:col-span-2 premium-card p-6 sm:p-8 relative overflow-hidden group min-h-[220px]"
               style={{ boxShadow: "var(--shadow-inset)" }}>
               <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-5"
                 style={{ background: "rgba(249,115,22,0.15)" }}>
@@ -620,7 +754,7 @@ export default function LandingPage() {
             </div>
 
             {/* SECR Reports */}
-            <div className="col-span-6 md:col-span-2 premium-card p-8 relative overflow-hidden group">
+            <div className="col-span-6 sm:col-span-3 md:col-span-2 premium-card p-6 sm:p-8 relative overflow-hidden group min-h-[220px]">
               <div className="absolute bottom-0 right-0 opacity-5">
                 <FileText className="w-32 h-32" />
               </div>
@@ -635,7 +769,7 @@ export default function LandingPage() {
             </div>
 
             {/* Performance Compare */}
-            <div className="col-span-6 md:col-span-2 premium-card p-8 relative overflow-hidden group"
+            <div className="col-span-6 sm:col-span-3 md:col-span-2 premium-card p-6 sm:p-8 relative overflow-hidden group min-h-[220px]"
               style={{ boxShadow: "var(--shadow-inset)" }}>
               <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-5"
                 style={{ background: "rgba(249,115,22,0.15)" }}>
@@ -648,7 +782,7 @@ export default function LandingPage() {
             </div>
 
             {/* Strategy & Targets */}
-            <div className="col-span-6 md:col-span-2 premium-card p-8 relative overflow-hidden group">
+            <div className="col-span-6 sm:col-span-3 md:col-span-2 premium-card p-6 sm:p-8 relative overflow-hidden group min-h-[220px]">
               <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-5"
                 style={{ background: "rgba(34,197,94,0.15)" }}>
                 <Target className="w-6 h-6 text-gt-green-600" />
@@ -660,7 +794,7 @@ export default function LandingPage() {
             </div>
 
             {/* Team + Secure */}
-            <div className="col-span-6 md:col-span-4 premium-card p-8 relative overflow-hidden group flex items-center gap-10">
+            <div className="col-span-6 md:col-span-4 premium-card p-6 sm:p-8 relative overflow-hidden group flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-10 min-h-[220px]">
               <div className="absolute inset-0 opacity-[0.02]">
                 <Lock className="w-full h-full" />
               </div>
@@ -674,7 +808,7 @@ export default function LandingPage() {
                   Role-based access (Owner / Admin / Member). Invite climate auditors with encrypted links.
                 </p>
               </div>
-              <div className="relative z-10 flex-1 border-l pl-10" style={{ borderColor: "var(--border-subtle)" }}>
+              <div className="relative z-10 flex-1 border-t pt-6 md:border-t-0 md:pt-0 md:border-l md:pl-10 w-full md:w-auto" style={{ borderColor: "var(--border-subtle)" }}>
                 <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-5"
                   style={{ background: "rgba(249,115,22,0.15)" }}>
                   <Lock className="w-6 h-6 text-gt-orange-500" />
@@ -691,23 +825,23 @@ export default function LandingPage() {
       </section>
 
       {/* ─── COMPLIANCE ──────────────────────────────────────────── */}
-      <section id="compliance" className="py-24 px-6"
+      <section id="compliance" className="py-16 sm:py-24 px-6"
         style={{ background: "linear-gradient(160deg, #091a0e 0%, #050f07 100%)" }}>
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
+          <div className="text-center mb-12 sm:mb-16">
             <p className="text-[10px] font-black uppercase tracking-[0.3em] mb-3 text-gt-green-400">Compliance</p>
-            <h2 className="text-4xl md:text-5xl font-black tracking-tighter text-white">Built for UK Law.<br />Verified by Design.</h2>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter text-white">Built for UK Law.<br />Verified by Design.</h2>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8 items-center">
-            <div className="space-y-5">
+            <div className="space-y-4 sm:space-y-5">
               {[
                 { icon: ShieldCheck, title: "DEFRA 2024 Conversion Factors", desc: "Always current with HM Government's official CO₂ math." },
                 { icon: FileText, title: "SECR Intensity Ratios", desc: "Carbon per £ of revenue — the mandatory SECR metric for large UK businesses." },
                 { icon: Globe, title: "UK GDPR (London Region)", desc: "All data stored in eu-west-2. Article 17 Right to Erasure built-in." },
                 { icon: Target, title: "SBTi Aligned Targets", desc: "Set science-based reduction goals validated against climate science pathways." },
               ].map(({ icon: Icon, title, desc }) => (
-                <div key={title} className="flex items-start gap-4 p-5 rounded-2xl transition-colors"
+                <div key={title} className="flex items-start gap-4 p-4 sm:p-5 rounded-2xl transition-colors"
                   style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
                     style={{ background: "rgba(34,197,94,0.15)" }}>
@@ -721,19 +855,19 @@ export default function LandingPage() {
               ))}
             </div>
 
-            <div className="grid grid-cols-2 gap-5">
+            <div className="grid grid-cols-2 gap-4 sm:gap-5">
               {[
                 { value: "98%", label: "Audit Success Rate", green: true },
                 { value: "0%", label: "Data Leakage Rate", green: false },
                 { value: "2024", label: "DEFRA Factor Version", green: true },
                 { value: "SOC2", label: "Security Standard", green: false },
               ].map(({ value, label, green }) => (
-                <div key={label} className="aspect-square rounded-2xl flex flex-col items-center justify-center p-6 text-center"
+                <div key={label} className="aspect-square rounded-2xl flex flex-col items-center justify-center p-4 sm:p-6 text-center"
                   style={{
                     background: green ? "rgba(34,197,94,0.06)" : "rgba(255,255,255,0.03)",
                     border: `1px solid ${green ? "rgba(34,197,94,0.2)" : "rgba(255,255,255,0.06)"}`,
                   }}>
-                  <p className="text-3xl font-black mb-2" style={{ color: green ? "#4ade80" : "rgba(255,255,255,0.8)" }}>{value}</p>
+                  <p className="text-2xl sm:text-3xl font-black mb-2" style={{ color: green ? "#4ade80" : "rgba(255,255,255,0.8)" }}>{value}</p>
                   <p className="text-[9px] font-black uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.3)" }}>{label}</p>
                 </div>
               ))}
@@ -743,15 +877,15 @@ export default function LandingPage() {
       </section>
 
       {/* ─── PRICING ─────────────────────────────────────────────── */}
-      <section id="pricing" className="py-24 px-6">
+      <section id="pricing" className="py-16 sm:py-24 px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
+          <div className="text-center mb-12 sm:mb-16">
             <p className="text-[10px] font-black uppercase tracking-[0.3em] mb-3" style={{ color: "var(--brand-green-dark)" }}>Pricing</p>
-            <h2 className="text-4xl md:text-5xl font-black tracking-tighter">Simple, Transparent Pricing</h2>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter">Simple, Transparent Pricing</h2>
             <p className="text-sm font-medium mt-3" style={{ color: "var(--text-muted)" }}>All prices exclude 20% UK VAT</p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
             {[
               {
                 name: "Free",
@@ -779,7 +913,7 @@ export default function LandingPage() {
               },
             ].map(({ name, price, desc, features, cta, highlight }) => (
               <div key={name}
-                className={`premium-card p-8 flex flex-col relative overflow-hidden ${highlight ? "ring-2 ring-gt-green-500" : ""}`}>
+                className={`premium-card p-6 sm:p-8 flex flex-col relative overflow-hidden ${highlight ? "ring-2 ring-gt-green-500 sm:col-span-2 md:col-span-1" : ""}`}>
                 {highlight && (
                   <div className="absolute top-0 right-0 p-4">
                     <span className="text-[8px] font-black px-3 py-1 rounded-full uppercase tracking-widest text-white"
@@ -828,9 +962,9 @@ export default function LandingPage() {
       </section>
 
       {/* ─── CTA BANNER ──────────────────────────────────────────── */}
-      <section className="py-8 px-6">
+      <section className="py-8 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="rounded-[2.5rem] p-16 text-center relative overflow-hidden"
+          <div className="rounded-[2rem] sm:rounded-[2.5rem] p-8 sm:p-12 md:p-16 text-center relative overflow-hidden"
             style={{ background: "linear-gradient(135deg, #0d2416 0%, #091a0e 100%)" }}>
             <div className="absolute top-0 right-0 w-96 h-96 rounded-full blur-[120px] opacity-20 pointer-events-none"
               style={{ background: "var(--brand-green)" }} />
@@ -839,18 +973,18 @@ export default function LandingPage() {
 
             <div className="relative z-10">
               <p className="text-[10px] font-black uppercase tracking-[0.3em] mb-4 text-gt-green-400">Ready?</p>
-              <h2 className="text-5xl md:text-7xl font-black tracking-tighter text-white mb-6">
+              <h2 className="text-4xl sm:text-5xl md:text-7xl font-black tracking-tighter text-white mb-6">
                 Start Your Journey<br />to{" "}
                 <span style={{ background: "linear-gradient(135deg, #22c55e, #86efac)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
                   Net Zero
                 </span>
               </h2>
-              <p className="text-sm font-medium mb-10 max-w-md mx-auto" style={{ color: "rgba(255,255,255,0.4)" }}>
+              <p className="text-sm font-medium mb-8 sm:mb-10 max-w-md mx-auto" style={{ color: "rgba(255,255,255,0.4)" }}>
                 Join 500+ UK businesses already saving time and the environment with GreenTrack AI.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link href="/signup"
-                  className="group flex items-center gap-3 px-10 py-5 rounded-2xl font-black text-xs uppercase tracking-widest text-white transition-all hover:scale-105"
+                  className="group flex items-center gap-3 px-8 sm:px-10 py-4 sm:py-5 rounded-2xl font-black text-xs uppercase tracking-widest text-white transition-all hover:scale-105 w-full sm:w-auto justify-center"
                   style={{ background: "linear-gradient(135deg, var(--brand-green), var(--brand-green-dark))", boxShadow: "0 0 40px rgba(34,197,94,0.3)" }}>
                   Get Started — It's Free
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -865,8 +999,8 @@ export default function LandingPage() {
       </section>
 
       {/* ─── FOOTER ──────────────────────────────────────────────── */}
-      <footer className="py-12 px-6 mt-8" style={{ borderTop: "1px solid var(--border-subtle)" }}>
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
+      <footer className="py-10 sm:py-12 px-6 mt-8" style={{ borderTop: "1px solid var(--border-subtle)" }}>
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--brand-green)" }}>
               <Leaf className="w-4 h-4 text-white" />
@@ -874,7 +1008,7 @@ export default function LandingPage() {
             <span className="font-black tracking-tight">GreenTrack AI</span>
           </div>
 
-          <div className="flex gap-8">
+          <div className="flex flex-wrap justify-center gap-6 sm:gap-8">
             {[
               { href: "/terms", label: "Terms" },
               { href: "/privacy", label: "Privacy" },
@@ -889,7 +1023,7 @@ export default function LandingPage() {
             ))}
           </div>
 
-          <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-center" style={{ color: "var(--text-muted)" }}>
             © 2025 GreenTrack AI Ltd · England & Wales
           </p>
         </div>

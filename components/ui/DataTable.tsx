@@ -10,18 +10,19 @@ export interface ColumnDef<T> {
 }
 
 interface DataTableProps<T> {
-  columns:       ColumnDef<T>[];
-  data:          T[];
-  rowKey:        (row: T) => string;
-  loading?:      boolean;
-  loadingLabel?: string;
-  emptyIcon?:    ReactNode;
-  emptyTitle?:   string;
-  emptyMessage?: string;
+  columns:        ColumnDef<T>[];
+  data:           T[];
+  rowKey:         (row: T) => string;
+  loading?:       boolean;
+  loadingLabel?:  string;
+  emptyIcon?:     ReactNode;
+  emptyTitle?:    string;
+  emptyMessage?:  string;
   emptyCtaLabel?: string;
   emptyCtaHref?:  string;
-  onRowHover?:   boolean;
-  footer?:       ReactNode;
+  onRowHover?:    boolean;
+  footer?:        ReactNode;
+  mobileRender?:  (row: T) => ReactNode;
 }
 
 export function DataTable<T>({
@@ -36,12 +37,40 @@ export function DataTable<T>({
   emptyCtaLabel,
   emptyCtaHref,
   footer,
+  mobileRender,
 }: DataTableProps<T>) {
   const alignClass = { left: "text-left", right: "text-right", center: "text-center" };
 
+  const emptyBlock = (
+    <EmptyState
+      icon={emptyIcon ?? null}
+      title={emptyTitle}
+      description={emptyMessage}
+      ctaLabel={emptyCtaLabel}
+      ctaHref={emptyCtaHref}
+    />
+  );
+
   return (
     <div className="premium-card overflow-hidden">
-      <div className="overflow-x-auto">
+
+      {/* ── Mobile card list (hidden on lg+) ── */}
+      {mobileRender && (
+        <div className="lg:hidden divide-y divide-border-subtle/30">
+          {loading && (
+            <div className="py-20 text-center">
+              <Spinner label={loadingLabel} />
+            </div>
+          )}
+          {!loading && data.length === 0 && emptyBlock}
+          {!loading && data.map((row) => (
+            <div key={rowKey(row)}>{mobileRender(row)}</div>
+          ))}
+        </div>
+      )}
+
+      {/* ── Desktop table (full-width; hidden below lg when mobileRender provided) ── */}
+      <div className={`overflow-x-auto ${mobileRender ? "hidden lg:block" : ""}`}>
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-bg-inset/20 border-b border-border-subtle">
@@ -66,15 +95,7 @@ export function DataTable<T>({
 
             {!loading && data.length === 0 && (
               <tr>
-                <td colSpan={columns.length}>
-                  <EmptyState
-                    icon={emptyIcon ?? null}
-                    title={emptyTitle}
-                    description={emptyMessage}
-                    ctaLabel={emptyCtaLabel}
-                    ctaHref={emptyCtaHref}
-                  />
-                </td>
+                <td colSpan={columns.length}>{emptyBlock}</td>
               </tr>
             )}
 
