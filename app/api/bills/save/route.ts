@@ -2,20 +2,12 @@ import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { sendBillProcessedEmail } from "@/lib/email";
 
-/**
- * POST /api/bills/save
- * Final step of the upload flow.
- * Looks up the correct DEFRA emission factor for the bill date,
- * calculates CO2, and saves the bill to the database.
- */
 export async function POST(request: Request) {
   const supabase = await createClient();
 
-  // Auth check
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
 
-  // Get user's org
   const { data: profile } = await supabase
     .from("profiles")
     .select("org_id, organisations(name)")
@@ -49,7 +41,7 @@ export async function POST(request: Request) {
 
   // ── Look up emission factor by bill date (critical for SECR accuracy) ────
   // Uses valid_from / valid_to so old bills use the correct historical factor
-  const { data: factor } = await supabase
+  const { data: factor, error: factorError } = await supabase
     .from("emission_factors")
     .select("kg_co2e_per_unit, scope")
     .eq("fuel_type", bill_type)
@@ -57,6 +49,8 @@ export async function POST(request: Request) {
     .lte("valid_from", bill_date)
     .gte("valid_to", bill_date)
     .single();
+
+  console.error("[save] factor query:", { factor, factorError, bill_type, usage_unit, bill_date });
 
   if (!factor) {
     return NextResponse.json(

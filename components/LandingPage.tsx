@@ -1,55 +1,310 @@
 "use client";
-import React from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import {
   Leaf, BarChart3, UploadCloud, FileText, ShieldCheck,
   Zap, ArrowRight, TrendingDown, CheckCircle, Building2,
   Target, Users, Globe, Lock, Scale, ChevronRight, Cpu,
 } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function LandingPage() {
+  const [navExpanded, setNavExpanded] = useState(true);
+  const [scrollPct, setScrollPct] = useState(0);
+  const [sweeping, setSweeping] = useState(false);
+  const lastScrollY = useRef(0);
+  const isHoveredRef = useRef(false);
+  const sweepTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    lastScrollY.current = window.scrollY;
+
+    const onScroll = () => {
+      const y = window.scrollY;
+      const dy = y - lastScrollY.current;
+      const total = document.documentElement.scrollHeight - window.innerHeight;
+      setScrollPct(total > 0 ? Math.min(100, (y / total) * 100) : 0);
+
+      if (y < 80) {
+        setNavExpanded(true);
+      } else if (dy < -8 && !isHoveredRef.current) {
+        setNavExpanded(true);
+      } else if (dy > 5 && !isHoveredRef.current) {
+        setNavExpanded(false);
+      }
+
+      lastScrollY.current = y;
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const handleEnter = () => {
+    isHoveredRef.current = true;
+    if (!navExpanded) {
+      setNavExpanded(true);
+      setSweeping(true);
+      if (sweepTimer.current) clearTimeout(sweepTimer.current);
+      sweepTimer.current = setTimeout(() => setSweeping(false), 900);
+    }
+  };
+
+  const handleLeave = () => {
+    isHoveredRef.current = false;
+    if (window.scrollY > 80) setNavExpanded(false);
+  };
+
   return (
     <div className="min-h-screen overflow-x-hidden" style={{ background: "var(--bg-base)", color: "var(--text-primary)" }}>
 
+      <style>{`
+        @keyframes matPulse {
+          0%,100% { box-shadow:0 0 0 0 rgba(34,197,94,.45),0 12px 40px rgba(0,0,0,.55); }
+          50%      { box-shadow:0 0 0 9px rgba(34,197,94,0),0 12px 40px rgba(0,0,0,.55); }
+        }
+        @keyframes rollHint {
+          0%,100% { opacity:.28; transform:translateX(0) scale(1); }
+          50%      { opacity:1;   transform:translateX(5px) scale(1.1); }
+        }
+        @keyframes shimmerSweep {
+          0%   { left:-60%; opacity:0; }
+          8%   { opacity:1; }
+          92%  { opacity:1; }
+          100% { left:130%; opacity:0; }
+        }
+        @keyframes leafBounce {
+          0%,100% { transform:scale(1) rotate(0deg); }
+          30%     { transform:scale(1.15) rotate(-10deg); }
+          60%     { transform:scale(0.95) rotate(5deg); }
+        }
+        @keyframes ctaGlow {
+          0%,100% { box-shadow:0 4px 16px rgba(34,197,94,.35),inset 0 1px 0 rgba(255,255,255,.2); }
+          50%      { box-shadow:0 4px 28px rgba(34,197,94,.6),inset 0 1px 0 rgba(255,255,255,.2); }
+        }
+        @keyframes liveDot {
+          0%,100% { opacity:1; transform:scale(1); }
+          50%      { opacity:.4; transform:scale(.7); }
+        }
+
+        /* Nav link underline slide */
+        .nl { position:relative; }
+        .nl::after {
+          content:''; position:absolute; bottom:-3px; left:0;
+          width:0; height:1.5px; border-radius:2px;
+          background:linear-gradient(90deg,#22c55e,#86efac,#22c55e);
+          transition:width .3s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        .nl:hover::after { width:100%; }
+        .nl:hover { opacity:.8 !important; }
+
+        /* Login hover */
+        .nlogin:hover { color:#4ade80 !important; }
+
+        /* CTA button */
+        .ncta {
+          background:linear-gradient(135deg,#22c55e 0%,#16a34a 50%,#22c55e 100%) !important;
+          background-size:200% auto !important;
+          transition:background-position .5s ease, box-shadow .25s, transform .15s !important;
+        }
+        .ncta:hover {
+          background-position:right center !important;
+          box-shadow:0 6px 28px rgba(34,197,94,.55),inset 0 1px 0 rgba(255,255,255,.25) !important;
+          transform:translateY(-1.5px) !important;
+        }
+        .ncta:active { transform:translateY(0) !important; }
+      `}</style>
+
       {/* ─── NAVBAR ──────────────────────────────────────────────── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 p-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between glass rounded-2xl px-6 py-3.5" style={{ backdropFilter: "blur(28px)", WebkitBackdropFilter: "blur(28px)" }}>
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center shadow-lg" style={{ background: "var(--brand-green)" }}>
-              <Leaf className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-lg font-black tracking-tight">
-              GreenTrack <span style={{ color: "var(--brand-green)" }}>AI</span>
-            </span>
-          </div>
+      <div
+        style={{ position: "fixed", top: 16, left: 16, right: 16, zIndex: 50 }}
+        onMouseEnter={handleEnter}
+        onMouseLeave={handleLeave}
+      >
+        <div style={{ maxWidth: 1280, margin: "0 auto", position: "relative", height: 56 }}>
 
-          <div className="hidden md:flex items-center gap-8">
-            {["Features", "Compliance", "Pricing"].map((item) => (
-              <a key={item} href={`#${item.toLowerCase()}`}
-                className="text-[10px] font-black uppercase tracking-widest transition-opacity hover:opacity-80"
-                style={{
-                  background: "linear-gradient(135deg, #16a34a 0%, #16a34a 40%, #1a9c5f 70%, #1f8e49 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
+          {/* ── Rolling mat bar ── */}
+          <nav
+            aria-label="Main navigation"
+            style={{
+              position: "absolute",
+              inset: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "0 22px",
+              backdropFilter: "blur(40px)",
+              WebkitBackdropFilter: "blur(40px)",
+              background: "linear-gradient(175deg,rgba(14,40,22,.96) 0%,rgba(7,20,11,.92) 100%)",
+              border: "1px solid rgba(34,197,94,.22)",
+              boxShadow: "0 1px 0 rgba(134,239,172,.08) inset, 0 20px 60px rgba(0,0,0,.55)",
+              clipPath: navExpanded
+                ? "inset(0 0% 0 0 round 18px)"
+                : "inset(0 calc(100% - 60px) 0 0 round 28px)",
+              transition: navExpanded
+                ? "clip-path 0.78s cubic-bezier(0.34,1.56,0.64,1)"
+                : "clip-path 0.44s cubic-bezier(0.4,0,0.2,1)",
+              animation: !navExpanded ? "matPulse 2.4s ease-in-out infinite" : "none",
+              overflow: "hidden",
+              willChange: "clip-path",
+            }}
+          >
+            {/* Top glass-edge highlight */}
+            <div aria-hidden="true" style={{
+              position: "absolute", top: 0, left: 0, right: 0, height: 1, pointerEvents: "none",
+              background: "linear-gradient(90deg,transparent 0%,rgba(134,239,172,.6) 25%,rgba(255,255,255,.35) 50%,rgba(134,239,172,.6) 75%,transparent 100%)",
+            }} />
+
+            {/* Shimmer sweep when unrolling */}
+            {sweeping && (
+              <div aria-hidden="true" style={{
+                position: "absolute", top: 0, bottom: 0, width: "45%", pointerEvents: "none",
+                background: "linear-gradient(90deg,transparent,rgba(255,255,255,.055),rgba(134,239,172,.04),transparent)",
+                animation: "shimmerSweep .85s ease-out forwards",
+              }} />
+            )}
+
+            {/* Scroll progress bar */}
+            <div aria-hidden="true" style={{
+              position: "absolute", bottom: 0, left: 0, height: 2, pointerEvents: "none",
+              width: `${scrollPct}%`,
+              background: "linear-gradient(90deg,#22c55e,#86efac)",
+              boxShadow: "0 0 8px rgba(34,197,94,.7)",
+              borderRadius: "0 2px 0 0",
+              transition: "width .12s linear",
+            }} />
+
+            {/* ── Logo ── */}
+            <div style={{ display: "flex", alignItems: "center", gap: 11, flexShrink: 0 }}>
+              <div style={{
+                width: 38, height: 38, borderRadius: 11, flexShrink: 0,
+                background: "linear-gradient(145deg,#22c55e 0%,#16a34a 100%)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                boxShadow: "0 2px 18px rgba(34,197,94,.55),inset 0 1px 0 rgba(255,255,255,.25)",
+                animation: !navExpanded ? "leafBounce 2.8s ease-in-out infinite" : "none",
+              }}>
+                <Leaf size={20} color="white" strokeWidth={2.2} />
+              </div>
+
+              {/* Brand text + live dot */}
+              <div style={{
+                opacity: navExpanded ? 1 : 0,
+                transform: navExpanded ? "translateX(0)" : "translateX(-10px)",
+                transition: navExpanded ? "opacity .24s .42s, transform .28s .42s" : "opacity .08s, transform .08s",
+                display: "flex", alignItems: "center", gap: 8,
+              }}>
+                <span style={{ fontSize: 17, fontWeight: 900, letterSpacing: "-0.5px", whiteSpace: "nowrap" }}>
+                  GreenTrack <span style={{ color: "#22c55e" }}>AI</span>
+                </span>
+                <span style={{
+                  display: "flex", alignItems: "center", gap: 4,
+                  padding: "2px 7px", borderRadius: 20,
+                  background: "rgba(34,197,94,.12)", border: "1px solid rgba(34,197,94,.25)",
                 }}>
-                {item}
-              </a>
-            ))}
+                  <span style={{
+                    width: 5, height: 5, borderRadius: "50%", background: "#22c55e", flexShrink: 0,
+                    animation: "liveDot 1.6s ease-in-out infinite",
+                    boxShadow: "0 0 5px rgba(34,197,94,.8)",
+                  }} />
+                  <span style={{ fontSize: 8, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.1em", color: "#4ade80" }}>
+                    Live
+                  </span>
+                </span>
+              </div>
+            </div>
+
+            {/* ── Nav links ── */}
+            <div style={{ display: "flex", alignItems: "center", gap: 36, whiteSpace: "nowrap" }}>
+              {["Features", "Compliance", "Pricing"].map((item, i) => (
+                <a
+                  key={item}
+                  href={`#${item.toLowerCase()}`}
+                  className="nl"
+                  style={{
+                    fontSize: 10, fontWeight: 900, textTransform: "uppercase",
+                    letterSpacing: "0.17em", textDecoration: "none",
+                    background: "linear-gradient(135deg,#4ade80 0%,#22c55e 45%,#16a34a 100%)",
+                    WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
+                    opacity: navExpanded ? 1 : 0,
+                    transform: navExpanded ? "translateY(0)" : "translateY(5px)",
+                    transition: navExpanded
+                      ? `opacity .32s ${.38 + i * .07}s, transform .32s ${.38 + i * .07}s`
+                      : "opacity .05s, transform .05s",
+                    display: "block",
+                  }}
+                >
+                  {item}
+                </a>
+              ))}
+            </div>
+
+            {/* ── CTAs ── */}
+            <div style={{
+              display: "flex", alignItems: "center", gap: 6, flexShrink: 0,
+              opacity: navExpanded ? 1 : 0,
+              transform: navExpanded ? "translateX(0)" : "translateX(10px)",
+              transition: navExpanded ? "opacity .24s .52s, transform .28s .52s" : "opacity .05s, transform .05s",
+              whiteSpace: "nowrap",
+            }}>
+              <ThemeToggle buttonStyle={{
+                width: 36, height: 36, borderRadius: 10,
+                background: "rgba(34,197,94,.08)",
+                border: "1px solid rgba(34,197,94,.2)",
+                color: "rgba(134,239,172,.85)",
+                cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                transition: "background .2s, box-shadow .2s",
+                flexShrink: 0,
+              }} />
+              <Link href="/login" className="nlogin" style={{
+                fontSize: 10, fontWeight: 900, textTransform: "uppercase",
+                letterSpacing: "0.15em", padding: "8px 16px", borderRadius: 10,
+                color: "rgba(255,255,255,.42)", textDecoration: "none",
+                transition: "color .2s",
+              }}>
+                Login
+              </Link>
+              <Link href="/signup" className="ncta" style={{
+                fontSize: 10, fontWeight: 900, textTransform: "uppercase",
+                letterSpacing: "0.14em", padding: "10px 20px", borderRadius: 12,
+                display: "flex", alignItems: "center", gap: 6,
+                color: "white", textDecoration: "none",
+                backgroundSize: "200% auto",
+                boxShadow: "0 4px 18px rgba(34,197,94,.38),inset 0 1px 0 rgba(255,255,255,.22)",
+                animation: navExpanded ? "ctaGlow 3s ease-in-out infinite" : "none",
+              }}>
+                Get Started <ArrowRight size={12} strokeWidth={2.5} />
+              </Link>
+            </div>
+          </nav>
+
+          {/* ── Chevron hint beside rolled pill ── */}
+          <div aria-hidden="true" style={{
+            position: "absolute", top: "50%", left: 68,
+            transform: "translateY(-50%)",
+            display: "flex", alignItems: "center", gap: 0,
+            pointerEvents: "none",
+            opacity: navExpanded ? 0 : 1,
+            transition: navExpanded ? "opacity .1s" : "opacity .35s .6s",
+            animation: !navExpanded ? "rollHint 2s ease-in-out infinite" : "none",
+          }}>
+            <ChevronRight size={12} color="rgba(34,197,94,.85)" strokeWidth={2.5} />
+            <ChevronRight size={12} color="rgba(34,197,94,.4)" strokeWidth={2.5} style={{ marginLeft: -5 }} />
           </div>
 
-          <div className="flex items-center gap-3">
-            <Link href="/login" className="text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-xl transition-colors hover:text-gt-green-600"
-              style={{ color: "var(--text-muted)" }}>
-              Login
-            </Link>
-            <Link href="/signup" className=" px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2"
-              style={{ color: "var(--brand-green-dark)" }}>
-              Get Started <ChevronRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
+          {/* ── Curl-edge gradient at roll boundary ── */}
+          <div aria-hidden="true" style={{
+            position: "absolute", top: 5, bottom: 5,
+            left: navExpanded ? -300 : 54,
+            width: 14, borderRadius: "0 7px 7px 0",
+            background: "linear-gradient(to right,rgba(34,197,94,.18),rgba(134,239,172,.06),transparent)",
+            pointerEvents: "none",
+            transition: navExpanded
+              ? "left 0.78s cubic-bezier(0.34,1.56,0.64,1)"
+              : "left 0.44s cubic-bezier(0.4,0,0.2,1)",
+          }} />
         </div>
-      </nav>
+      </div>
 
       {/* ─── HERO ────────────────────────────────────────────────── */}
       <section className="relative min-h-screen flex flex-col items-center justify-center pt-28 pb-24 px-6 overflow-hidden"

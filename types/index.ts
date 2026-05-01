@@ -150,6 +150,23 @@ export interface ReportSummary {
   bill_count:    number;
 }
 
+// ─── Targets ─────────────────────────────────────────────────────────────────
+
+export interface OrgTarget {
+  id: string;
+  org_id: string;
+  created_by: string | null;
+  annual_carbon_cap_kg: number;
+  yearly_reduction_rate: number;
+  net_zero_target_year: number | null;
+  baseline_year: number;
+  sbti_pathway: "1.5c" | "wbb2c" | "2c";
+  notes: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 // ─── Admin panel types ───────────────────────────────────────────────────────
 
 export interface AdminStats {
