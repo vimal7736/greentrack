@@ -19,6 +19,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     .eq("id", user.id)
     .single();
 
+  // Block admin users from accessing user portal — redirect to admin portal
+  if (profile?.role === "superadmin" || profile?.role === "super_admin") {
+    redirect("/admin");
+  }
+
   const org = (Array.isArray(profile?.organisations) ? profile.organisations[0] : profile?.organisations) as { name: string; tier: string } | null;
 
   return (

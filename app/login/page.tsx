@@ -28,8 +28,21 @@ export default function LoginPage() {
       return;
     }
 
-    // Middleware will handle redirect, but push as fallback
-      router.push("/dashboard");
+    // Check role to route admins to admin portal, users to dashboard
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    let destination = "/dashboard";
+    if (authUser) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", authUser.id)
+        .single();
+      if (profile?.role === "superadmin" || profile?.role === "super_admin") {
+        destination = "/admin";
+      }
+    }
+
+    router.push(destination);
     router.refresh();
   }
 

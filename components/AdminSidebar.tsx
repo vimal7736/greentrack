@@ -3,56 +3,22 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import {
-  LayoutDashboard, Upload, History, FileText,
-  Users, CreditCard, LogOut, Leaf,
-  Scale, Target,
+  BarChart3, Building2, Beaker, Users, Activity,
+  LogOut, Shield, Leaf,
 } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 
-const NAV_ITEMS = [
-  { label: "Dashboard",  href: "/dashboard", icon: LayoutDashboard },
-  { label: "Upload Bill", href: "/upload",    icon: Upload },
-  { label: "History",    href: "/history",   icon: History },
-  { label: "Reports",    href: "/reports",   icon: FileText },
-  { label: "Compare",    href: "/compare",   icon: Scale },
-  { label: "Targets",    href: "/targets",   icon: Target },
-  { label: "Team",       href: "/team",      icon: Users },
-  { label: "Billing",    href: "/billing",   icon: CreditCard },
+const ADMIN_NAV = [
+  { label: "Overview",      href: "/admin",              icon: BarChart3 },
+  { label: "Organisations", href: "/admin/organisations", icon: Building2 },
+  { label: "Factors",       href: "/admin/factors",       icon: Beaker },
+  { label: "Users",         href: "/admin/users",         icon: Users },
+  { label: "Activity",      href: "/admin/activity",      icon: Activity },
 ];
 
-const TIER_CFG: Record<string, { label: string; style: React.CSSProperties }> = {
-  free: {
-    label: "Free",
-    style: {
-      background: "rgba(255,255,255,0.06)",
-      color: "rgba(255,255,255,0.45)",
-      boxShadow: "inset 2px 2px 5px rgba(0,0,0,0.35), inset -2px -2px 5px rgba(255,255,255,0.06)",
-      borderRadius: "6px",
-    },
-  },
-  starter: {
-    label: "Starter",
-    style: {
-      background: "rgba(249,115,22,0.15)",
-      color: "#fdba74",
-      boxShadow: "inset 3px 3px 6px rgba(100,30,0,0.45), inset -3px -3px 6px rgba(255,160,60,0.18)",
-      borderRadius: "6px",
-    },
-  },
-  business: {
-    label: "Business",
-    style: {
-      background: "rgba(34,197,94,0.12)",
-      color: "#86efac",
-      boxShadow: "inset 3px 3px 6px rgba(0,50,20,0.50), inset -3px -3px 6px rgba(80,200,110,0.16)",
-      borderRadius: "6px",
-    },
-  },
-};
-
-const BG  = "#1a4731";
-const ND  = "rgba(0,0,0,0.45)";
-const NL  = "rgba(255,255,255,0.08)";
+const BG  = "#1e293b";
+const ND  = "rgba(0,0,0,0.50)";
+const NL  = "rgba(255,255,255,0.07)";
 
 const inset   = `inset 4px 4px 10px ${ND}, inset -4px -4px 10px ${NL}`;
 const insetSm = `inset 2px 2px 6px ${ND}, inset -2px -2px 6px ${NL}`;
@@ -65,23 +31,20 @@ const toggleBtnStyle: React.CSSProperties = {
   borderRadius: "10px",
 };
 
-interface SidebarProps {
+interface AdminSidebarProps {
   userName:  string;
   userEmail: string;
-  userRole:  string;
-  orgName:   string;
-  orgTier:   string;
   collapsed: boolean;
   onCollapseToggle: () => void;
   mobileOpen: boolean;
   onMobileClose: () => void;
 }
 
-export default function Sidebar({
-  userName, userEmail, userRole, orgName, orgTier,
+export default function AdminSidebar({
+  userName, userEmail,
   collapsed, onCollapseToggle,
   mobileOpen, onMobileClose,
-}: SidebarProps) {
+}: AdminSidebarProps) {
   const pathname = usePathname();
   const [isMobile, setIsMobile] = useState(false);
 
@@ -92,31 +55,32 @@ export default function Sidebar({
     return () => window.removeEventListener("resize", check);
   }, []);
 
-  // On mobile/tablet: always icon-only rail; on desktop: respect collapsed prop
   const iconOnly = isMobile || collapsed;
 
   function handleSignOut() {
     window.location.href = "/api/auth/signout";
   }
 
-  const initials = (userName || "User")
+  const initials = (userName || "Admin")
     .split(" ")
     .map((n) => n[0])
     .join("")
     .toUpperCase()
     .slice(0, 2);
 
-  const safeTier = orgTier || "free";
-  const tierCfg  = TIER_CFG[safeTier] ?? TIER_CFG.free;
+  function isActive(href: string) {
+    if (href === "/admin") return pathname === "/admin";
+    return pathname.startsWith(href);
+  }
 
   function activeStyle(active: boolean): React.CSSProperties {
     if (iconOnly) {
       return {
         display: "flex", alignItems: "center", justifyContent: "center",
         width: 40, height: 40, borderRadius: 12, margin: "0 auto",
-        background: active ? "rgba(34,197,94,0.20)" : "transparent",
+        background: active ? "rgba(249,115,22,0.20)" : "transparent",
         boxShadow: active ? inset : "none",
-        color: active ? "#86efac" : "rgba(255,255,255,0.55)",
+        color: active ? "#fdba74" : "rgba(255,255,255,0.55)",
         transition: "background 150ms, color 150ms",
         flexShrink: 0,
       };
@@ -126,9 +90,9 @@ export default function Sidebar({
           display: "flex", alignItems: "center", gap: "0.75rem",
           paddingTop: "0.6rem", paddingBottom: "0.6rem",
           paddingLeft: "calc(0.75rem - 3px)",
-          borderLeft: "3px solid #22c55e",
+          borderLeft: "3px solid #f97316",
           borderRadius: "0 12px 12px 0",
-          background: "rgba(34,197,94,0.16)",
+          background: "rgba(249,115,22,0.16)",
           boxShadow: insetSm,
           color: "#fff",
           fontSize: "0.875rem", fontWeight: 600,
@@ -157,7 +121,7 @@ export default function Sidebar({
         width: iconOnly ? "4rem" : "16rem",
         transition: "width 0.28s cubic-bezier(.4,0,.2,1), transform 0.28s cubic-bezier(.4,0,.2,1)",
       }}
-      aria-label="Application sidebar"
+      aria-label="Admin sidebar"
     >
       {/* ── Logo / Brand ────────────────────────────────────────── */}
       <div
@@ -169,16 +133,16 @@ export default function Sidebar({
         }}
       >
         <Link
-          href="/dashboard"
+          href="/admin"
           className="flex items-center gap-3 group min-w-0"
           onClick={onMobileClose}
-          aria-label="GreenTrack AI home"
+          aria-label="Admin Command Center"
         >
           <div
             className="w-9 h-9 flex items-center justify-center shrink-0 transition-transform group-hover:scale-105"
-            style={{ borderRadius: 12, background: "rgba(255,255,255,0.06)", boxShadow: inset }}
+            style={{ borderRadius: 12, background: "rgba(249,115,22,0.12)", boxShadow: inset }}
           >
-            <Leaf className="w-5 h-5" style={{ color: "#4ade80" }} />
+            <Shield className="w-5 h-5" style={{ color: "#f97316" }} />
           </div>
 
           {!iconOnly && (
@@ -186,8 +150,8 @@ export default function Sidebar({
               <p className="font-bold text-white text-sm leading-tight tracking-tight whitespace-nowrap">
                 GreenTrack AI
               </p>
-              <p className="text-[11px] leading-tight whitespace-nowrap" style={{ color: "#4ade80" }}>
-                Carbon Management
+              <p className="text-[11px] leading-tight whitespace-nowrap" style={{ color: "#f97316" }}>
+                Admin Portal
               </p>
             </div>
           )}
@@ -196,18 +160,23 @@ export default function Sidebar({
         {!iconOnly && <ThemeToggle buttonStyle={toggleBtnStyle} />}
       </div>
 
-      {/* ── Org / Tier strip ────────────────────────────────────── */}
+      {/* ── Admin label strip ────────────────────────────────────── */}
       {!iconOnly && (
         <div
           className="px-4 py-2.5 flex items-center justify-between gap-2 shrink-0"
           style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
         >
-          <p className="text-white/90 text-xs font-semibold truncate">{orgName}</p>
+          <p className="text-white/90 text-xs font-semibold truncate">Command Center</p>
           <span
             className="shrink-0 inline-flex items-center px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider"
-            style={tierCfg.style}
+            style={{
+              background: "rgba(249,115,22,0.15)",
+              color: "#fdba74",
+              boxShadow: "inset 3px 3px 6px rgba(100,30,0,0.45), inset -3px -3px 6px rgba(255,160,60,0.18)",
+              borderRadius: "6px",
+            }}
           >
-            {tierCfg.label}
+            Super Admin
           </span>
         </div>
       )}
@@ -216,11 +185,11 @@ export default function Sidebar({
       <nav
         className="flex-1 py-2 overflow-y-auto overflow-x-hidden"
         style={{ paddingLeft: iconOnly ? 0 : "0.5rem", paddingRight: iconOnly ? 0 : "0.5rem" }}
-        aria-label="Main navigation"
+        aria-label="Admin navigation"
       >
         <div className="space-y-0.5">
-          {NAV_ITEMS.map(({ label, href, icon: Icon }) => {
-            const active = pathname === href;
+          {ADMIN_NAV.map(({ label, href, icon: Icon }) => {
+            const active = isActive(href);
             return (
               <Link
                 key={href}
@@ -249,14 +218,12 @@ export default function Sidebar({
               </Link>
             );
           })}
-
-
         </div>
 
         <div className="mt-3 pt-3" style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }} />
       </nav>
 
-      {/* ── Desktop collapse toggle (hidden on mobile) ──────────── */}
+      {/* ── Desktop collapse toggle ──────────────────────────────── */}
       <button
         type="button"
         onClick={onCollapseToggle}
@@ -272,7 +239,7 @@ export default function Sidebar({
         aria-label={iconOnly ? "Expand sidebar" : "Collapse sidebar"}
       >
         <Leaf
-          className={`w-4 h-4 text-gt-green-400 transition-all duration-500 ease-in-out ${
+          className={`w-4 h-4 text-orange-400 transition-all duration-500 ease-in-out ${
             iconOnly ? "rotate-180 scale-x-[-1]" : "rotate-0"
           }`}
         />
@@ -281,13 +248,13 @@ export default function Sidebar({
       {/* ── User profile footer ─────────────────────────────────── */}
       <div
         className="shrink-0 p-3"
-        style={{ borderTop: "1px solid rgba(255,255,255,0.08)", background: "rgba(0,0,0,0.20)" }}
+        style={{ borderTop: "1px solid rgba(255,255,255,0.08)", background: "rgba(0,0,0,0.25)" }}
       >
         {iconOnly ? (
           <div className="flex flex-col items-center gap-2">
             <div
               className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
-              style={{ background: "linear-gradient(145deg, #16a34a, #22c55e)", boxShadow: raised, color: "#fff" }}
+              style={{ background: "linear-gradient(145deg, #ea580c, #f97316)", boxShadow: raised, color: "#fff" }}
               title={userName}
             >
               {initials}
@@ -299,13 +266,13 @@ export default function Sidebar({
             <div className="flex items-center gap-3 mb-3">
               <div
                 className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
-                style={{ background: "linear-gradient(145deg, #16a34a, #22c55e)", boxShadow: raised, color: "#fff" }}
+                style={{ background: "linear-gradient(145deg, #ea580c, #f97316)", boxShadow: raised, color: "#fff" }}
               >
                 {initials}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-white text-xs font-semibold truncate leading-tight">{userName}</p>
-                <p className="text-[11px] truncate leading-tight" style={{ color: "#4ade80" }}>{userEmail}</p>
+                <p className="text-[11px] truncate leading-tight" style={{ color: "#f97316" }}>{userEmail}</p>
               </div>
             </div>
 

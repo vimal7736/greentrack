@@ -7,14 +7,15 @@ import type { AdminUser } from "@/types";
 import { DataTable, type ColumnDef } from "@/components/ui/DataTable";
 import { Input } from "@/components/ui/Input";
 import { formatDate } from "@/lib/utils/format";
+import { AdminSubNav } from "../AdminSubNav";
 
 /* ── Role badge styles ─────────────────────────────────────── */
 const ROLE_STYLES: Record<string, { bg: string; text: string; ring: string }> = {
-  owner:      { bg: "rgba(249,115,22,0.10)", text: "var(--brand-orange-dark)", ring: "rgba(249,115,22,0.20)" },
-  admin:      { bg: "rgba(59,130,246,0.10)", text: "#3b82f6",                 ring: "rgba(59,130,246,0.20)" },
-  member:     { bg: "rgba(120,120,120,0.08)", text: "var(--text-muted)",       ring: "rgba(120,120,120,0.15)" },
-  superadmin: { bg: "rgba(239,68,68,0.10)",  text: "#ef4444",                 ring: "rgba(239,68,68,0.20)" },
-  super_admin: { bg: "rgba(239,68,68,0.10)", text: "#ef4444",                 ring: "rgba(239,68,68,0.20)" },
+  owner:       { bg: "rgba(249,115,22,0.10)", text: "var(--brand-orange-dark)", ring: "rgba(249,115,22,0.20)" },
+  admin:       { bg: "rgba(59,130,246,0.10)", text: "#3b82f6",                  ring: "rgba(59,130,246,0.20)" },
+  member:      { bg: "rgba(120,120,120,0.08)", text: "var(--text-muted)",        ring: "rgba(120,120,120,0.15)" },
+  superadmin:  { bg: "rgba(239,68,68,0.10)",  text: "#ef4444",                  ring: "rgba(239,68,68,0.20)" },
+  super_admin: { bg: "rgba(239,68,68,0.10)",  text: "#ef4444",                  ring: "rgba(239,68,68,0.20)" },
 };
 
 const ROLE_FILTERS = [
@@ -22,7 +23,7 @@ const ROLE_FILTERS = [
   { key: "owner",      label: "Owners" },
   { key: "admin",      label: "Admins" },
   { key: "member",     label: "Members" },
-  { key: "superadmin", label: "Super Admins" },
+  { key: "superadmin", label: "Super" },
 ];
 
 export default function AdminUsersPage() {
@@ -62,9 +63,9 @@ export default function AdminUsersPage() {
   }, [users, roleFilter, search]);
 
   /* ── Stats ──────────────────────────────────────────────── */
-  const totalUsers = users.length;
-  const ownerCount = users.filter((u) => u.role === "owner").length;
-  const adminCount = users.filter((u) => u.role === "admin").length;
+  const totalUsers  = users.length;
+  const ownerCount  = users.filter((u) => u.role === "owner").length;
+  const adminCount  = users.filter((u) => u.role === "admin").length;
   const memberCount = users.filter((u) => u.role === "member").length;
 
   /* ── Columns ────────────────────────────────────────────── */
@@ -80,9 +81,9 @@ export default function AdminUsersPage() {
           .toUpperCase()
           .slice(0, 2);
         return (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 lg:gap-3">
             <div
-              className="w-9 h-9 rounded-full flex items-center justify-center text-[10px] font-black shrink-0"
+              className="w-8 h-8 lg:w-9 lg:h-9 rounded-full flex items-center justify-center text-[10px] font-black shrink-0"
               style={{
                 background: "linear-gradient(145deg, var(--brand-green-dark), var(--brand-green))",
                 color: "#fff",
@@ -120,7 +121,7 @@ export default function AdminUsersPage() {
         const style = ROLE_STYLES[u.role] ?? ROLE_STYLES.member;
         return (
           <span
-            className="inline-flex items-center px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest"
+            className="inline-flex items-center px-2 lg:px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest"
             style={{
               background: style.bg,
               color: style.text,
@@ -144,9 +145,9 @@ export default function AdminUsersPage() {
   ];
 
   return (
-    <div className="space-y-6 animate-scale-in">
-      {/* ── Stats ──────────────────────────────────────────── */}
-      <div className="grid grid-cols-4 gap-4">
+    <div className="space-y-4 lg:space-y-6 animate-scale-in">
+      {/* ── Stats — 2 cols mobile → 4 desktop ───────────────── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
         {[
           { label: "Total Users",  value: totalUsers,  icon: <Users className="w-4 h-4" />,     accent: "orange" },
           { label: "Owners",       value: ownerCount,  icon: <Shield className="w-4 h-4" />,    accent: "orange" },
@@ -155,13 +156,13 @@ export default function AdminUsersPage() {
         ].map(({ label, value, icon, accent }) => (
           <div
             key={label}
-            className="premium-card p-5"
+            className="premium-card p-4 lg:p-5"
             style={{ borderTop: `3px solid ${accent === "green" ? "var(--brand-green)" : "var(--brand-orange)"}` }}
           >
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted opacity-50">{label}</span>
+            <div className="flex items-center justify-between mb-2 lg:mb-3">
+              <span className="text-[9px] lg:text-[10px] font-black uppercase tracking-[0.2em] text-text-muted opacity-50">{label}</span>
               <div
-                className="w-8 h-8 rounded-xl flex items-center justify-center"
+                className="w-7 h-7 lg:w-8 lg:h-8 rounded-xl flex items-center justify-center"
                 style={{
                   background: "var(--neu-base)",
                   boxShadow: "var(--shadow-inset-sm)",
@@ -171,15 +172,15 @@ export default function AdminUsersPage() {
                 {icon}
               </div>
             </div>
-            <span className="text-2xl font-black tracking-tighter" style={{ color: "var(--text-primary)" }}>
+            <span className="text-xl lg:text-2xl font-black tracking-tighter" style={{ color: "var(--text-primary)" }}>
               {value}
             </span>
           </div>
         ))}
       </div>
 
-      {/* ── Search + Filter ────────────────────────────────── */}
-      <div className="flex items-end gap-4">
+      {/* ── Search + Filter — stacks on mobile ───────────────── */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3 lg:gap-4">
         <div className="flex-1">
           <Input
             icon={<Search className="w-4 h-4" />}
@@ -189,13 +190,15 @@ export default function AdminUsersPage() {
           />
         </div>
 
+        {/* Role filter — horizontally scrollable on mobile */}
         <div
-          className="flex items-center gap-1 p-1 rounded-xl"
+          className="flex items-center gap-1 p-1 rounded-xl overflow-x-auto shrink-0"
           style={{
             background: "var(--neu-base)",
             boxShadow: "var(--shadow-inset-xs)",
             border: "var(--card-border)",
-          }}
+            scrollbarWidth: "none",
+          } as React.CSSProperties}
         >
           {ROLE_FILTERS.map(({ key, label }) => (
             <button

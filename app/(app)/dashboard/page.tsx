@@ -41,10 +41,6 @@ export default async function DashboardPage() {
     .eq("id", user.id)
     .single();
 
-  if (profile?.role === "superadmin" || profile?.role === "super_admin") {
-    redirect("/admin");
-  }
-
   if (!profile?.org_id) return <NoOrgState />;
 
   const org = (

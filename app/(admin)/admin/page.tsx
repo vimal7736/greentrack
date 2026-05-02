@@ -6,6 +6,7 @@ import {
   ArrowUpRight, UserPlus, Upload, Zap, Flame,
 } from "lucide-react";
 import type { AdminStats, AdminActivity } from "@/types";
+import { AdminSubNav } from "./AdminSubNav";
 
 /* ── Tier colors ────────────────────────────────────────────── */
 const TIER_BAR_COLORS: Record<string, string> = {
@@ -38,18 +39,20 @@ export default function AdminOverviewPage() {
 
   if (loading) {
     return (
-      <div className="space-y-6 animate-pulse">
-        <div className="grid grid-cols-5 gap-4">
+      <div className="space-y-4 lg:space-y-6 animate-pulse">
+        {/* KPI skeleton — 2 cols mobile → 3 tablet → 5 desktop */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 lg:gap-4">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="premium-card p-6 space-y-3">
+            <div key={i} className={`premium-card p-4 lg:p-6 space-y-3${i === 4 ? " col-span-2 sm:col-span-1" : ""}`}>
               <div className="h-3 w-20 rounded" style={{ background: "var(--bg-inset)" }} />
               <div className="h-8 w-16 rounded" style={{ background: "var(--bg-inset)" }} />
             </div>
           ))}
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        {/* Two card row skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
           {Array.from({ length: 2 }).map((_, i) => (
-            <div key={i} className="premium-card p-6 h-48" />
+            <div key={i} className="premium-card p-4 lg:p-6 h-40 lg:h-48" />
           ))}
         </div>
       </div>
@@ -92,24 +95,24 @@ export default function AdminOverviewPage() {
   ];
 
   return (
-    <div className="space-y-6 animate-scale-in">
-      {/* ── KPI Cards ──────────────────────────────────────── */}
-      <div className="grid grid-cols-5 gap-4">
-        {kpis.map(({ label, value, icon, accent, href }) => {
+    <div className="space-y-4 lg:space-y-6 animate-scale-in">
+      {/* ── KPI Cards — 2 cols mobile → 3 tablet → 5 desktop ── */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 lg:gap-4">
+        {kpis.map(({ label, value, icon, accent, href }, idx) => {
           const accentColor = accent === "green" ? "var(--brand-green)" : "var(--brand-orange)";
           const iconColor = accent === "green" ? "var(--brand-green-dark)" : "var(--brand-orange-dark)";
 
           const card = (
             <div
-              className="premium-card p-6 group relative overflow-hidden transition-all duration-500 hover:-translate-y-1"
+              className={`premium-card p-4 lg:p-6 group relative overflow-hidden transition-all duration-500 hover:-translate-y-1${idx === 4 ? " col-span-2 sm:col-span-1" : ""}`}
               style={{ borderTop: `3px solid ${accentColor}` }}
             >
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted opacity-50">
+              <div className="flex items-center justify-between mb-3 lg:mb-4">
+                <span className="text-[9px] lg:text-[10px] font-black uppercase tracking-[0.2em] text-text-muted opacity-50">
                   {label}
                 </span>
                 <div
-                  className="w-9 h-9 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110"
+                  className="w-8 h-8 lg:w-9 lg:h-9 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110"
                   style={{
                     background: "var(--neu-base)",
                     boxShadow: "var(--shadow-inset-sm)",
@@ -119,11 +122,11 @@ export default function AdminOverviewPage() {
                   {icon}
                 </div>
               </div>
-              <span className="text-2xl font-black tracking-tighter" style={{ color: "var(--text-primary)" }}>
+              <span className="text-xl lg:text-2xl font-black tracking-tighter" style={{ color: "var(--text-primary)" }}>
                 {value}
               </span>
               {href && (
-                <div className="flex items-center gap-1 mt-3 text-[9px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-60 transition-opacity" style={{ color: "var(--text-muted)" }}>
+                <div className="flex items-center gap-1 mt-2 lg:mt-3 text-[9px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-60 transition-opacity" style={{ color: "var(--text-muted)" }}>
                   View All <ArrowUpRight className="w-3 h-3" />
                 </div>
               )}
@@ -132,27 +135,27 @@ export default function AdminOverviewPage() {
           );
 
           return href ? (
-            <Link key={label} href={href} className="block">
+            <Link key={label} href={href} className={`block${idx === 4 ? " col-span-2 sm:col-span-1" : ""}`}>
               {card}
             </Link>
           ) : (
-            <div key={label}>{card}</div>
+            <div key={label} className={idx === 4 ? "col-span-2 sm:col-span-1" : ""}>{card}</div>
           );
         })}
       </div>
 
-      {/* ── Row: Plan Distribution + Revenue Breakdown ───── */}
-      <div className="grid grid-cols-2 gap-4">
+      {/* ── Row: Plan Distribution + Revenue Breakdown — stacks on mobile ── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
         {/* Plan Distribution */}
         <div
-          className="rounded-2xl p-6"
+          className="rounded-2xl p-4 lg:p-6"
           style={{
             background: "var(--neu-base)",
             boxShadow: "var(--shadow-raised)",
             border: "var(--card-border)",
           }}
         >
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted opacity-50 mb-5">
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted opacity-50 mb-4 lg:mb-5">
             Plan Distribution
           </p>
           <div className="space-y-4">
@@ -199,24 +202,24 @@ export default function AdminOverviewPage() {
 
         {/* Revenue Breakdown */}
         <div
-          className="rounded-2xl p-6"
+          className="rounded-2xl p-4 lg:p-6"
           style={{
             background: "var(--neu-base)",
             boxShadow: "var(--shadow-raised)",
             border: "var(--card-border)",
           }}
         >
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted opacity-50 mb-5">
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted opacity-50 mb-4 lg:mb-5">
             Revenue Breakdown
           </p>
-          <div className="space-y-4">
+          <div className="space-y-3 lg:space-y-4">
             {[
               { tier: "Starter", count: stats?.tier_counts?.starter ?? 0, price: 24, color: "#3b82f6" },
               { tier: "Business", count: stats?.tier_counts?.business ?? 0, price: 99, color: "var(--brand-green)" },
             ].map(({ tier, count, price, color }) => (
               <div
                 key={tier}
-                className="flex items-center justify-between p-4 rounded-xl"
+                className="flex items-center justify-between p-3 lg:p-4 rounded-xl"
                 style={{
                   background: "var(--bg-inset)",
                   border: "var(--card-border)",
@@ -233,14 +236,14 @@ export default function AdminOverviewPage() {
                     </p>
                   </div>
                 </div>
-                <span className="text-lg font-black tracking-tighter" style={{ color: "var(--text-primary)" }}>
+                <span className="text-base lg:text-lg font-black tracking-tighter" style={{ color: "var(--text-primary)" }}>
                   £{(count * price).toLocaleString()}
                 </span>
               </div>
             ))}
 
             <div
-              className="flex items-center justify-between p-4 rounded-xl"
+              className="flex items-center justify-between p-3 lg:p-4 rounded-xl"
               style={{
                 background: "rgba(249,115,22,0.06)",
                 border: "1px solid rgba(249,115,22,0.15)",
@@ -249,7 +252,7 @@ export default function AdminOverviewPage() {
               <span className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: "var(--brand-orange)" }}>
                 Total MRR (ex VAT)
               </span>
-              <span className="text-2xl font-black tracking-tighter" style={{ color: "var(--brand-orange)" }}>
+              <span className="text-xl lg:text-2xl font-black tracking-tighter" style={{ color: "var(--brand-orange)" }}>
                 £{(stats?.mrr ?? 0).toLocaleString()}
               </span>
             </div>
@@ -257,7 +260,7 @@ export default function AdminOverviewPage() {
         </div>
       </div>
 
-      {/* ── Recent Activity Feed ───────────────────────────── */}
+      {/* ── Recent Activity Feed ──────────────────────────────── */}
       <div
         className="rounded-2xl overflow-hidden"
         style={{
@@ -266,7 +269,7 @@ export default function AdminOverviewPage() {
           border: "var(--card-border)",
         }}
       >
-        <div className="px-6 py-5 flex items-center justify-between" style={{ borderBottom: "1px solid var(--border-subtle)" }}>
+        <div className="px-4 lg:px-6 py-4 lg:py-5 flex items-center justify-between" style={{ borderBottom: "1px solid var(--border-subtle)" }}>
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: "var(--brand-orange)" }} />
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted">
@@ -275,7 +278,7 @@ export default function AdminOverviewPage() {
           </div>
           <Link
             href="/admin/activity"
-            className="px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2 hover:shadow-lg"
+            className="px-3 lg:px-4 py-1.5 lg:py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2 hover:shadow-lg"
             style={{
               background: "var(--bg-inset)",
               color: "var(--text-muted)",
@@ -285,9 +288,9 @@ export default function AdminOverviewPage() {
           </Link>
         </div>
 
-        <div className="p-4">
+        <div className="p-3 lg:p-4">
           {activities.length === 0 ? (
-            <div className="py-12 text-center">
+            <div className="py-10 lg:py-12 text-center">
               <p className="text-sm font-bold text-text-muted opacity-40">No activity recorded yet</p>
             </div>
           ) : (
@@ -315,11 +318,9 @@ function ActivityRow({ activity }: { activity: AdminActivity }) {
   const timeAgo = getTimeAgo(activity.created_at);
 
   return (
-    <div
-      className="flex items-center gap-4 px-4 py-3.5 rounded-xl group transition-all duration-300 hover:bg-white/5"
-    >
+    <div className="flex items-center gap-3 lg:gap-4 px-3 lg:px-4 py-3 lg:py-3.5 rounded-xl group transition-all duration-300 hover:bg-white/5">
       <div
-        className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110"
+        className="w-8 h-8 lg:w-9 lg:h-9 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110"
         style={{ background: cfg.bg }}
       >
         <cfg.Icon className="w-4 h-4" style={{ color: cfg.color }} />
