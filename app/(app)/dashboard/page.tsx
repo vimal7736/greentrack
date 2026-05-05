@@ -8,7 +8,6 @@ import {
   Lightbulb, AlertTriangle, CheckCircle, Leaf,
 } from "lucide-react";
 import DashboardCharts from "./DashboardCharts";
-import NoOrgState from "@/components/NoOrgState";
 import { BudgetRing } from "./BudgetRing";
 import { PeriodComparison } from "./PeriodComparison";
 
@@ -41,22 +40,21 @@ export default async function DashboardPage() {
     .eq("id", user.id)
     .single();
 
-  if (!profile?.org_id) return <NoOrgState />;
-
   const org = (
-    Array.isArray(profile.organisations) ? profile.organisations[0] : profile.organisations
+    Array.isArray(profile?.organisations) ? profile.organisations[0] : profile?.organisations
   ) as { name: string } | null;
   const orgName = org?.name ?? "Your Organisation";
+  const orgId   = profile?.org_id ?? null;
 
   const twelveMonthsAgo = new Date();
   twelveMonthsAgo.setFullYear(twelveMonthsAgo.getFullYear() - 1);
 
-  const { data: billsData } = await supabase
+  const { data: billsData } = orgId ? await supabase
     .from("bills")
     .select("id,bill_type,bill_date,usage_amount,usage_unit,co2_kg,cost_gbp,supplier,created_at")
-    .eq("org_id", profile.org_id)
+    .eq("org_id", orgId)
     .gte("bill_date", twelveMonthsAgo.toISOString().slice(0, 10))
-    .order("bill_date", { ascending: false });
+    .order("bill_date", { ascending: false }) : { data: [] };
 
   type BillRow = {
     id: string; bill_type: string; bill_date: string;

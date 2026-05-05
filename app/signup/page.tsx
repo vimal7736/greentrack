@@ -1,200 +1,376 @@
 "use client";
 
 import { useState } from "react";
-import { Leaf, CheckCircle, AlertCircle } from "lucide-react";
+import {
+  Leaf, CheckCircle, AlertCircle, ArrowRight, ArrowLeft,
+  Eye, EyeOff, ShieldCheck, BarChart3, FileText, Users,
+} from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
+/* ── Constants ──────────────────────────────────────────────── */
+const UK_INDUSTRIES = [
+  "Agriculture & Forestry", "Construction & Property", "Education",
+  "Energy & Utilities", "Finance & Insurance", "Food & Beverage",
+  "Healthcare & Social Care", "Hospitality & Tourism", "IT & Technology",
+  "Legal & Professional Services", "Manufacturing", "Media & Communications",
+  "Retail & Wholesale", "Transport & Logistics", "Other",
+];
+
+/* ── Types ──────────────────────────────────────────────────── */
+type OrgData = {
+  companyName: string; companyNumber: string; vatNumber: string; industry: string;
+  orgEmail: string; phone: string; website: string;
+  addressLine1: string; addressLine2: string; city: string;
+  county: string; postcode: string; country: string;
+};
+type UserData = {
+  firstName: string; lastName: string; jobTitle: string;
+  email: string; phone: string; password: string; confirmPassword: string;
+};
+
+const INIT_ORG: OrgData = {
+  companyName: "", companyNumber: "", vatNumber: "", industry: "", orgEmail: "",
+  phone: "", website: "", addressLine1: "", addressLine2: "", city: "",
+  county: "", postcode: "", country: "GB",
+};
+const INIT_USER: UserData = {
+  firstName: "", lastName: "", jobTitle: "", email: "", phone: "", password: "", confirmPassword: "",
+};
+
+/* ── Shared styles ──────────────────────────────────────────── */
+const inp =
+  "w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-900 " +
+  "placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all";
+const sel = inp + " cursor-pointer";
+
+function F({ label, req, children }: { label: string; req?: boolean; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-1">
+      <label className="text-[9px] font-black uppercase tracking-widest text-gray-400">
+        {label}{req && <span className="text-red-400 ml-0.5">*</span>}
+      </label>
+      {children}
+    </div>
+  );
+}
+
+/* ── Page ───────────────────────────────────────────────────── */
 export default function SignupPage() {
   const supabase = createClient();
+  const [step, setStep]           = useState<1 | 2 | "done">(1);
+  const [loading, setLoading]     = useState(false);
+  const [error, setError]         = useState<string | null>(null);
+  const [doneEmail, setDoneEmail] = useState("");
+  const [showPass, setShowPass]   = useState(false);
+  const [showConf, setShowConf]   = useState(false);
+  const [org, setOrg]             = useState<OrgData>(INIT_ORG);
+  const [user, setUser]           = useState<UserData>(INIT_USER);
 
-  const [step, setStep] = useState<"form" | "verify">("form");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [userEmail, setUserEmail] = useState("");
+  const setO = (f: keyof OrgData) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+      setOrg(p => ({ ...p, [f]: e.target.value }));
+  const setU = (f: keyof UserData) =>
+    (e: React.ChangeEvent<HTMLInputElement>) =>
+      setUser(p => ({ ...p, [f]: e.target.value }));
 
-  async function handleSignup(formData: FormData) {
-    setLoading(true);
+  function handleStep1() {
     setError(null);
+    if (!/^[A-Z]{1,2}\d[A-Z\d]? ?\d[A-Z]{2}$/i.test(org.postcode.trim())) {
+      setError("Enter a valid UK postcode — e.g. SW1A 1AA");
+      return;
+    }
+    setStep(2);
+  }
 
-    const firstName = formData.get("firstName") as string;
-    const lastName = formData.get("lastName") as string;
-    const company = formData.get("company") as string;
-    const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
+  async function handleStep2() {
+    setError(null);
+    if (user.password !== user.confirmPassword) { setError("Passwords do not match."); return; }
+    if (user.password.length < 8) { setError("Password must be at least 8 characters."); return; }
+    setLoading(true);
 
-    // 1. Create the auth user in Supabase
-    const { data, error: signupError } = await supabase.auth.signUp({
-      email,
-      password,
+    const { data, error: err } = await supabase.auth.signUp({
+      email: user.email, password: user.password,
       options: {
-        // This data gets saved to the profile after email confirmation
         data: {
-          full_name: `${firstName} ${lastName}`,
-          company_name: company,
+          full_name: `${user.firstName} ${user.lastName}`,
+          job_title: user.jobTitle, user_phone: user.phone,
+          org_name: org.companyName, org_email: org.orgEmail, org_phone: org.phone,
+          org_website: org.website, org_company_number: org.companyNumber,
+          org_vat_number: org.vatNumber, org_industry: org.industry,
+          org_address_line1: org.addressLine1, org_address_line2: org.addressLine2,
+          org_city: org.city, org_county: org.county,
+          org_postcode: org.postcode.toUpperCase(), org_country: org.country,
         },
         emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/callback`,
       },
     });
-
-    if (signupError) {
-      setError(signupError.message);
-      setLoading(false);
-      return;
-    }
-
-    // 2. If signup succeeded, show the verify email step
-    if (data.user) {
-      setUserEmail(email);
-      setStep("verify");
-    }
-
     setLoading(false);
+    if (err) { setError(err.message); return; }
+    if (data.user) { setDoneEmail(user.email); setStep("done"); }
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-900 to-green-700 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div className="h-screen flex overflow-hidden">
 
+      {/* ── Left branding panel ─────────────────────────────── */}
+      <div className="hidden lg:flex w-[380px] shrink-0 bg-gradient-to-br from-green-900 via-green-800 to-green-700 flex-col justify-between p-10">
         {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="w-14 h-14 bg-green-400 rounded-2xl flex items-center justify-center mx-auto mb-3">
-            <Leaf className="w-8 h-8 text-green-900" />
+        <div>
+          <div className="flex items-center gap-3 mb-10">
+            <div className="w-10 h-10 bg-green-400 rounded-xl flex items-center justify-center">
+              <Leaf className="w-5 h-5 text-green-900" />
+            </div>
+            <span className="text-white font-bold text-lg">GreenTrack AI</span>
           </div>
-          <h1 className="text-2xl font-bold text-white">GreenTrack AI</h1>
-          <p className="text-green-300 text-sm mt-1">Start tracking your carbon footprint</p>
+          <h2 className="text-white text-2xl font-black leading-snug mb-3">
+            Carbon management<br />for UK businesses
+          </h2>
+          <p className="text-green-300 text-sm leading-relaxed mb-10">
+            Track, report, and reduce your carbon footprint using real UK DEFRA emission factors.
+          </p>
+          <div className="space-y-4">
+            {[
+              { Icon: BarChart3,  text: "Automatic CO₂ calculation from bills" },
+              { Icon: FileText,   text: "SECR-compliant PDF carbon reports" },
+              { Icon: Users,      text: "Team management & role-based access" },
+              { Icon: ShieldCheck, text: "UK GDPR compliant · Data in London" },
+            ].map(({ Icon, text }) => (
+              <div key={text} className="flex items-center gap-3">
+                <div className="w-7 h-7 rounded-lg bg-green-700 flex items-center justify-center shrink-0">
+                  <Icon className="w-3.5 h-3.5 text-green-300" />
+                </div>
+                <p className="text-green-200 text-xs">{text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+        <p className="text-green-500 text-[10px]">© 2025 GreenTrack AI · Free to start</p>
+      </div>
+
+      {/* ── Right form panel ────────────────────────────────── */}
+      <div className="flex-1 bg-white overflow-y-auto flex flex-col">
+        {/* Mobile header */}
+        <div className="lg:hidden flex items-center gap-2 px-6 pt-6 pb-2">
+          <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
+            <Leaf className="w-4 h-4 text-white" />
+          </div>
+          <span className="font-bold text-gray-900">GreenTrack AI</span>
         </div>
 
-        {step === "form" ? (
-          <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-2xl">
-            <h2 className="text-xl font-bold text-gray-900 mb-1">Create your account</h2>
-            <p className="text-gray-500 text-sm mb-6">Free to start — no credit card required</p>
+        <div className="flex-1 flex flex-col justify-center px-8 lg:px-14 py-6 max-w-xl w-full mx-auto lg:mx-0 lg:max-w-none">
 
-            {error && (
-              <div className="mb-4 flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg">
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                {error}
+          {/* ── Done ──────────────────────────────────────── */}
+          {step === "done" && (
+            <div className="text-center max-w-sm mx-auto">
+              <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle className="w-8 h-8 text-green-600" />
               </div>
-            )}
-
-            <form action={handleSignup} className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-gray-900 mb-1.5 uppercase tracking-wider">
-                    First name
-                  </label>
-                  <input
-                    name="firstName"
-                    required
-                    placeholder="James"
-                    className="w-full bg-white border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-900 mb-1.5 uppercase tracking-wider">
-                    Last name
-                  </label>
-                  <input
-                    name="lastName"
-                    required
-                    placeholder="Mitchell"
-                    className="w-full bg-white border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-gray-900 mb-1.5 uppercase tracking-wider">
-                  Company name
-                </label>
-                <input
-                  name="company"
-                  required
-                  placeholder="Acme Ltd"
-                  className="w-full bg-white border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-gray-900 mb-1.5 uppercase tracking-wider">
-                  Work email
-                </label>
-                <input
-                  name="email"
-                  type="email"
-                  required
-                  placeholder="james@acmeltd.co.uk"
-                  className="w-full bg-white border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-gray-900 mb-1.5 uppercase tracking-wider">
-                  Password
-                </label>
-                <input
-                  name="password"
-                  type="password"
-                  required
-                  minLength={8}
-                  placeholder="Min. 8 characters"
-                  className="w-full bg-white border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
-                />
-              </div>
-
-              <label className="flex items-start gap-2 text-xs text-gray-500 cursor-pointer">
-                <input type="checkbox" required className="mt-0.5 rounded" />
-                I agree to the{" "}
-                <Link href="/terms" className="text-green-600 underline">Terms of Service</Link>
-                {" "}and{" "}
-                <Link href="/privacy" className="text-green-600 underline">Privacy Policy</Link>
-              </label>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-green-600 hover:bg-green-700 disabled:opacity-60 text-white py-3 rounded-lg font-semibold text-sm transition-colors"
-              >
-                {loading ? "Creating account..." : "Create Account"}
-              </button>
-            </form>
-
-            <p className="text-center text-sm text-gray-500 mt-6">
-              Already have an account?{" "}
-              <Link href="/login" className="text-green-600 font-medium hover:underline">
-                Sign in
+              <h2 className="text-xl font-bold text-gray-900 mb-2">Check your email</h2>
+              <p className="text-gray-500 text-sm mb-1">
+                Verification link sent to <strong className="text-gray-800">{doneEmail}</strong>
+              </p>
+              <p className="text-gray-500 text-sm mb-6">
+                Welcome email sent to <strong className="text-gray-800">{org.orgEmail}</strong>
+              </p>
+              <Link href="/login" className="text-green-600 text-sm font-semibold hover:underline">
+                Back to Sign In →
               </Link>
-            </p>
-          </div>
-        ) : (
-          /* Email verification step */
-          <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-2xl text-center">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="w-9 h-9 text-green-600" />
             </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Check your email</h2>
-            <p className="text-gray-500 text-sm mb-6">
-              We sent a verification link to{" "}
-              <strong className="text-gray-800">{userEmail}</strong>.
-              <br />
-              Click the link to activate your account.
-            </p>
-            <p className="text-xs text-gray-400">
-              Didn&apos;t get it? Check your spam folder, or{" "}
-              <button
-                onClick={() => setStep("form")}
-                className="text-green-600 underline"
-              >
-                try again
-              </button>
-              .
-            </p>
-          </div>
-        )}
+          )}
 
-        <p className="text-center text-green-400 text-xs mt-6">
-          UK GDPR compliant · PECR Cookie consent · Data stored in London
-        </p>
+          {step !== "done" && (
+            <>
+              {/* Step indicator */}
+              <div className="flex items-center gap-3 mb-5">
+                <div className="flex items-center gap-2">
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${step === 1 ? "bg-green-600 text-white" : "bg-green-100 text-green-600"}`}>
+                    {step === 2 ? <CheckCircle className="w-3.5 h-3.5" /> : "1"}
+                  </div>
+                  <span className={`text-xs font-bold ${step === 1 ? "text-green-600" : "text-gray-400"}`}>Organisation</span>
+                </div>
+                <div className="flex-1 h-px bg-gray-200 relative">
+                  <div className={`absolute inset-y-0 left-0 bg-green-500 transition-all duration-500 ${step === 2 ? "w-full" : "w-0"}`} />
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${step === 2 ? "bg-green-600 text-white" : "bg-gray-100 text-gray-400"}`}>2</div>
+                  <span className={`text-xs font-bold ${step === 2 ? "text-green-600" : "text-gray-400"}`}>Admin User</span>
+                </div>
+              </div>
+
+              {/* Error */}
+              {error && (
+                <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 text-xs px-3 py-2.5 rounded-lg mb-4">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  {error}
+                </div>
+              )}
+
+              {/* ── STEP 1 ──────────────────────────────────── */}
+              {step === 1 && (
+                <form action={handleStep1} className="space-y-3">
+                  <div className="mb-1">
+                    <h2 className="text-lg font-bold text-gray-900">Organisation Details</h2>
+                    <p className="text-gray-400 text-xs mt-0.5">Tell us about your company</p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <F label="Company Name" req>
+                      <input className={inp} required placeholder="Acme Ltd" value={org.companyName} onChange={setO("companyName")} />
+                    </F>
+                    <F label="Companies House No." req>
+                      <input className={inp} required placeholder="12345678" maxLength={8} value={org.companyNumber} onChange={setO("companyNumber")} />
+                    </F>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <F label="VAT Number">
+                      <input className={inp} placeholder="GB123456789" value={org.vatNumber} onChange={setO("vatNumber")} />
+                    </F>
+                    <F label="Industry" req>
+                      <select className={sel} required value={org.industry} onChange={setO("industry")}>
+                        <option value="">Select...</option>
+                        {UK_INDUSTRIES.map(i => <option key={i} value={i}>{i}</option>)}
+                      </select>
+                    </F>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <F label="Organisation Email" req>
+                      <input className={inp} required type="email" placeholder="hello@acme.co.uk" value={org.orgEmail} onChange={setO("orgEmail")} />
+                    </F>
+                    <F label="Phone" req>
+                      <input className={inp} required type="tel" placeholder="+44 20 7946 0958" value={org.phone} onChange={setO("phone")} />
+                    </F>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <F label="Website">
+                      <input className={inp} type="url" placeholder="https://acme.co.uk" value={org.website} onChange={setO("website")} />
+                    </F>
+                    <F label="Address Line 1" req>
+                      <input className={inp} required placeholder="123 High Street" value={org.addressLine1} onChange={setO("addressLine1")} />
+                    </F>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <F label="Address Line 2">
+                      <input className={inp} placeholder="Suite 4" value={org.addressLine2} onChange={setO("addressLine2")} />
+                    </F>
+                    <F label="City" req>
+                      <input className={inp} required placeholder="London" value={org.city} onChange={setO("city")} />
+                    </F>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-3">
+                    <F label="County">
+                      <input className={inp} placeholder="Surrey" value={org.county} onChange={setO("county")} />
+                    </F>
+                    <F label="Postcode" req>
+                      <input className={inp} required placeholder="SW1A 1AA" value={org.postcode} onChange={setO("postcode")} style={{ textTransform: "uppercase" }} />
+                    </F>
+                    <F label="Country" req>
+                      <select className={sel} required value={org.country} onChange={setO("country")}>
+                        <option value="GB">United Kingdom</option>
+                        <option value="IE">Ireland</option>
+                      </select>
+                    </F>
+                  </div>
+
+                  <button type="submit" className="w-full bg-green-600 hover:bg-green-700 text-white py-2.5 rounded-lg font-semibold text-sm transition-colors flex items-center justify-center gap-2 mt-1">
+                    Continue to Admin User <ArrowRight className="w-4 h-4" />
+                  </button>
+
+                  <p className="text-center text-xs text-gray-400 pt-1">
+                    Already have an account?{" "}
+                    <Link href="/login" className="text-green-600 font-semibold hover:underline">Sign in</Link>
+                  </p>
+                </form>
+              )}
+
+              {/* ── STEP 2 ──────────────────────────────────── */}
+              {step === 2 && (
+                <form action={handleStep2} className="space-y-3">
+                  <div className="mb-1">
+                    <h2 className="text-lg font-bold text-gray-900">Admin User</h2>
+                    <p className="text-gray-400 text-xs mt-0.5">
+                      This person will manage{" "}
+                      <span className="text-green-600 font-semibold">{org.companyName}</span>
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <F label="First Name" req>
+                      <input className={inp} required placeholder="James" value={user.firstName} onChange={setU("firstName")} />
+                    </F>
+                    <F label="Last Name" req>
+                      <input className={inp} required placeholder="Mitchell" value={user.lastName} onChange={setU("lastName")} />
+                    </F>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <F label="Job Title" req>
+                      <input className={inp} required placeholder="Operations Manager" value={user.jobTitle} onChange={setU("jobTitle")} />
+                    </F>
+                    <F label="Direct Phone">
+                      <input className={inp} type="tel" placeholder="+44 7700 900000" value={user.phone} onChange={setU("phone")} />
+                    </F>
+                  </div>
+
+                  <F label="Admin Email" req>
+                    <input className={inp} required type="email" placeholder="james@acme.co.uk" value={user.email} onChange={setU("email")} />
+                  </F>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <F label="Password" req>
+                      <div className="relative">
+                        <input className={inp + " pr-9"} required type={showPass ? "text" : "password"} minLength={8} placeholder="Min. 8 chars" value={user.password} onChange={setU("password")} />
+                        <button type="button" onClick={() => setShowPass(p => !p)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                          {showPass ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                        </button>
+                      </div>
+                    </F>
+                    <F label="Confirm Password" req>
+                      <div className="relative">
+                        <input className={inp + " pr-9"} required type={showConf ? "text" : "password"} minLength={8} placeholder="Re-enter" value={user.confirmPassword} onChange={setU("confirmPassword")} />
+                        <button type="button" onClick={() => setShowConf(p => !p)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                          {showConf ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                        </button>
+                      </div>
+                    </F>
+                  </div>
+
+                  {/* Email routing summary */}
+                  <div className="bg-green-50 border border-green-200 rounded-lg px-3 py-2.5 text-[11px] text-green-700 space-y-0.5">
+                    <p><span className="font-bold">Welcome email</span> → {org.orgEmail}</p>
+                    <p><span className="font-bold">Verification & reset</span> → {user.email || "your admin email"}</p>
+                  </div>
+
+                  <label className="flex items-start gap-2 text-xs text-gray-500 cursor-pointer">
+                    <input type="checkbox" required className="mt-0.5 rounded shrink-0 accent-green-600" />
+                    <span>
+                      I agree to the{" "}
+                      <Link href="/terms" className="text-green-600 underline">Terms</Link>
+                      {" "}and{" "}
+                      <Link href="/privacy" className="text-green-600 underline">Privacy Policy</Link>
+                    </span>
+                  </label>
+
+                  <div className="flex gap-3 pt-1">
+                    <button type="button" onClick={() => { setStep(1); setError(null); }}
+                      className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg border border-gray-200 text-gray-600 text-sm font-semibold hover:bg-gray-50 transition-colors">
+                      <ArrowLeft className="w-3.5 h-3.5" /> Back
+                    </button>
+                    <button type="submit" disabled={loading}
+                      className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-60 text-white py-2.5 rounded-lg font-semibold text-sm transition-colors">
+                      {loading ? "Creating account..." : "Create Account"}
+                    </button>
+                  </div>
+                </form>
+              )}
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
