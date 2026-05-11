@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  BarChart3, Building2, Beaker, Users, Shield, X
+  BarChart3, Building2, Beaker, Users, Shield, X, CreditCard,
 } from "lucide-react";
 
 const NAV_LEFT = [
@@ -11,7 +11,8 @@ const NAV_LEFT = [
 ];
 
 const NAV_RIGHT = [
-  { label: "Factors", href: "/admin/factors", icon: Beaker },
+  { label: "Subs",    href: "/admin/subscriptions", icon: CreditCard },
+// { label: "Factors", href: "/admin/factors", icon: Beaker },
   { label: "Users",   href: "/admin/users",   icon: Users },
 ];
 

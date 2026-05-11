@@ -1,36 +1,51 @@
 "use client";
 import { useState, useEffect, useMemo } from "react";
+import Link from "next/link";
 import {
   Users, Search, Shield, UserCheck, User as UserIcon,
+  ChevronDown, ExternalLink, Ban, CheckCircle2,
 } from "lucide-react";
 import type { AdminUser } from "@/types";
 import { DataTable, type ColumnDef } from "@/components/ui/DataTable";
 import { Input } from "@/components/ui/Input";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { useToast } from "@/components/ui/Toast";
 import { formatDate } from "@/lib/utils/format";
-import { AdminSubNav } from "../AdminSubNav";
 
 /* ── Role badge styles ─────────────────────────────────────── */
 const ROLE_STYLES: Record<string, { bg: string; text: string; ring: string }> = {
-  owner:       { bg: "rgba(249,115,22,0.10)", text: "var(--brand-orange-dark)", ring: "rgba(249,115,22,0.20)" },
-  admin:       { bg: "rgba(59,130,246,0.10)", text: "#3b82f6",                  ring: "rgba(59,130,246,0.20)" },
-  member:      { bg: "rgba(120,120,120,0.08)", text: "var(--text-muted)",        ring: "rgba(120,120,120,0.15)" },
-  superadmin:  { bg: "rgba(239,68,68,0.10)",  text: "#ef4444",                  ring: "rgba(239,68,68,0.20)" },
-  super_admin: { bg: "rgba(239,68,68,0.10)",  text: "#ef4444",                  ring: "rgba(239,68,68,0.20)" },
+  owner: { bg: "rgba(249,115,22,0.10)", text: "var(--brand-orange-dark)", ring: "rgba(249,115,22,0.20)" },
+  admin: { bg: "rgba(59,130,246,0.10)", text: "#3b82f6", ring: "rgba(59,130,246,0.20)" },
+  member: { bg: "rgba(120,120,120,0.08)", text: "var(--text-muted)", ring: "rgba(120,120,120,0.15)" },
+  superadmin: { bg: "rgba(239,68,68,0.10)", text: "#ef4444", ring: "rgba(239,68,68,0.20)" },
+  super_admin: { bg: "rgba(239,68,68,0.10)", text: "#ef4444", ring: "rgba(239,68,68,0.20)" },
 };
 
 const ROLE_FILTERS = [
-  { key: "all",        label: "All" },
-  { key: "owner",      label: "Owners" },
-  { key: "admin",      label: "Admins" },
-  { key: "member",     label: "Members" },
+  { key: "all", label: "All" },
+  { key: "owner", label: "Owners" },
+  { key: "admin", label: "Admins" },
+  { key: "member", label: "Members" },
   { key: "superadmin", label: "Super" },
 ];
 
+const ASSIGNABLE_ROLES = ["owner", "admin", "member"];
+
 export default function AdminUsersPage() {
+  const toast = useToast();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
+  const [changingRole, setChangingRole] = useState<string | null>(null);
+
+  /* ── Disable confirmation ────────────────────────────────── */
+  const [disableTarget, setDisableTarget] = useState<AdminUser | null>(null);
+  const [disableLoading, setDisableLoading] = useState(false);
+
+  /* ── Role change confirmation ────────────────────────────── */
+  const [roleChangeTarget, setRoleChangeTarget] = useState<{ user: AdminUser; newRole: string } | null>(null);
+  const [roleChangeLoading, setRoleChangeLoading] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -44,6 +59,66 @@ export default function AdminUsersPage() {
     }
     load();
   }, []);
+
+  /* ── Role change handler ──────────────────────────────────── */
+  function initiateRoleChange(user: AdminUser, newRole: string) {
+    if (user.role === "superadmin" || user.role === "super_admin") {
+      toast.error("Cannot change a superadmin's role");
+      return;
+    }
+    setRoleChangeTarget({ user, newRole });
+  }
+
+  async function confirmRoleChange() {
+    if (!roleChangeTarget) return;
+    const { user, newRole } = roleChangeTarget;
+    setRoleChangeLoading(true);
+
+    const res = await fetch("/api/admin/users", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: user.id, role: newRole }),
+    });
+
+    if (res.ok) {
+      setUsers((prev) => prev.map((u) => u.id === user.id ? { ...u, role: newRole } : u));
+      toast.success(`${user.full_name}'s role updated to ${newRole}`);
+    } else {
+      const data = await res.json().catch(() => ({}));
+      toast.error(data.error || "Failed to change role");
+    }
+
+    setRoleChangeLoading(false);
+    setRoleChangeTarget(null);
+  }
+
+  /* ── Disable/Enable handler ──────────────────────────────── */
+  async function handleDisableToggle() {
+    if (!disableTarget) return;
+    const isCurrentlyDisabled = (disableTarget as AdminUser & { is_disabled?: boolean }).is_disabled;
+    const action = isCurrentlyDisabled ? "enable" : "disable";
+    setDisableLoading(true);
+
+    const res = await fetch("/api/admin/users", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: disableTarget.id, action }),
+    });
+
+    if (res.ok) {
+      setUsers((prev) => prev.map((u) =>
+        u.id === disableTarget.id
+          ? { ...u, is_disabled: !isCurrentlyDisabled } as AdminUser
+          : u
+      ));
+      toast.success(`User ${action === "disable" ? "disabled" : "enabled"} successfully`);
+    } else {
+      toast.error(`Failed to ${action} user`);
+    }
+
+    setDisableLoading(false);
+    setDisableTarget(null);
+  }
 
   const filtered = useMemo(() => {
     let result = users;
@@ -63,9 +138,9 @@ export default function AdminUsersPage() {
   }, [users, roleFilter, search]);
 
   /* ── Stats ──────────────────────────────────────────────── */
-  const totalUsers  = users.length;
-  const ownerCount  = users.filter((u) => u.role === "owner").length;
-  const adminCount  = users.filter((u) => u.role === "admin").length;
+  const totalUsers = users.length;
+  const ownerCount = users.filter((u) => u.role === "owner").length;
+  const adminCount = users.filter((u) => u.role === "admin").length;
   const memberCount = users.filter((u) => u.role === "member").length;
 
   /* ── Columns ────────────────────────────────────────────── */
@@ -80,27 +155,44 @@ export default function AdminUsersPage() {
           .join("")
           .toUpperCase()
           .slice(0, 2);
+        const isDisabled = (u as AdminUser & { is_disabled?: boolean }).is_disabled;
         return (
-          <div className="flex items-center gap-2 lg:gap-3">
+          <Link href={`/admin/users/${u.id}`} className="flex items-center gap-2 lg:gap-3 group">
             <div
-              className="w-8 h-8 lg:w-9 lg:h-9 rounded-full flex items-center justify-center text-[10px] font-black shrink-0"
+              className="w-8 h-8 lg:w-9 lg:h-9 rounded-full flex items-center justify-center text-[10px] font-black shrink-0 relative"
               style={{
-                background: "linear-gradient(145deg, var(--brand-green-dark), var(--brand-green))",
+                background: isDisabled
+                  ? "linear-gradient(145deg, #6b7280, #9ca3af)"
+                  : "linear-gradient(145deg, var(--brand-green-dark), var(--brand-green))",
                 color: "#fff",
                 boxShadow: "var(--shadow-raised)",
+                opacity: isDisabled ? 0.6 : 1,
               }}
             >
               {initials}
+              {isDisabled && (
+                <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-red-500 border-2 flex items-center justify-center"
+                  style={{ borderColor: "var(--neu-base)" }}>
+                  <Ban className="w-2 h-2 text-white" />
+                </div>
+              )}
             </div>
             <div className="min-w-0">
-              <p className="text-xs font-black tracking-tight truncate" style={{ color: "var(--text-primary)" }}>
+              <p className="text-xs font-black tracking-tight truncate flex items-center gap-1.5" style={{ color: "var(--text-primary)" }}>
                 {u.full_name}
+                <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-50 transition-opacity shrink-0" />
               </p>
               <p className="text-[9px] font-bold text-text-muted opacity-50 truncate">
                 {u.email}
               </p>
+              {isDisabled && (
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[7px] font-black uppercase tracking-widest mt-0.5"
+                  style={{ background: "rgba(239,68,68,0.10)", color: "#ef4444" }}>
+                  <Ban className="w-2 h-2" /> Disabled
+                </span>
+              )}
             </div>
-          </div>
+          </Link>
         );
       },
     },
@@ -119,17 +211,42 @@ export default function AdminUsersPage() {
       align: "center",
       render: (u) => {
         const style = ROLE_STYLES[u.role] ?? ROLE_STYLES.member;
+        const isSuperadmin = u.role === "superadmin" || u.role === "super_admin";
         return (
-          <span
-            className="inline-flex items-center px-2 lg:px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest"
-            style={{
-              background: style.bg,
-              color: style.text,
-              border: `1px solid ${style.ring}`,
-            }}
-          >
-            {u.role.replace("_", " ")}
-          </span>
+          <div className="flex flex-col items-center gap-1.5">
+            <span
+              className="inline-flex items-center px-2 lg:px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest"
+              style={{
+                background: style.bg,
+                color: style.text,
+                border: `1px solid ${style.ring}`,
+              }}
+            >
+              {u.role.replace("_", " ")}
+            </span>
+            {/* Role change dropdown — not shown for superadmins */}
+            {!isSuperadmin && (
+              <div className="relative inline-block">
+                <select
+                  value={u.role}
+                  disabled={changingRole === u.id}
+                  onChange={(e) => initiateRoleChange(u, e.target.value)}
+                  className="appearance-none pr-5 pl-2 py-1 rounded-lg text-[8px] font-bold uppercase tracking-widest cursor-pointer focus:outline-none"
+                  style={{
+                    background: "var(--bg-inset)",
+                    color: "var(--text-muted)",
+                    border: "var(--card-border)",
+                    opacity: changingRole === u.id ? 0.5 : 0.7,
+                  }}
+                >
+                  {ASSIGNABLE_ROLES.map((r) => (
+                    <option key={r} value={r}>{r}</option>
+                  ))}
+                </select>
+                <ChevronDown className="w-2.5 h-2.5 absolute right-1 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted" />
+              </div>
+            )}
+          </div>
         );
       },
     },
@@ -142,6 +259,32 @@ export default function AdminUsersPage() {
         </span>
       ),
     },
+    {
+      key: "actions",
+      header: "Actions",
+      align: "right",
+      render: (u) => {
+        const isSuperadmin = u.role === "superadmin" || u.role === "super_admin";
+        if (isSuperadmin) return <span className="text-[9px] font-bold text-text-muted opacity-30">Protected</span>;
+
+        const isDisabled = (u as AdminUser & { is_disabled?: boolean }).is_disabled;
+        return (
+          <button
+            type="button"
+            onClick={() => setDisableTarget(u)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all hover:brightness-110 active:scale-95"
+            style={{
+              background: isDisabled ? "rgba(34,197,94,0.10)" : "rgba(239,68,68,0.08)",
+              color: isDisabled ? "var(--brand-green-dark)" : "#ef4444",
+              border: `1px solid ${isDisabled ? "rgba(34,197,94,0.20)" : "rgba(239,68,68,0.15)"}`,
+            }}
+          >
+            {isDisabled ? <CheckCircle2 className="w-3 h-3" /> : <Ban className="w-3 h-3" />}
+            {isDisabled ? "Enable" : "Disable"}
+          </button>
+        );
+      },
+    },
   ];
 
   return (
@@ -149,10 +292,10 @@ export default function AdminUsersPage() {
       {/* ── Stats — 2 cols mobile → 4 desktop ───────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
         {[
-          { label: "Total Users",  value: totalUsers,  icon: <Users className="w-4 h-4" />,     accent: "orange" },
-          { label: "Owners",       value: ownerCount,  icon: <Shield className="w-4 h-4" />,    accent: "orange" },
-          { label: "Admins",       value: adminCount,  icon: <UserCheck className="w-4 h-4" />, accent: "green" },
-          { label: "Members",      value: memberCount, icon: <UserIcon className="w-4 h-4" />,  accent: "green" },
+          { label: "Total Users", value: totalUsers, icon: <Users className="w-4 h-4" />, accent: "orange" },
+          { label: "Owners", value: ownerCount, icon: <Shield className="w-4 h-4" />, accent: "orange" },
+          { label: "Admins", value: adminCount, icon: <UserCheck className="w-4 h-4" />, accent: "green" },
+          { label: "Members", value: memberCount, icon: <UserIcon className="w-4 h-4" />, accent: "green" },
         ].map(({ label, value, icon, accent }) => (
           <div
             key={label}
@@ -209,10 +352,10 @@ export default function AdminUsersPage() {
               style={
                 roleFilter === key
                   ? {
-                      background: "var(--bg-surface)",
-                      color: "var(--brand-orange)",
-                      boxShadow: "var(--shadow-raised)",
-                    }
+                    background: "var(--bg-surface)",
+                    color: "var(--brand-orange)",
+                    boxShadow: "var(--shadow-raised)",
+                  }
                   : { color: "var(--text-muted)" }
               }
             >
@@ -232,6 +375,42 @@ export default function AdminUsersPage() {
         emptyIcon={<Users className="w-10 h-10" />}
         emptyTitle="No Users Found"
         emptyMessage="Try adjusting your search or filters."
+      />
+
+      {/* ── Disable / Enable Confirmation ──────────────────── */}
+      <ConfirmDialog
+        open={!!disableTarget}
+        title={
+          (disableTarget as AdminUser & { is_disabled?: boolean })?.is_disabled
+            ? "Enable User Account"
+            : "Disable User Account"
+        }
+        description={
+          (disableTarget as AdminUser & { is_disabled?: boolean })?.is_disabled
+            ? `Are you sure you want to re-enable "${disableTarget?.full_name}"? They will regain full access.`
+            : `Are you sure you want to disable "${disableTarget?.full_name}"? They will be blocked from logging in.`
+        }
+        confirmLabel={
+          (disableTarget as AdminUser & { is_disabled?: boolean })?.is_disabled ? "Enable" : "Disable"
+        }
+        variant={
+          (disableTarget as AdminUser & { is_disabled?: boolean })?.is_disabled ? "info" : "danger"
+        }
+        loading={disableLoading}
+        onConfirm={handleDisableToggle}
+        onCancel={() => setDisableTarget(null)}
+      />
+
+      {/* ── Role Change Confirmation ───────────────────────── */}
+      <ConfirmDialog
+        open={!!roleChangeTarget}
+        title="Change User Role"
+        description={`Change ${roleChangeTarget?.user.full_name}'s role from "${roleChangeTarget?.user.role}" to "${roleChangeTarget?.newRole}"?`}
+        confirmLabel="Change Role"
+        variant="warning"
+        loading={roleChangeLoading}
+        onConfirm={confirmRoleChange}
+        onCancel={() => setRoleChangeTarget(null)}
       />
     </div>
   );

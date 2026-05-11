@@ -6,10 +6,11 @@ import AdminSidebar from "./AdminSidebar";
 import AdminMobileBottomNav from "./AdminMobileBottomNav";
 import { ThemeToggle } from "./ThemeToggle";
 import { AdminGooeyMenu } from "./ui/AdminGooeyMenu";
+import { ToastProvider } from "./ui/Toast";
 
-const BG  = "#1e293b";
-const ND  = "rgba(0,0,0,0.50)";
-const NL  = "rgba(255,255,255,0.07)";
+const BG = "#1e293b";
+const ND = "rgba(0,0,0,0.50)";
+const NL = "rgba(255,255,255,0.07)";
 const inset = `inset 2px 2px 6px ${ND}, inset -2px -2px 6px ${NL}`;
 
 const mobileBtnStyle: React.CSSProperties = {
@@ -37,7 +38,7 @@ export default function AdminShell({
   children,
   userName, userEmail,
 }: AdminShellProps) {
-  const [collapsed, setCollapsed]   = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   // Keep --sidebar-w in sync with collapsed state and viewport width
@@ -63,6 +64,7 @@ export default function AdminShell({
   }, []);
 
   return (
+    <ToastProvider>
     <div style={{ background: "var(--bg-base)", minHeight: "100vh" }}>
 
       {/* ── Mobile top header (hidden on lg+) ─────────────────── */}
@@ -97,9 +99,9 @@ export default function AdminShell({
 
       {/* ── Mobile Circular Gooey Menu (only on mobile) ────────── */}
       <div className="lg:hidden">
-        <AdminGooeyMenu 
-          isOpen={mobileOpen} 
-          onClose={() => setMobileOpen(false)} 
+        <AdminGooeyMenu
+          isOpen={mobileOpen}
+          onClose={() => setMobileOpen(false)}
         />
       </div>
 
@@ -129,10 +131,11 @@ export default function AdminShell({
       </main>
 
       {/* ── Mobile bottom nav (hidden on lg+) ─────────────────── */}
-      <AdminMobileBottomNav 
-        isOpen={mobileOpen} 
-        onMenuToggle={() => setMobileOpen(!mobileOpen)} 
+      <AdminMobileBottomNav
+        isOpen={mobileOpen}
+        onMenuToggle={() => setMobileOpen(!mobileOpen)}
       />
     </div>
+    </ToastProvider>
   );
 }

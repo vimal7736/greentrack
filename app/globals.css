@@ -481,9 +481,15 @@ body {
   50%       { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
 }
 
+@keyframes gt-slide-up {
+  from { opacity: 0; transform: translateY(16px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
 .animate-fade-in   { animation: gt-fade-in 0.3s var(--transition-base) both; }
 .animate-scale-in  { animation: gt-scale-in 0.25s var(--transition-base) both; }
 .animate-pulse-green { animation: gt-pulse-green 2s infinite; }
+.animate-slide-up  { animation: gt-slide-up 0.3s var(--transition-base) both; }
 
 /* ================================================================
    DARK MODE — flatten neumorphism (remove shadows on .brut* hover/active)

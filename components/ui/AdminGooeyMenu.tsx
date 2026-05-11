@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { 
   Shield, X, BarChart3, Building2, Beaker, 
-  Users, Activity, LogOut
+  Users, Activity, LogOut, CreditCard,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 
@@ -37,7 +37,8 @@ export const AdminGooeyMenu: React.FC<AdminGooeyMenuProps> = ({ isOpen, onClose 
   const menuItems: MenuItem[] = [
     { label: "Overview",  href: "/admin",               icon: BarChart3 },
     { label: "Orgs",      href: "/admin/organisations",  icon: Building2 },
-    { label: "Factors",   href: "/admin/factors",        icon: Beaker },
+    { label: "Subs",      href: "/admin/subscriptions",  icon: CreditCard },
+// { label: "Factors",   href: "/admin/factors",        icon: Beaker },
     { label: "Users",     href: "/admin/users",          icon: Users },
     { label: "Activity",  href: "/admin/activity",       icon: Activity },
     { label: "Logout",    href: "/api/auth/signout",     icon: LogOut },
