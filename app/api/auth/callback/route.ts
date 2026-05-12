@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
+import { sendWelcomeEmail } from "@/lib/email";
 
 function generateSlug(name: string): string {
   const base = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -121,6 +122,15 @@ export async function GET(request: Request) {
       full_name: meta.full_name  ?? "",
     })
     .eq("id", user.id);
+  
+  // ── Send Welcome Email (Non-blocking) ──
+  if (meta.org_email) {
+    sendWelcomeEmail({
+      to: meta.org_email,
+      orgName: orgName,
+      adminName: (meta.full_name as string) || "Admin",
+    });
+  }
 
   return NextResponse.redirect(`${origin}${next}`);
 }

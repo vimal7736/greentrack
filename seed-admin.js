@@ -1,7 +1,7 @@
 const { createClient } = require('@supabase/supabase-js');
 const dotenv = require('dotenv');
 
-dotenv.config({ path: '.env' });
+dotenv.config({ path: '.env.local' });
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -55,10 +55,10 @@ async function seedSuperAdmin() {
   }
 
   // 2. Update role in profiles table
-  console.log("Updating profile role to 'superadmin'...");
+  console.log("Updating profile role to 'super_admin'...");
   const { error: updateError } = await supabase
     .from('profiles')
-    .update({ role: 'superadmin' })
+    .update({ role: 'super_admin' })
     .eq('id', user.id);
 
   if (updateError) {
@@ -77,7 +77,7 @@ async function seedSuperAdmin() {
     
     const { error: insertError } = await supabase
         .from('profiles')
-        .insert({ id: user.id, email, role: 'superadmin', full_name: 'Super Admin', org_id: orgId });
+        .insert({ id: user.id, email, role: 'super_admin', full_name: 'Super Admin', org_id: orgId });
         
     if (insertError) {
         console.error("Error inserting profile:", insertError);
