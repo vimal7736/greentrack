@@ -20,6 +20,7 @@ import { Button }        from "@/components/ui/Button";
 import { StatCard }      from "@/components/ui/StatCard";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { RangeSlider }   from "@/components/ui/RangeSlider";
+import { AITipAdvisor } from "@/components/AITipAdvisor";
 
 // ─── Local types ──────────────────────────────────────────────────────────────
 
@@ -620,9 +621,18 @@ export default function TargetsPage() {
           </div>
         </div>
 
-        {/* Quick Wins */}
-        <div className="premium-card p-4 sm:p-7 space-y-4 sm:space-y-5">
-          <SectionHeader title="Quick Wins" subtitle="Top actions to accelerate your trajectory" />
+        {/* Quick Wins & AI Advisor */}
+        <div className="space-y-4 sm:space-y-6">
+          <AITipAdvisor 
+            ytdCo2={ytdCo2}
+            annualTarget={annualTarget}
+            reductionPct={reductionPct}
+            billTypes={Array.from(new Set(bills.map(b => b.bill_type)))}
+            sbtiPathway={sbtiPathway}
+          />
+
+          <div className="premium-card p-4 sm:p-7 space-y-4 sm:space-y-5">
+            <SectionHeader title="Quick Wins" subtitle="Top actions to accelerate your trajectory" />
           <div className="space-y-3">
             {quickWins.map((w) => (
               <div key={w.title}
@@ -660,6 +670,7 @@ export default function TargetsPage() {
           </button>
         </div>
       </div>
+    </div>
     </PageLayout>
   );
 }
