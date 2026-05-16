@@ -36,7 +36,7 @@ export default function LoginPage() {
         .select("role")
         .eq("id", authUser.id)
         .single();
-      if (profile?.role === "superadmin" || profile?.role === "super_admin") {
+      if (profile?.role === "superadmin" || profile?.role === "super_admin" || profile?.role === "admin") {
         destination = "/admin";
       }
     }

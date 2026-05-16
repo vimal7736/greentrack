@@ -20,7 +20,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     .single();
 
   // Block admin users from accessing user portal — redirect to admin portal
-  if (profile?.role === "superadmin" || profile?.role === "super_admin") {
+  if (profile?.role === "superadmin" || profile?.role === "super_admin" || profile?.role === "admin") {
     redirect("/admin");
   }
 

@@ -19,8 +19,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     .eq("id", user.id)
     .single();
 
-  // Only superadmin / super_admin can access the admin portal
-  if (profile?.role !== "superadmin" && profile?.role !== "super_admin") {
+  // Only superadmin / super_admin / admin can access the admin portal
+  if (profile?.role !== "superadmin" && profile?.role !== "super_admin" && profile?.role !== "admin") {
     redirect("/dashboard");
   }
 

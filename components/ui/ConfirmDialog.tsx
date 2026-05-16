@@ -76,7 +76,7 @@ export function ConfirmDialog({
           className="relative w-full max-w-md rounded-3xl p-6 lg:p-8 animate-scale-in"
           style={{
             background: "var(--bg-surface)",
-            boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25), var(--shadow-raised)",
+            boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25), var(--shadow-inset)",
             border: "var(--card-border)",
           }}
         >

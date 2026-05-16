@@ -4,6 +4,7 @@ import Link from "next/link";
 import {
   Users, Search, Shield, UserCheck, User as UserIcon,
   ChevronDown, ExternalLink, Ban, CheckCircle2,
+  Mail, Calendar, MapPin, Activity, X, FileText, Leaf,
 } from "lucide-react";
 import type { AdminUser } from "@/types";
 import { DataTable, type ColumnDef } from "@/components/ui/DataTable";
@@ -46,6 +47,9 @@ export default function AdminUsersPage() {
   /* ── Role change confirmation ────────────────────────────── */
   const [roleChangeTarget, setRoleChangeTarget] = useState<{ user: AdminUser; newRole: string } | null>(null);
   const [roleChangeLoading, setRoleChangeLoading] = useState(false);
+
+  const [selectedUser, setSelectedUser] = useState<any | null>(null);
+  const [userModalLoading, setUserModalLoading] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -120,6 +124,18 @@ export default function AdminUsersPage() {
     setDisableTarget(null);
   }
 
+  async function handleUserClick(userId: string) {
+    setUserModalLoading(true);
+    const res = await fetch(`/api/admin/users?detail=${userId}`);
+    if (res.ok) {
+      const d = await res.json();
+      setSelectedUser(d.user);
+    } else {
+      toast.error("Failed to load user details");
+    }
+    setUserModalLoading(false);
+  }
+
   const filtered = useMemo(() => {
     let result = users;
     if (roleFilter !== "all") {
@@ -157,7 +173,11 @@ export default function AdminUsersPage() {
           .slice(0, 2);
         const isDisabled = (u as AdminUser & { is_disabled?: boolean }).is_disabled;
         return (
-          <Link href={`/admin/users/${u.id}`} className="flex items-center gap-2 lg:gap-3 group">
+          <button 
+            type="button" 
+            onClick={() => handleUserClick(u.id)}
+            className="flex items-center gap-2 lg:gap-3 group text-left focus:outline-none"
+          >
             <div
               className="w-8 h-8 lg:w-9 lg:h-9 rounded-full flex items-center justify-center text-[10px] font-black shrink-0 relative"
               style={{
@@ -178,7 +198,7 @@ export default function AdminUsersPage() {
               )}
             </div>
             <div className="min-w-0">
-              <p className="text-xs font-black tracking-tight truncate flex items-center gap-1.5" style={{ color: "var(--text-primary)" }}>
+              <p className="text-xs font-black tracking-tight truncate flex items-center gap-1.5 group-hover:text-brand-orange transition-colors" style={{ color: "var(--text-primary)" }}>
                 {u.full_name}
                 <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-50 transition-opacity shrink-0" />
               </p>
@@ -192,7 +212,7 @@ export default function AdminUsersPage() {
                 </span>
               )}
             </div>
-          </Link>
+          </button>
         );
       },
     },
@@ -412,6 +432,139 @@ export default function AdminUsersPage() {
         onConfirm={confirmRoleChange}
         onCancel={() => setRoleChangeTarget(null)}
       />
+
+      {/* User Detail Modal */}
+      <UserDetailModal 
+        user={selectedUser} 
+        isOpen={!!selectedUser} 
+        onClose={() => setSelectedUser(null)} 
+      />
+    </div>
+  );
+}
+
+/* ── Helper: User Detail Modal ──────────────────────────────── */
+function UserDetailModal({ user, isOpen, onClose }: { user: any; isOpen: boolean; onClose: () => void }) {
+  if (!isOpen || !user) return null;
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 lg:p-8">
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/40 animate-fade-in" onClick={onClose} />
+      
+      {/* Modal Container */}
+      <div className="relative w-full max-w-2xl max-h-full overflow-hidden premium-card flex flex-col animate-scale-in"
+        style={{ background: "var(--neu-base)", border: "1px solid rgba(255,255,255,0.1)" }}>
+        
+        {/* Modal Header */}
+        <div className="p-5 lg:p-6 border-b border-white/5 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-lg font-black uppercase"
+              style={{ background: "linear-gradient(145deg, var(--brand-green-dark), var(--brand-green))", color: "#fff", boxShadow: "var(--shadow-raised)" }}>
+              {user.full_name.charAt(0)}
+            </div>
+            <div>
+              <h2 className="text-lg lg:text-xl font-black tracking-tight" style={{ color: "var(--text-primary)" }}>{user.full_name}</h2>
+              <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-text-muted opacity-60 uppercase tracking-widest">
+                User Profile Details
+              </span>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-2 rounded-xl hover:bg-white/5 transition-colors text-text-muted">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Modal Body */}
+        <div className="flex-1 overflow-y-auto p-5 lg:p-8 space-y-8 scrollbar-thin">
+          
+          {/* Section: Overview Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <ModalDetailRow icon={<Mail className="w-3.5 h-3.5" />} label="Email Address" value={user.email} />
+              <ModalDetailRow icon={<Shield className="w-3.5 h-3.5" />} label="Platform Role" value={user.role} isBadge />
+              <ModalDetailRow icon={<Calendar className="w-3.5 h-3.5" />} label="Joined Date" value={formatDate(user.created_at)} />
+            </div>
+            <div className="space-y-4">
+              <ModalDetailRow icon={<MapPin className="w-3.5 h-3.5" />} label="Organisation" value={user.org_name} />
+              <ModalDetailRow icon={<Activity className="w-3.5 h-3.5" />} label="Status" value={user.is_disabled ? "Disabled" : "Active"} 
+                valueColor={user.is_disabled ? "#ef4444" : "var(--brand-green-dark)"} />
+              <ModalDetailRow icon={<Leaf className="w-3.5 h-3.5" />} label="ID" value={user.id} isCode />
+            </div>
+          </div>
+
+          {/* Section: Activity / Bills */}
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-1.5 h-4 rounded-full bg-brand-orange" />
+              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted">Recent Billing Activity</h3>
+            </div>
+            
+            <div className="space-y-2">
+              {(!user.bills || user.bills.length === 0) ? (
+                <div className="p-8 text-center bg-white/5 rounded-2xl border border-dashed border-white/10">
+                  <p className="text-xs font-bold text-text-muted opacity-40 uppercase tracking-widest">No activity recorded</p>
+                </div>
+              ) : (
+                user.bills.slice(0, 5).map((bill: any) => (
+                  <BillActivityRow key={bill.id} bill={bill} />
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Modal Footer */}
+        <div className="p-5 border-t border-white/5 flex justify-end gap-3 bg-white/2">
+          <button onClick={onClose} 
+            className="px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest bg-white/5 text-text-muted hover:bg-white/10 transition-all active:scale-95">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ModalDetailRow({ icon, label, value, isBadge, isCode, valueColor }: { icon: React.ReactNode; label: string; value: string; isBadge?: boolean; isCode?: boolean; valueColor?: string }) {
+  return (
+    <div className="flex items-start gap-3">
+      <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-text-muted shrink-0">
+        {icon}
+      </div>
+      <div>
+        <p className="text-[9px] font-black uppercase tracking-widest text-text-muted opacity-40 mb-0.5">{label}</p>
+        {isBadge ? (
+          <span className="inline-flex px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-tighter"
+            style={{ background: "rgba(59,130,246,0.1)", color: "#3b82f6", border: "1px solid rgba(59,130,246,0.2)" }}>
+            {value}
+          </span>
+        ) : (
+          <p className={`text-xs font-bold ${isCode ? "font-mono opacity-80" : ""}`} style={{ color: valueColor || "var(--text-primary)" }}>
+            {value}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function BillActivityRow({ bill }: { bill: any }) {
+  return (
+    <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5 group hover:bg-white/10 transition-colors">
+      <div className="flex items-center gap-3">
+        <div className="w-8 h-8 rounded-lg bg-gt-green-500/10 flex items-center justify-center text-brand-green">
+          <FileText className="w-4 h-4" />
+        </div>
+        <div>
+          <p className="text-xs font-black capitalize" style={{ color: "var(--text-primary)" }}>{bill.bill_type.replace("_", " ")} Bill</p>
+          <p className="text-[9px] font-bold text-text-muted opacity-50">{formatDate(bill.bill_date)}</p>
+        </div>
+      </div>
+      <div className="text-right">
+        <p className="text-xs font-black" style={{ color: "var(--brand-green-dark)" }}>{bill.co2_kg.toFixed(1)} kg</p>
+        <p className="text-[9px] font-bold text-text-muted opacity-40 uppercase tracking-widest">Estimated CO₂e</p>
+      </div>
     </div>
   );
 }

@@ -18,7 +18,7 @@ export async function requireSuperadmin() {
     .eq("id", user.id)
     .single();
 
-  if (profile?.role !== "superadmin") {
+  if (profile?.role !== "superadmin" && profile?.role !== "admin") {
     return { error: NextResponse.json({ error: "Forbidden" }, { status: 403 }) };
   }
 

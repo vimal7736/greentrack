@@ -36,7 +36,7 @@ export default function AdminLoginPage() {
         .eq("id", user.id)
         .single();
 
-      if (profile?.role === "super_admin" || profile?.role === "superadmin") {
+      if (profile?.role === "super_admin" || profile?.role === "superadmin" || profile?.role === "admin") {
         router.push("/admin");
       } else {
         // Not an admin — sign them out and show error

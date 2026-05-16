@@ -1,5 +1,5 @@
-import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { requireSuperadmin } from "@/lib/admin/auth";
 import { NextResponse } from "next/server";
 
 /**
@@ -7,22 +7,11 @@ import { NextResponse } from "next/server";
  * Returns platform-wide stats. Requires superadmin role.
  */
 export async function GET() {
-  const supabase = await createClient();
+  const result = await requireSuperadmin();
+  if ("error" in result) return result.error;
+  
+  const admin = result.admin;
 
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
-
-  if (profile?.role !== "superadmin") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
-
-  const admin = createAdminClient();
 
   const today = new Date().toISOString().slice(0, 10);
 

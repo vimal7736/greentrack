@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
 
   /* ── Detail mode ────────────────────────────────────────── */
   if (detailId) {
-    let orgRes = await admin.from("organisations").select(detailCols).eq("id", detailId).single();
+    let orgRes: any = await admin.from("organisations").select(detailCols).eq("id", detailId).single();
     if (orgRes.error && orgRes.error.message?.includes("status")) {
       orgRes = await admin.from("organisations").select(detailColsFallback).eq("id", detailId).single();
     }
@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
   if (search) query = query.ilike("name", `%${search}%`);
   if (tier && tier !== "all") query = query.eq("tier", tier);
 
-  let orgsRes = await query;
+  let orgsRes: any = await query;
 
   // Fallback if status column doesn't exist
   if (orgsRes.error && orgsRes.error.message?.includes("status")) {
