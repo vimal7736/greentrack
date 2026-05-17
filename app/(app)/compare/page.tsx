@@ -192,22 +192,22 @@ export default function ComparePage() {
                     {label}
                   </p>
 
-                  <div className="flex items-center justify-between gap-4 mb-6">
-                    <div className="text-center space-y-1 bg-bg-inset/10 rounded-2xl p-2.5 min-w-[70px] border border-border-subtle/10 flex-1">
-                      <p className="text-[8px] font-black uppercase tracking-[0.15em]" style={{ color: colorA }}>Period A</p>
-                      <p className="text-2xl font-black text-text-primary tracking-tighter">{fmt(a)}</p>
-                      <p className="text-[9px] font-black text-text-muted opacity-50 tracking-wider uppercase">{unit}</p>
+                  <div className="mb-6 space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="text-center space-y-1 bg-bg-inset/10 rounded-2xl p-2.5 border border-border-subtle/10">
+                        <p className="text-[8px] font-black uppercase tracking-[0.15em]" style={{ color: colorA }}>Period A</p>
+                        <p className="text-xl font-black text-text-primary tracking-tighter leading-none">{fmt(a)}</p>
+                        <p className="text-[9px] font-black text-text-muted opacity-50 tracking-wider uppercase">{unit}</p>
+                      </div>
+                      <div className="text-center space-y-1 bg-bg-inset/10 rounded-2xl p-2.5 border border-border-subtle/10">
+                        <p className="text-[8px] font-black uppercase tracking-[0.15em]" style={{ color: colorB }}>Period B</p>
+                        <p className="text-xl font-black text-text-primary tracking-tighter leading-none">{fmt(b)}</p>
+                        <p className="text-[9px] font-black text-text-muted opacity-50 tracking-wider uppercase">{unit}</p>
+                      </div>
                     </div>
-
-                    <div className="flex flex-col items-center justify-center shrink-0">
+                    <div className="flex flex-col items-center justify-center gap-1">
                       <DeltaChip a={a} b={b} />
-                      <span className="text-[8px] font-black text-text-muted opacity-40 uppercase tracking-widest mt-1">difference</span>
-                    </div>
-
-                    <div className="text-center space-y-1 bg-bg-inset/10 rounded-2xl p-2.5 min-w-[70px] border border-border-subtle/10 flex-1">
-                      <p className="text-[8px] font-black uppercase tracking-[0.15em]" style={{ color: colorB }}>Period B</p>
-                      <p className="text-2xl font-black text-text-primary tracking-tighter">{fmt(b)}</p>
-                      <p className="text-[9px] font-black text-text-muted opacity-50 tracking-wider uppercase">{unit}</p>
+                      <span className="text-[8px] font-black text-text-muted opacity-40 uppercase tracking-widest">difference</span>
                     </div>
                   </div>
 
@@ -314,21 +314,56 @@ export default function ComparePage() {
             )}
           </ChartCard>
 
-          {/* Granular stream breakdown table */}
+          {/* Granular stream breakdown */}
           <div className="premium-card overflow-hidden">
-            <div className="p-6 border-b border-border-subtle/50 bg-bg-inset/10">
+            <div className="p-5 sm:p-6 border-b border-border-subtle/50 bg-bg-inset/10">
               <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted">
                 Granular Stream Breakdown
               </h2>
             </div>
-            <div className="overflow-x-auto">
+
+            {/* Mobile cards */}
+            <div className="sm:hidden divide-y divide-border-subtle/30">
+              {allTypes.map((t) => {
+                const a = sA.byType[t] ?? 0;
+                const b = sB.byType[t] ?? 0;
+                return (
+                  <div key={t} className="px-4 py-4 space-y-3">
+                    <p className="text-xs font-black text-text-primary">{BILL_TYPE_LABELS[t] ?? t}</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <p className="text-[9px] font-black uppercase tracking-widest mb-1" style={{ color: colorA }}>Period A</p>
+                        <p className="text-sm font-black" style={{ color: colorA }}>
+                          {a.toLocaleString(undefined, { maximumFractionDigits: 1 })}
+                          <span className="text-[9px] opacity-50 ml-1">kg</span>
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-[9px] font-black uppercase tracking-widest mb-1" style={{ color: colorB }}>Period B</p>
+                        <p className="text-sm font-black" style={{ color: colorB }}>
+                          {b.toLocaleString(undefined, { maximumFractionDigits: 1 })}
+                          <span className="text-[9px] opacity-50 ml-1">kg</span>
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[9px] font-black uppercase tracking-widest text-text-muted opacity-40">Delta</span>
+                      <DeltaChip a={a} b={b} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Desktop table */}
+            <div className="hidden sm:block overflow-x-auto">
               <table className="w-full text-sm text-text-primary">
                 <thead>
                   <tr className="bg-bg-inset/20 text-[10px] font-black uppercase tracking-[0.2em] text-text-muted border-b border-border-subtle">
-                    <th className="text-left px-4 sm:px-8 py-4 sm:py-5">Emission Source</th>
-                    <th className="text-right px-4 sm:px-6 py-4 sm:py-5">Period A (kg)</th>
-                    <th className="text-right px-4 sm:px-6 py-4 sm:py-5">Period B (kg)</th>
-                    <th className="text-right px-4 sm:px-8 py-4 sm:py-5">Delta</th>
+                    <th className="text-left px-8 py-5">Emission Source</th>
+                    <th className="text-right px-6 py-5">Period A (kg)</th>
+                    <th className="text-right px-6 py-5">Period B (kg)</th>
+                    <th className="text-right px-8 py-5">Delta</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border-subtle/50">
@@ -337,14 +372,14 @@ export default function ComparePage() {
                     const b = sB.byType[t] ?? 0;
                     return (
                       <tr key={t} className="group hover:bg-bg-inset/30 transition-all duration-300">
-                        <td className="px-4 sm:px-8 py-3 sm:py-4 font-black text-xs">{BILL_TYPE_LABELS[t] ?? t}</td>
-                        <td className="px-4 sm:px-6 py-3 sm:py-4 text-right font-black" style={{ color: colorA }}>
+                        <td className="px-8 py-4 font-black text-xs">{BILL_TYPE_LABELS[t] ?? t}</td>
+                        <td className="px-6 py-4 text-right font-black" style={{ color: colorA }}>
                           {a.toLocaleString(undefined, { maximumFractionDigits: 1 })}
                         </td>
-                        <td className="px-4 sm:px-6 py-3 sm:py-4 text-right font-black" style={{ color: colorB }}>
+                        <td className="px-6 py-4 text-right font-black" style={{ color: colorB }}>
                           {b.toLocaleString(undefined, { maximumFractionDigits: 1 })}
                         </td>
-                        <td className="px-4 sm:px-8 py-3 sm:py-4 text-right">
+                        <td className="px-8 py-4 text-right">
                           <div className="flex justify-end">
                             <DeltaChip a={a} b={b} />
                           </div>
