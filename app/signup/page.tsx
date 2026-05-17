@@ -68,9 +68,10 @@ export default function SignupPage() {
   const [user, setUser]           = useState<UserData>(INIT_USER);
 
   // Discovery State
-  const [discoveredOrg, setDiscoveredOrg] = useState<{ id: string, name: string } | null>(null);
+  const [orgDomain, setOrgDomain]           = useState("");
+  const [discoveredOrg, setDiscoveredOrg]   = useState<{ id: string, name: string } | null>(null);
   const [checkingDomain, setCheckingDomain] = useState(false);
-  const [requestStatus, setRequestStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
+  const [requestStatus, setRequestStatus]   = useState<"idle" | "loading" | "done" | "error">("idle");
 
   const setO = (f: keyof OrgData) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
@@ -86,33 +87,25 @@ export default function SignupPage() {
         setError("Enter a valid UK postcode — e.g. SW1A 1AA");
         return;
       }
+      // Pre-fill admin email from org email if not already set
+      if (!user.email && org.orgEmail) {
+        setUser(u => ({ ...u, email: org.orgEmail }));
+      }
     }
     setStep(2);
   }
 
-  // Domain Discovery Effect
+  // Domain Discovery Effect — triggers from the Organisation Domain field
   useEffect(() => {
-    const emailToCheck = org.orgEmail || user.email;
-    if (!emailToCheck.includes("@")) {
-      setDiscoveredOrg(null);
-      return;
-    }
+    const raw = orgDomain.replace(/^@/, "").trim();
+    if (!raw) { setDiscoveredOrg(null); return; }
 
     const timer = setTimeout(async () => {
-      const domain = emailToCheck.split("@")[1].toLowerCase();
-      // Skip common generic domains (Temporarily disabled for testing)
-      // const generic = ["gmail.com", "outlook.com", "hotmail.com", "yahoo.com", "icloud.com"];
-      // if (generic.includes(domain)) return;
-
       setCheckingDomain(true);
       try {
-        const res = await fetch(`/api/org/discovery?email=${encodeURIComponent(emailToCheck)}`);
+        const res = await fetch(`/api/org/discovery?domain=${encodeURIComponent(raw)}`);
         const data = await res.json();
-        if (data.found) {
-          setDiscoveredOrg({ id: data.orgId, name: data.orgName });
-        } else {
-          setDiscoveredOrg(null);
-        }
+        setDiscoveredOrg(data.found ? { id: data.orgId, name: data.orgName } : null);
       } catch (e) {
         console.error("Discovery error", e);
       } finally {
@@ -121,7 +114,7 @@ export default function SignupPage() {
     }, 800);
 
     return () => clearTimeout(timer);
-  }, [org.orgEmail, user.email, step]);
+  }, [orgDomain, step]);
 
   async function handleRequestJoin() {
     if (!discoveredOrg) return;
@@ -359,14 +352,27 @@ export default function SignupPage() {
                     <p className="text-gray-400 text-xs mt-0.5">Tell us about your company</p>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <F label="Organisation Email" req>
-                      <input className={inp} required type="email" autoComplete="off" placeholder="hello@acme.co.uk" value={org.orgEmail} onChange={setO("orgEmail")} />
-                    </F>
-                    <F label="Phone" req>
-                      <input className={inp} required={!discoveredOrg} disabled={!!discoveredOrg} type="tel" placeholder="+44 20 7946 0958" value={org.phone} onChange={setO("phone")} />
-                    </F>
-                  </div>
+                  {/* Organisation Domain — primary discovery field */}
+                  <F label="Organisation Domain">
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm select-none">@</span>
+                      <input
+                        className={inp + " pl-7"}
+                        placeholder="company.com"
+                        autoComplete="off"
+                        value={orgDomain.replace(/^@/, "")}
+                        onChange={e => setOrgDomain(e.target.value)}
+                      />
+                      {checkingDomain && (
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 animate-pulse">
+                          Searching…
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[9px] text-gray-400 mt-0.5">
+                      Type your company domain to find an existing organisation or create a new one.
+                    </p>
+                  </F>
 
                   {discoveredOrg ? (
                     <div className="bg-green-50 border border-green-200 rounded-2xl p-5 mb-4 animate-in zoom-in-95">
@@ -384,6 +390,15 @@ export default function SignupPage() {
                     </div>
                   ) : (
                     <>
+                      <div className="grid grid-cols-2 gap-3">
+                        <F label="Organisation Email" req>
+                          <input className={inp} required type="email" autoComplete="off" placeholder="hello@acme.co.uk" value={org.orgEmail} onChange={setO("orgEmail")} />
+                        </F>
+                        <F label="Phone" req>
+                          <input className={inp} required type="tel" placeholder="+44 20 7946 0958" value={org.phone} onChange={setO("phone")} />
+                        </F>
+                      </div>
+
                       <div className="grid grid-cols-2 gap-3">
                         <F label="Company Name" req>
                           <input className={inp} required placeholder="Acme Ltd" value={org.companyName} onChange={setO("companyName")} />
@@ -468,6 +483,32 @@ export default function SignupPage() {
                     </p>
                   </div>
 
+                  {/* Email summary — top of step 2, neumorphic raised with green accent */}
+                  {(org.orgEmail || user.email) && !discoveredOrg && (
+                    <div className="rounded-2xl px-5 py-3.5" style={{ background: "var(--neu-base)", boxShadow: "3px 3px 7px var(--neu-dark), -3px -3px 7px var(--neu-light)", borderLeft: "4px solid #22c55e" }}>
+                      <div className="grid grid-cols-2 gap-4">
+                        {org.orgEmail && (
+                          <div className="space-y-1">
+                            <p className="text-[8px] font-black uppercase tracking-[0.2em] text-green-600">Organisation Email</p>
+                            <div className="flex items-center gap-2">
+                              <span className="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0" />
+                              <p className="text-[11px] font-black text-green-900 truncate">{org.orgEmail}</p>
+                            </div>
+                          </div>
+                        )}
+                        {user.email && (
+                          <div className="space-y-1">
+                            <p className="text-[8px] font-black uppercase tracking-[0.2em] text-green-600">Admin Email</p>
+                            <div className="flex items-center gap-2">
+                              <span className="w-1.5 h-1.5 rounded-full bg-green-600 shrink-0" />
+                              <p className="text-[11px] font-black text-green-900 truncate">{user.email}</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
                   {discoveredOrg && (
                     <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-4 animate-in fade-in slide-in-from-top-2">
                       <div className="flex items-start gap-3">
@@ -526,11 +567,6 @@ export default function SignupPage() {
                     </F>
                   </div>
 
-                  {/* Email routing summary */}
-                  <div className="bg-green-50 border border-green-200 rounded-lg px-3 py-2.5 text-[11px] text-green-700 space-y-0.5">
-                    <p><span className="font-bold">Welcome email</span> → {org.orgEmail}</p>
-                    <p><span className="font-bold">Verification & reset</span> → {user.email || "your admin email"}</p>
-                  </div>
 
                   <label className="flex items-start gap-2 text-xs text-gray-500 cursor-pointer">
                     <input type="checkbox" required className="mt-0.5 rounded shrink-0 accent-green-600" />

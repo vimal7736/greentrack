@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
-import { UserPlus, Trash2, Crown, User, ChevronDown, Clock, Check, X, ShieldAlert, Building2 } from "lucide-react";
+import { UserPlus, Trash2, Crown, User, ChevronDown, Clock, Check, X, ShieldAlert, Building2, AlertTriangle } from "lucide-react";
+import { isPublicDomain } from "@/lib/utils/domain";
 
 import type { TeamMember, TeamApiResponse } from "@/types";
 import { formatDate } from "@/lib/utils/format";
@@ -379,17 +380,26 @@ export default function TeamPage() {
                         onChange={e => setDomain(e.target.value)}
                       />
                     </div>
-                    <Button 
-                      size="sm" 
-                      disabled={savingSettings || (domain === org?.discovery_domain && allowDiscovery === org?.allow_discovery)}
+                    <Button
+                      size="sm"
+                      disabled={savingSettings || (domain === org?.discovery_domain && allowDiscovery === org?.allow_discovery) || isPublicDomain(domain)}
                       onClick={handleSaveSettings}
                     >
                       {savingSettings ? "..." : "Save"}
                     </Button>
                   </div>
-                  <p className="text-[8px] text-text-muted leading-relaxed opacity-60">
-                    Allows users with this email domain to find and request to join your organisation automatically during signup.
-                  </p>
+                  {domain && isPublicDomain(domain) ? (
+                    <div className="flex items-start gap-2 p-2.5 rounded-xl bg-red-50 border border-red-100">
+                      <AlertTriangle className="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5" />
+                      <p className="text-[9px] text-red-600 leading-relaxed font-bold">
+                        Public domains like gmail.com are shared by millions of people and cannot be used for discovery. Enter your company&apos;s own domain (e.g. <span className="font-black">yourcompany.com</span>).
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-[8px] text-text-muted leading-relaxed opacity-60">
+                      Allows users with this email domain to find and request to join your organisation automatically during signup.
+                    </p>
+                  )}
                 </div>
               </div>
             </div>

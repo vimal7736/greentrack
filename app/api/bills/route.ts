@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
 
 /**
@@ -83,6 +84,7 @@ export async function GET(request: Request) {
 
 export async function DELETE(request: Request) {
   const supabase = await createClient();
+  const admin    = createAdminClient();
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
@@ -101,7 +103,20 @@ export async function DELETE(request: Request) {
   const billId = searchParams.get("id");
   if (!billId) return NextResponse.json({ error: "Missing bill id" }, { status: 400 });
 
-  const { error } = await supabase
+  // Verify the bill belongs to this org before deleting (manual auth check)
+  const { data: bill } = await supabase
+    .from("bills")
+    .select("id")
+    .eq("id", billId)
+    .eq("org_id", profile.org_id)
+    .single();
+
+  if (!bill) {
+    return NextResponse.json({ error: "Bill not found" }, { status: 404 });
+  }
+
+  // Use admin client to bypass any RLS silent-failure issues
+  const { error } = await admin
     .from("bills")
     .delete()
     .eq("id", billId)

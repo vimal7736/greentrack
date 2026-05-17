@@ -76,25 +76,38 @@ export async function GET(request: Request) {
   // Try full insert with all fields; fall back to minimal if extra columns don't exist yet
   let org: { id: string } | null = null;
 
+  // Auto-derive discovery_domain from website so future signups can find this org
+  let discoveryDomain: string | null = null;
+  if (meta.org_website) {
+    try {
+      const url = (meta.org_website as string).startsWith("http")
+        ? meta.org_website as string
+        : `https://${meta.org_website}`;
+      discoveryDomain = new URL(url).hostname.replace(/^www\./, "").toLowerCase();
+    } catch { discoveryDomain = null; }
+  }
+
   const { data: fullOrg, error: fullErr } = await admin
     .from("organisations")
     .insert({
-      name:           orgName,
-      slug:           generateSlug(orgName),
-      org_email:      meta.org_email           ?? null,
-      phone:          meta.org_phone           ?? null,
-      website:        meta.org_website         ?? null,
-      company_number: meta.org_company_number  ?? null,
-      vat_number:     meta.org_vat_number      ?? null,
-      industry:       meta.org_industry        ?? null,
-      address_line1:  meta.org_address_line1   ?? null,
-      address_line2:  meta.org_address_line2   ?? null,
-      city:           meta.org_city            ?? null,
-      county:         meta.org_county          ?? null,
-      postcode:       meta.org_postcode        ?? null,
-      country:        meta.org_country         ?? "GB",
-      tier:           "free",
-      seats_limit:    3,
+      name:             orgName,
+      slug:             generateSlug(orgName),
+      org_email:        meta.org_email           ?? null,
+      phone:            meta.org_phone           ?? null,
+      website:          meta.org_website         ?? null,
+      company_number:   meta.org_company_number  ?? null,
+      vat_number:       meta.org_vat_number      ?? null,
+      industry:         meta.org_industry        ?? null,
+      address_line1:    meta.org_address_line1   ?? null,
+      address_line2:    meta.org_address_line2   ?? null,
+      city:             meta.org_city            ?? null,
+      county:           meta.org_county          ?? null,
+      postcode:         meta.org_postcode        ?? null,
+      country:          meta.org_country         ?? "GB",
+      tier:             "free",
+      seats_limit:      3,
+      discovery_domain: discoveryDomain,
+      allow_discovery:  discoveryDomain ? true : false,
     })
     .select("id")
     .single();

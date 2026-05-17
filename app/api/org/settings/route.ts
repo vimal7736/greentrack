@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { isPublicDomain } from "@/lib/utils/domain";
 
 export async function PATCH(request: Request) {
   const supabase = await createClient();
@@ -19,8 +20,15 @@ export async function PATCH(request: Request) {
 
   const { discovery_domain, allow_discovery } = await request.json();
 
+  if (discovery_domain && isPublicDomain(discovery_domain)) {
+    return NextResponse.json(
+      { error: "Public email domains (gmail.com, yahoo.com, etc.) cannot be used for discovery. Use your company domain e.g. company.com" },
+      { status: 400 }
+    );
+  }
+
   const updateData: any = {};
-  if (discovery_domain !== undefined) updateData.discovery_domain = discovery_domain;
+  if (discovery_domain !== undefined) updateData.discovery_domain = discovery_domain.toLowerCase().trim();
   if (allow_discovery !== undefined) updateData.allow_discovery = allow_discovery;
 
   const { error } = await supabase

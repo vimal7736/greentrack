@@ -73,7 +73,7 @@ export async function POST(request: Request) {
   const org = (Array.isArray(profile.organisations) ? profile.organisations[0] : profile.organisations) as { seats_limit: number; tier: string } | null;
   const seatsLimit = org?.seats_limit ?? 3;
 
-  // Count current members
+  // Count current members (exclude platform superadmins from seat count)
   const { count: currentCount } = await supabase
     .from("profiles")
     .select("*", { count: "exact", head: true })

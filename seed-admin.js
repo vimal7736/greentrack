@@ -2,7 +2,7 @@ const { createClient } = require('@supabase/supabase-js');
 const dotenv = require('dotenv');
 
 // Load environment variables from .env
-dotenv.config();
+dotenv.config({ path: '.env.local' });
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -64,48 +64,44 @@ async function seedSuperAdmin() {
     }
   }
 
-  // 2. Ensure an organisation exists
-  console.log("🔍 Checking for existing organisations...");
-  const { data: orgs, error: orgFetchError } = await supabase.from('organisations').select('id').limit(1);
+  // 2. Ensure a dedicated PLATFORM organisation exists for the super admin.
+  // We never reuse a user org — the platform org is identified by name.
+  const PLATFORM_ORG_NAME = 'GreenTrack Platform';
+  console.log(`🔍 Looking for platform organisation '${PLATFORM_ORG_NAME}'...`);
+  const { data: platformOrgs, error: platformOrgFetchError } = await supabase
+    .from('organisations')
+    .select('id')
+    .eq('name', PLATFORM_ORG_NAME)
+    .limit(1);
 
-  if (orgFetchError) {
-    console.error("❌ Error fetching organisations:", orgFetchError.message);
+  if (platformOrgFetchError) {
+    console.error("❌ Error fetching platform org:", platformOrgFetchError.message);
     return;
   }
 
-  let orgId = orgs?.[0]?.id;
+  let orgId = platformOrgs?.[0]?.id;
 
   if (!orgId) {
-    console.log("➕ No organisations found, creating 'GreenTrack Global'...");
+    console.log(`➕ Platform org not found, creating '${PLATFORM_ORG_NAME}'...`);
     const { data: newOrg, error: orgInsertError } = await supabase
       .from('organisations')
       .insert({
-        name: 'GreenTrack Global',
+        name: PLATFORM_ORG_NAME,
+        slug: 'greentrack-platform',
         tier: 'business',
-        seats_limit: 100
+        seats_limit: 1000
       })
       .select()
       .single();
 
     if (orgInsertError) {
-      console.error("❌ Error creating organisation:", orgInsertError.message);
+      console.error("❌ Error creating platform organisation:", orgInsertError.message);
       return;
     }
     orgId = newOrg.id;
-    console.log(`✅ Organisation created with ID: ${orgId}`);
+    console.log(`✅ Platform organisation created with ID: ${orgId}`);
   } else {
-    console.log(`ℹ️ Using existing organisation ID: ${orgId}`);
-    // Update seats_limit just in case it's 0 or 1
-    const { error: seatUpdateError } = await supabase
-      .from('organisations')
-      .update({ seats_limit: 100 })
-      .eq('id', orgId);
-
-    if (seatUpdateError) {
-      console.warn("⚠️ Could not update seats_limit:", seatUpdateError.message);
-    } else {
-      console.log("✅ seats_limit increased to 100.");
-    }
+    console.log(`ℹ️ Platform org already exists with ID: ${orgId}`);
   }
 
   // 3. Update or Insert profile
@@ -143,7 +139,7 @@ async function seedSuperAdmin() {
       .from('profiles')
       .update({
         role: 'admin',
-        org_id: orgId // Ensure they belong to an org
+        org_id: orgId // Move to dedicated platform org, away from user orgs
       })
       .eq('id', user.id);
 
