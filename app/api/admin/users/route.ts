@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
   }
 
   /* ── List mode ──────────────────────────────────────────── */
-  let profilesRes = await admin
+  let profilesRes: any = await admin
     .from("profiles")
     .select(selectCols)
     .order("created_at", { ascending: false })
@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
   const profiles = profilesRes.data;
   if (!profiles) return NextResponse.json({ users: [] });
 
-  const users = profiles.map((p) => {
+  const users = profiles.map((p: Record<string, any>) => {
     const org = Array.isArray(p.organisations) ? p.organisations[0] : p.organisations;
     return {
       id: p.id,
