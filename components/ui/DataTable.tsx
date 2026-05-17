@@ -52,7 +52,7 @@ export function DataTable<T>({
   );
 
   return (
-    <div className="premium-card overflow-hidden">
+    <div className="premium-card overflow-visible">
 
       {/* ── Mobile card list (hidden on lg+) ── */}
       {mobileRender && (
