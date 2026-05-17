@@ -94,9 +94,9 @@ export async function GET(request: NextRequest) {
   for (const b of billsRes.data ?? []) { if (b.org_id) billsByOrg[b.org_id] = (billsByOrg[b.org_id] ?? 0) + 1; }
 
   return NextResponse.json({
-    orgs: orgs.map((o: Record<string, unknown>) => ({
+    orgs: orgs.map((o: { id: string } & Record<string, unknown>) => ({
       ...o,
-      status: (o as Record<string, unknown>).status ?? "active",
+      status: o.status ?? "active",
       user_count: usersByOrg[o.id] ?? 0,
       bill_count: billsByOrg[o.id] ?? 0,
     })),
