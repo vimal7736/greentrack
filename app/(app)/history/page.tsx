@@ -336,7 +336,7 @@ export default function HistoryPage() {
         onClose={() => setViewingBill(null)}
         pdfUrl={viewingBill?.pdf_url ? `/api/bills/view?path=${encodeURIComponent(viewingBill.pdf_url)}` : null}
         billDate={viewingBill?.bill_date}
-        supplier={viewingBill?.supplier}
+        supplier={viewingBill?.supplier ?? undefined}
       />
     </PageLayout>
   );
