@@ -7,6 +7,25 @@ export async function proxy(request: NextRequest) {
   
   let supabaseResponse = NextResponse.next({ request });
 
+  const publicPrefixes = [
+    "/login", "/signup", "/auth/callback",
+    "/privacy", "/terms",
+    "/api/webhooks/stripe",
+    "/api/auth",
+    "/api/org/discovery",
+    "/api/org/request-join",
+    "/verify-email",
+    "/admin-login",
+    "/manifest.json",
+  ];
+  
+  const isPublic = publicPrefixes.some((p) => pathname.startsWith(p));
+
+  const isBypass = isPublic && pathname !== "/login" && pathname !== "/signup";
+  if (isBypass) {
+    return supabaseResponse;
+  }
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -32,19 +51,6 @@ export async function proxy(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  const publicPrefixes = [
-    "/login", "/signup", "/auth/callback",
-    "/privacy", "/terms",
-    "/api/webhooks/stripe",
-    "/api/auth",
-    "/api/org/discovery",
-    "/api/org/request-join",
-    "/verify-email",
-    "/admin-login",
-  ];
-  
-  const isPublic = publicPrefixes.some((p) => pathname.startsWith(p));
-  
   if (pathname.includes("/api/org")) {
     console.log(`[PROXY] API Check: ${pathname} | isPublic: ${isPublic} | user: ${!!user}`);
   }

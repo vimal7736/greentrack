@@ -15,8 +15,8 @@ interface Props {
   monthlyChart: MonthlyPoint[];
   byType:       ByType[];
   totalCo2:     number;
-  /** "co2" renders only the area chart, "energy" only the bar chart, omit for full 3-panel grid */
-  chartOnly?:   "co2" | "energy";
+  /** "co2" renders only the area chart, "energy" only the bar chart, "interactive" renders tabbed toggler, omit for full 3-panel grid */
+  chartOnly?:   "co2" | "energy" | "interactive";
 }
 
 const TYPE_LABELS: Record<string, string> = {
@@ -38,6 +38,8 @@ const TYPE_COLORS: Record<string, string> = {
 export default function DashboardCharts({ monthlyChart, byType, totalCo2, chartOnly }: Props) {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [activeTab, setActiveTab] = useState<"co2" | "energy">("co2");
+  
   useEffect(() => setMounted(true), []);
 
   const isDark = mounted && resolvedTheme === "dark";
@@ -77,11 +79,126 @@ export default function DashboardCharts({ monthlyChart, byType, totalCo2, chartO
     .filter((b) => b.type === "electricity")
     .reduce((s, b) => s + b.co2_kg, 0);
 
+  /* Smart data focus: filter out leading empty months to keep chart focused */
+  const firstActiveIndex = monthlyChart.findIndex(pt => pt.co2 > 0 || pt.kwh > 0);
+  let cleanChartData = monthlyChart;
+  if (firstActiveIndex > 0) {
+    const sliceStart = Math.max(0, firstActiveIndex - 1);
+    cleanChartData = monthlyChart.slice(sliceStart);
+  }
+
+  /* ── chartOnly="interactive" — clean tabbed carbon & energy switch ── */
+  if (chartOnly === "interactive") {
+    return (
+      <div className="flex flex-col h-full justify-between">
+        {/* Header row with Title and Switcher */}
+        <div className="flex items-center justify-between gap-3 mb-6">
+          <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+            {activeTab === "co2" ? "Carbon Emissions (kg CO₂e)" : "Energy Consumption (kWh)"}
+          </p>
+          
+          {/* Segmented Switcher Button Group (Rich Inset Neumorphic Pill Tray) */}
+          <div 
+            className="flex items-center p-1 rounded-full border border-border-subtle/5 shrink-0 transition-all duration-300"
+            style={{ 
+              background: "var(--bg-inset)",
+              boxShadow: "var(--shadow-inset-sm)",
+            }}
+          >
+            <button
+              onClick={() => setActiveTab("co2")}
+              className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.08em] rounded-full transition-all duration-500 cursor-pointer ${
+                activeTab === "co2"
+                  ? "text-white scale-100"
+                  : "text-text-muted hover:text-text-primary scale-95"
+              }`}
+              style={
+                activeTab === "co2"
+                  ? {
+                      background: "linear-gradient(135deg, var(--brand-green), var(--brand-green-dark))",
+                      boxShadow: isDark
+                        ? "1px 2px 4px rgba(0, 0, 0, 0.4), inset 1px 1px 2px rgba(255, 255, 255, 0.2)"
+                        : "1px 2px 4px rgba(34, 197, 94, 0.3), inset 1px 1px 2px rgba(255, 255, 255, 0.4)",
+                    }
+                  : {}
+              }
+            >
+              CO₂
+            </button>
+            <button
+              onClick={() => setActiveTab("energy")}
+              className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.08em] rounded-full transition-all duration-500 cursor-pointer ${
+                activeTab === "energy"
+                  ? "text-white scale-100"
+                  : "text-text-muted hover:text-text-primary scale-95"
+              }`}
+              style={
+                activeTab === "energy"
+                  ? {
+                      background: "linear-gradient(135deg, var(--brand-green), var(--brand-green-dark))",
+                      boxShadow: isDark
+                        ? "1px 2px 4px rgba(0, 0, 0, 0.4), inset 1px 1px 2px rgba(255, 255, 255, 0.2)"
+                        : "1px 2px 4px rgba(34, 197, 94, 0.3), inset 1px 1px 2px rgba(255, 255, 255, 0.4)",
+                    }
+                  : {}
+              }
+            >
+              Energy
+            </button>
+          </div>
+        </div>
+
+        {/* Chart Render Canvas */}
+        <div className="flex-1 min-h-[220px]">
+          {activeTab === "co2" ? (
+            <ResponsiveContainer width="100%" height={240}>
+              <AreaChart data={cleanChartData}>
+                <defs>
+                  <linearGradient id="co2Grad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%"  stopColor="#22c55e" stopOpacity={isDark ? 0.25 : 0.18} />
+                    <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke={grid} vertical={false} />
+                <XAxis dataKey="month" tick={{ fontSize: 11, fill: tick }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: tick }} axisLine={false} tickLine={false} width={40} />
+                <Tooltip
+                  contentStyle={tooltipStyle}
+                  formatter={(v: unknown) => [`${v} kg`, "CO₂e"]}
+                  cursor={{ stroke: "#22c55e", strokeWidth: 1, strokeDasharray: "4 4" }}
+                />
+                <Area
+                  type="monotone" dataKey="co2"
+                  stroke="#22c55e" fill="url(#co2Grad)" strokeWidth={2.5}
+                  dot={{ r: 3, fill: "#22c55e", strokeWidth: 0 }}
+                  activeDot={{ r: 5, fill: "#22c55e", stroke: "none" }}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          ) : (
+            <ResponsiveContainer width="100%" height={240}>
+              <BarChart data={cleanChartData} barSize={28}>
+                <CartesianGrid strokeDasharray="3 3" stroke={grid} vertical={false} />
+                <XAxis dataKey="month" tick={{ fontSize: 11, fill: tick }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: tick }} axisLine={false} tickLine={false} width={40} />
+                <Tooltip
+                  contentStyle={tooltipStyle}
+                  cursor={{ fill: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)" }}
+                />
+                <Bar dataKey="kwh" name="kWh" fill="#22c55e" radius={[4, 4, 0, 0]} opacity={0.9} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   /* ── chartOnly="co2" — just the area chart, no wrapper ── */
   if (chartOnly === "co2") {
     return (
       <ResponsiveContainer width="100%" height={220}>
-        <AreaChart data={monthlyChart}>
+        <AreaChart data={cleanChartData}>
           <defs>
             <linearGradient id="co2Grad" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%"  stopColor="#22c55e" stopOpacity={isDark ? 0.25 : 0.18} />
@@ -111,7 +228,7 @@ export default function DashboardCharts({ monthlyChart, byType, totalCo2, chartO
   if (chartOnly === "energy") {
     return (
       <ResponsiveContainer width="100%" height={180}>
-        <BarChart data={monthlyChart} barSize={28}>
+        <BarChart data={cleanChartData} barSize={28}>
           <CartesianGrid strokeDasharray="3 3" stroke={grid} vertical={false} />
           <XAxis dataKey="month" tick={{ fontSize: 11, fill: tick }} axisLine={false} tickLine={false} />
           <YAxis tick={{ fontSize: 11, fill: tick }} axisLine={false} tickLine={false} width={40} />
@@ -138,7 +255,7 @@ export default function DashboardCharts({ monthlyChart, byType, totalCo2, chartO
           Monthly CO₂ Emissions (kg)
         </h2>
         <ResponsiveContainer width="100%" height={220}>
-          <AreaChart data={monthlyChart}>
+          <AreaChart data={cleanChartData}>
             <defs>
               <linearGradient id="co2Grad" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%"  stopColor="#22c55e" stopOpacity={isDark ? 0.25 : 0.18} />
@@ -268,7 +385,7 @@ export default function DashboardCharts({ monthlyChart, byType, totalCo2, chartO
           Monthly Energy Consumption (kWh)
         </h2>
         <ResponsiveContainer width="100%" height={180}>
-          <BarChart data={monthlyChart} barSize={28}>
+          <BarChart data={cleanChartData} barSize={28}>
             <CartesianGrid strokeDasharray="3 3" stroke={grid} vertical={false} />
             <XAxis
               dataKey="month"

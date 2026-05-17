@@ -75,12 +75,14 @@ interface SidebarProps {
   onCollapseToggle: () => void;
   mobileOpen: boolean;
   onMobileClose: () => void;
+  onNavigate?: () => void;
 }
 
 export default function Sidebar({
   userName, userEmail, userRole, orgName, orgTier,
   collapsed, onCollapseToggle,
   mobileOpen, onMobileClose,
+  onNavigate,
 }: SidebarProps) {
   const pathname = usePathname();
   const [isMobile, setIsMobile] = useState(false);
@@ -225,7 +227,10 @@ export default function Sidebar({
               <Link
                 key={href}
                 href={href}
-                onClick={onMobileClose}
+                onClick={() => {
+                  onMobileClose();
+                  if (pathname !== href && onNavigate) onNavigate();
+                }}
                 title={iconOnly ? label : undefined}
                 aria-current={active ? "page" : undefined}
                 style={activeStyle(active)}

@@ -17,6 +17,7 @@ interface GooeyMenuProps {
   isOpen: boolean;
   onClose: () => void;
   userRole?: string;
+  onNavigate?: () => void;
 }
 
 /**
@@ -24,7 +25,7 @@ interface GooeyMenuProps {
  * A premium circular menu with a gooey animation effect.
  * Redesigned to be strictly Green and Neumorphic.
  */
-export const GooeyMenu: React.FC<GooeyMenuProps> = ({ isOpen, onClose, userRole }) => {
+export const GooeyMenu: React.FC<GooeyMenuProps> = ({ isOpen, onClose, userRole, onNavigate }) => {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
 
@@ -118,7 +119,10 @@ export const GooeyMenu: React.FC<GooeyMenuProps> = ({ isOpen, onClose, userRole 
               key={`link-${item.href}`}
               href={item.href}
               prefetch={item.label === "Logout" ? false : undefined}
-              onClick={onClose}
+              onClick={() => {
+                onClose();
+                if (pathname !== item.href && onNavigate) onNavigate();
+              }}
               className="absolute w-14 h-14 rounded-full flex flex-col items-center justify-center text-white transition-all duration-500 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] hover:scale-110 active:scale-90"
               style={{
                 transform: getTransform(i, menuItems.length, isOpen),

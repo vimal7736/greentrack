@@ -18,9 +18,10 @@ const NAV_RIGHT = [
 interface MobileBottomNavProps {
   onMenuToggle: () => void;
   isOpen: boolean;
+  onNavigate?: () => void;
 }
 
-export default function MobileBottomNav({ onMenuToggle, isOpen }: MobileBottomNavProps) {
+export default function MobileBottomNav({ onMenuToggle, isOpen, onNavigate }: MobileBottomNavProps) {
   const pathname = usePathname();
 
   const renderLink = ({ label, href, icon: Icon }: any) => {
@@ -29,6 +30,9 @@ export default function MobileBottomNav({ onMenuToggle, isOpen }: MobileBottomNa
       <Link
         key={href}
         href={href}
+        onClick={() => {
+          if (pathname !== href && onNavigate) onNavigate();
+        }}
         className="flex-1 flex flex-col items-center justify-center gap-0.5 relative transition-colors duration-150 active:opacity-70"
         style={{ color: active ? "#4ade80" : "rgba(255,255,255,0.40)" }}
         aria-current={active ? "page" : undefined}
