@@ -206,3 +206,49 @@ export async function sendAccountDeletedEmail({ to }: { to: string }) {
     console.error("Failed to send account deleted email:", error);
   }
 }
+
+export async function sendJoinRequestEmail({
+  to,
+  orgName,
+  userName,
+  userEmail,
+}: {
+  to: string;
+  orgName: string;
+  userName: string;
+  userEmail: string;
+}) {
+  try {
+    await transporter.sendMail({
+      from: FROM,
+      to,
+      subject: `Action Required: New Join Request for ${orgName}`,
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;color:#1a1a1a">
+          <div style="background:#14532d;padding:24px 32px;border-radius:12px 12px 0 0">
+            <h1 style="color:#fff;margin:0;font-size:20px">GreenTrack AI</h1>
+          </div>
+          <div style="background:#fff;padding:32px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 12px 12px">
+            <h2 style="margin:0 0 8px;font-size:18px">New Join Request ✓</h2>
+            <p style="color:#6b7280;margin:0 0 24px">
+              <strong>${userName}</strong> (${userEmail}) has requested to join your organisation on GreenTrack AI.
+            </p>
+            <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px 20px;margin-bottom:24px">
+              <p style="margin:0;font-size:14px;color:#166534">
+                You can approve or reject this request from your Team Management dashboard.
+              </p>
+            </div>
+            <a href="${process.env.NEXT_PUBLIC_APP_URL}/team"
+               style="display:inline-block;background:#16a34a;color:#fff;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
+              Review Request
+            </a>
+          </div>
+          <p style="text-align:center;color:#9ca3af;font-size:12px;margin-top:16px">
+            GreenTrack AI · Carbon Management for UK Businesses
+          </p>
+        </div>`,
+    });
+  } catch (error) {
+    console.error("Failed to send join request email:", error);
+  }
+}

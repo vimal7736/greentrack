@@ -8,7 +8,7 @@ export function formatCarbonKg(kg: number): string {
 }
 
 export function formatCarbonTonnes(kg: number, decimals = 3): string {
-  return `${(kg / 1000).toFixed(decimals)} tCO₂e`;
+  return (kg / 1000).toFixed(decimals);
 }
 
 export function formatCost(gbp: number | null | undefined): string {

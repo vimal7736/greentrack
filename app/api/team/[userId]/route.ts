@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
 
 /**
@@ -49,7 +50,8 @@ export async function DELETE(
     return NextResponse.json({ error: "Cannot remove the organisation owner" }, { status: 403 });
   }
 
-  const { error } = await supabase
+  const adminClient = createAdminClient();
+  const { error } = await adminClient
     .from("profiles")
     .update({ org_id: null })
     .eq("id", userId);
@@ -92,7 +94,8 @@ export async function PATCH(
     return NextResponse.json({ error: "Invalid role" }, { status: 400 });
   }
 
-  const { error } = await supabase
+  const adminClient = createAdminClient();
+  const { error } = await adminClient
     .from("profiles")
     .update({ role })
     .eq("id", userId)

@@ -13,7 +13,7 @@ const NAV_ITEMS = [
   { label: "Dashboard",  href: "/dashboard", icon: LayoutDashboard },
   { label: "Upload Bill", href: "/upload",    icon: Upload },
   { label: "History",    href: "/history",   icon: History },
-  { label: "Reports",    href: "/reports",   icon: FileText },
+//  { label: "Reports",    href: "/reports",   icon: FileText },
   { label: "Compare",    href: "/compare",   icon: Scale },
   { label: "Targets",    href: "/targets",   icon: Target },
   { label: "Team",       href: "/team",      icon: Users },

@@ -41,7 +41,7 @@ export async function POST(request: Request) {
 
   // ── Look up emission factor by bill date (critical for SECR accuracy) ────
   // Uses valid_from / valid_to so old bills use the correct historical factor
-  const { data: factor, error: factorError } = await supabase
+  let { data: factor, error: factorError } = await supabase
     .from("emission_factors")
     .select("kg_co2e_per_unit, scope")
     .eq("fuel_type", bill_type)
@@ -49,6 +49,23 @@ export async function POST(request: Request) {
     .lte("valid_from", bill_date)
     .gte("valid_to", bill_date)
     .single();
+
+  // Fallback: If no factor exists for this exact date (e.g., a new year where DEFRA 
+  // hasn't released factors yet, or test data), fetch the most recent available.
+  if (!factor) {
+    const { data: fallbackFactor } = await supabase
+      .from("emission_factors")
+      .select("kg_co2e_per_unit, scope")
+      .eq("fuel_type", bill_type)
+      .eq("unit", usage_unit)
+      .order("valid_to", { ascending: false })
+      .limit(1)
+      .single();
+
+    if (fallbackFactor) {
+      factor = fallbackFactor;
+    }
+  }
 
   console.error("[save] factor query:", { factor, factorError, bill_type, usage_unit, bill_date });
 
@@ -77,11 +94,10 @@ export async function POST(request: Request) {
       usage_amount,
       usage_unit,
       co2_kg,
-      cost_gbp: cost_gbp ?? null,
-      supplier: supplier ?? null,
-      account_number: account_number ?? null,
-      pdf_url: pdf_url ?? null,
-      ocr_raw: ocr_raw ?? null,
+      cost_gbp,
+      supplier,
+      account_number,
+      pdf_url,
     })
     .select()
     .single();

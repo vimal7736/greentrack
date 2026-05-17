@@ -38,14 +38,14 @@ export async function GET(request: Request) {
   if (meta.org_id) {
     await admin
       .from("profiles")
-      .update({
+      .upsert({
+        id:        user.id,
         org_id:    meta.org_id,
         full_name: meta.full_name ?? "",
         job_title: meta.job_title ?? null,
         phone:     meta.user_phone ?? null,
-      })
-      .eq("id", user.id)
-      .is("org_id", null);
+        email:     user.email,
+      }, { onConflict: 'id' });
 
     return NextResponse.redirect(`${origin}${next}`);
   }
@@ -53,12 +53,21 @@ export async function GET(request: Request) {
   /* ── New signup — create org + link profile ──────────────── */
   const { data: existing } = await admin
     .from("profiles")
-    .select("org_id")
+    .select("org_id, full_name, email")
     .eq("id", user.id)
     .single();
 
   if (existing?.org_id) {
-    // Already set up (e.g. user clicked link twice) — go straight to dashboard
+    // If profile exists but is missing metadata, sync it now
+    if (!existing.full_name || !existing.email) {
+      await admin
+        .from("profiles")
+        .update({
+          full_name: existing.full_name || meta.full_name || "",
+          email:     existing.email     || user.email,
+        })
+        .eq("id", user.id);
+    }
     return NextResponse.redirect(`${origin}${next}`);
   }
 
@@ -113,15 +122,15 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/login?error=org_failed`);
   }
 
-  // Link profile to org + set role = owner
-  await admin
-    .from("profiles")
-    .update({
-      org_id:    org.id,
-      role:      "owner",
-      full_name: meta.full_name  ?? "",
-    })
-    .eq("id", user.id);
+    await admin
+      .from("profiles")
+      .upsert({
+        id:        user.id,
+        org_id:    org.id,
+        role:      "owner",
+        full_name: meta.full_name  ?? "",
+        email:     user.email,
+      }, { onConflict: 'id' });
   
   // ── Send Welcome Email (Non-blocking) ──
   if (meta.org_email) {

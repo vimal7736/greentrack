@@ -20,7 +20,7 @@ export async function GET() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("org_id, organisations(name, tier, seats_limit)")
+    .select("org_id, role, organisations(name, tier, seats_limit, discovery_domain, allow_discovery)")
     .eq("id", user.id)
     .single();
 
@@ -42,7 +42,10 @@ export async function GET() {
       name: org?.name ?? "",
       tier: org?.tier ?? "free",
       seats_limit: org?.seats_limit ?? 3,
+      discovery_domain: (org as any)?.discovery_domain ?? "",
+      allow_discovery: (org as any)?.allow_discovery ?? false,
     },
+    myRole: profile?.role ?? "member",
   });
 }
 
@@ -84,24 +87,98 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
-  const { email } = body;
+  const { email, password, fullName } = body;
 
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return NextResponse.json({ error: "Invalid email address" }, { status: 400 });
   }
 
-  // Use Supabase admin to invite the user — this sends a magic link email
-  const { error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/callback`,
-    data: { org_id: profile.org_id },
-  });
+  // 0. Check if a profile already exists for this email
+  // If it does, we just link them to this org immediately
+  const { data: existingProfile } = await adminClient
+    .from("profiles")
+    .select("id")
+    .eq("email", email)
+    .single();
 
-  if (inviteError) {
-    // If user already exists, that's fine — they can just sign in
-    if (!inviteError.message.includes("already been registered")) {
-      return NextResponse.json({ error: inviteError.message }, { status: 500 });
-    }
+  if (existingProfile) {
+    await adminClient
+      .from("profiles")
+      .update({ 
+        org_id: profile.org_id, 
+        role: "member",
+        full_name: fullName || undefined 
+      })
+      .eq("id", existingProfile.id);
+
+    return NextResponse.json({ 
+      success: true, 
+      message: `${email} was already in the system and has been linked to your organisation.` 
+    });
   }
 
-  return NextResponse.json({ success: true, message: `Invite sent to ${email}` });
+  if (password) {
+    // 1. Create user with password immediately
+    const { data: createData, error: createError } = await adminClient.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: false, // User must verify their email to access dashboard
+      user_metadata: { 
+        full_name: fullName || email.split('@')[0],
+        org_id: profile.org_id 
+      }
+    });
+
+    if (createError) {
+      return NextResponse.json({ error: createError.message }, { status: 500 });
+    }
+
+    // 1.b Manually ensure profile exists with correct org_id
+    await adminClient.from("profiles").upsert({
+      id: createData.user.id,
+      org_id: profile.org_id,
+      full_name: fullName || email.split('@')[0],
+      email: email,
+      role: "member"
+    }, { onConflict: 'id' });
+
+    // 1.c Trigger the verification email by sending an invite to the newly created user
+    await adminClient.auth.admin.inviteUserByEmail(email, {
+      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/callback`,
+      data: { org_id: profile.org_id }
+    });
+
+    return NextResponse.json({ 
+      success: true, 
+      message: `Account created and verification email sent to ${email}.` 
+    });
+  } else {
+    // 2. Use Supabase admin to invite the user — this sends a magic link email
+    const { data: inviteData, error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(email, {
+      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/callback`,
+      data: { 
+        org_id: profile.org_id,
+        full_name: fullName || email.split('@')[0]
+      },
+    });
+
+    if (inviteError) {
+      if (!inviteError.message.includes("already been registered")) {
+        return NextResponse.json({ error: inviteError.message }, { status: 500 });
+      }
+    }
+
+    // 2.b Manually ensure profile exists (if invite created a new user)
+    if (inviteData?.user) {
+      await adminClient.from("profiles").upsert({
+        id: inviteData.user.id,
+        org_id: profile.org_id,
+        full_name: fullName || email.split('@')[0],
+        email: email,
+        role: "member"
+      }, { onConflict: 'id' });
+    }
+
+    return NextResponse.json({ success: true, message: `Invite sent to ${email}` });
+  }
 }

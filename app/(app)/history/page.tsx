@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { Search, Filter, Download, Eye, Trash2, AlertCircle, Zap, Flame, ChevronDown } from "lucide-react";
+import { Search, Filter, Download, Eye, Trash2, AlertCircle, Zap, Flame, ChevronDown, Leaf, X } from "lucide-react";
 
 import { PageLayout }                from "@/components/ui/PageLayout";
 import { StatCard }                  from "@/components/ui/StatCard";
@@ -11,6 +11,8 @@ import { Input }                     from "@/components/ui/Input";
 import { DataTable, type ColumnDef } from "@/components/ui/DataTable";
 import { BILL_TYPE_FILTER_OPTIONS }  from "@/lib/carbon/constants";
 import { formatCost, formatCarbonTonnes } from "@/lib/utils/format";
+import { ConfirmationModal }          from "@/components/ui/ConfirmationModal";
+import { BillViewModal }              from "@/components/ui/BillViewModal";
 import { type Bill, type BillsApiResponse } from "@/types";
 
 const PAGE_SIZE = 10;
@@ -24,6 +26,8 @@ export default function HistoryPage() {
   const [loading,         setLoading]        = useState(true);
   const [error,           setError]          = useState<string | null>(null);
   const [deletingId,      setDeletingId]     = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId]= useState<string | null>(null);
+  const [viewingBill,     setViewingBill]    = useState<Bill | null>(null);
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search), 400);
@@ -49,7 +53,6 @@ export default function HistoryPage() {
   useEffect(() => { setPage(1); }, [typeFilter, debouncedSearch]);
 
   async function handleDelete(id: string) {
-    if (!confirm("Delete this bill? This cannot be undone.")) return;
     setDeletingId(id);
     const res = await fetch(`/api/bills?id=${id}`, { method: "DELETE" });
     setDeletingId(null);
@@ -111,24 +114,23 @@ export default function HistoryPage() {
     {
       key: "actions", header: "", align: "right",
       render: (bill) => (
-        <div className="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center justify-end gap-3 transition-opacity">
           {bill.pdf_url && (
-            <a
-              href={`/api/bills/view?path=${encodeURIComponent(bill.pdf_url)}`}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              type="button"
+              onClick={() => setViewingBill(bill)}
               className="w-9 h-9 rounded-xl bg-white shadow-sm flex items-center justify-center text-text-muted hover:bg-gt-green-500 hover:text-white transition-all hover:scale-110"
               title="View Record"
             >
               <Eye className="w-4 h-4" />
-            </a>
+            </button>
           )}
           <Button
             variant="danger"
             size="sm"
-            icon={<Trash2 className="w-4 h-4" />}
+            icon={deletingId === bill.id ? <Leaf className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
             disabled={deletingId === bill.id}
-            onClick={() => handleDelete(bill.id)}
+            onClick={() => setConfirmDeleteId(bill.id)}
             title="Archive Record"
             className="w-9 h-9 p-0"
           >
@@ -263,22 +265,25 @@ export default function HistoryPage() {
 
               <div className="flex items-center gap-2">
                 {bill.pdf_url && (
-                  <a
-                    href={`/api/bills/view?path=${encodeURIComponent(bill.pdf_url)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <button
+                    type="button"
+                    onClick={() => setViewingBill(bill)}
                     className="w-9 h-9 rounded-xl bg-white shadow-sm flex items-center justify-center text-text-muted hover:bg-gt-green-500 hover:text-white transition-all"
                   >
                     <Eye className="w-4 h-4" />
-                  </a>
+                  </button>
                 )}
                 <button
                   type="button"
                   disabled={deletingId === bill.id}
-                  onClick={() => handleDelete(bill.id)}
+                  onClick={() => setConfirmDeleteId(bill.id)}
                   className="w-9 h-9 rounded-xl bg-white shadow-sm flex items-center justify-center text-red-400 hover:bg-red-500 hover:text-white transition-all"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  {deletingId === bill.id ? (
+                    <Leaf className="w-4 h-4 animate-spin text-gt-green-500" />
+                  ) : (
+                    <Trash2 className="w-4 h-4" />
+                  )}
                 </button>
               </div>
             </div>
@@ -313,6 +318,25 @@ export default function HistoryPage() {
             onPage={setPage}
           />
         }
+      />
+
+      <ConfirmationModal
+        isOpen={!!confirmDeleteId}
+        onClose={() => setConfirmDeleteId(null)}
+        onConfirm={() => confirmDeleteId && handleDelete(confirmDeleteId)}
+        title="Delete this record?"
+        message="This action cannot be undone. This record will be permanently removed from your organisation's carbon audit trail."
+        confirmLabel="Delete Now"
+        cancelLabel="Cancel"
+        variant="danger"
+      />
+
+      <BillViewModal
+        isOpen={!!viewingBill}
+        onClose={() => setViewingBill(null)}
+        pdfUrl={viewingBill?.pdf_url ? `/api/bills/view?path=${encodeURIComponent(viewingBill.pdf_url)}` : null}
+        billDate={viewingBill?.bill_date}
+        supplier={viewingBill?.supplier}
       />
     </PageLayout>
   );

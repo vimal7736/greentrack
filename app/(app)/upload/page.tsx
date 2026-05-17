@@ -52,6 +52,7 @@ export default function UploadPage() {
 
   // Save result
   const [result, setResult] = useState<SaveResult | null>(null);
+  const [saving, setSaving] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -109,6 +110,8 @@ export default function UploadPage() {
       return;
     }
 
+    setSaving(true);
+
     const res = await fetch("/api/bills/save", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -128,6 +131,7 @@ export default function UploadPage() {
 
     if (!res.ok) {
       setError(data.error ?? "Failed to save bill");
+      setSaving(false);
       return;
     }
 
@@ -142,6 +146,7 @@ export default function UploadPage() {
     setOcr(null);
     setUsage("");
     setResult(null);
+    setSaving(false);
   }
 
   const stages: Stage[] = ["upload", "processing", "review", "result"];
@@ -480,11 +485,14 @@ export default function UploadPage() {
             <button
               type="button"
               onClick={handleSave}
-              className="group relative w-full bg-gt-green-900 hover:bg-black text-white py-4 lg:py-6 rounded-xl lg:rounded-[2rem] font-black uppercase tracking-[0.2em] text-xs transition-all shadow-2xl hover:shadow-gt-green-500/20 active:scale-[0.98] overflow-hidden"
+              disabled={saving}
+              className="group relative w-full bg-gt-green-900 hover:bg-black disabled:opacity-70 text-white py-4 lg:py-6 rounded-xl lg:rounded-[2rem] font-black uppercase tracking-[0.2em] text-xs transition-all shadow-2xl hover:shadow-gt-green-500/20 active:scale-[0.98] overflow-hidden"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-gt-green-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               <span className="relative z-10 flex items-center justify-center gap-2">
-                Calculate Impact <ArrowUpRight className="w-4 h-4" />
+                {saving && <Leaf className="w-4 h-4 animate-spin" />}
+                {saving ? "Calculating..." : "Calculate Impact"}
+                {!saving && <ArrowUpRight className="w-4 h-4" />}
               </span>
             </button>
           </div>

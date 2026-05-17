@@ -14,14 +14,14 @@ import { PeriodComparison } from "./PeriodComparison";
 /* ── Constants ───────────────────────────────────────────────── */
 const TYPE_LABELS: Record<string, string> = {
   electricity: "Electricity", gas: "Gas", water: "Water",
-  fuel_diesel: "Diesel",      fuel_petrol: "Petrol",
+  fuel_diesel: "Diesel", fuel_petrol: "Petrol",
 };
 const BADGE_STYLES: Record<string, { bg: string; text: string }> = {
-  electricity: { bg: "rgba(34,197,94,0.12)",  text: "var(--brand-green-dark)" },
-  gas:         { bg: "rgba(34,197,94,0.10)",  text: "var(--brand-green-dark)" },
-  water:       { bg: "rgba(34,197,94,0.08)",  text: "var(--brand-green-dark)" },
-  fuel_diesel: { bg: "rgba(20,80,40,0.12)",   text: "var(--brand-green-darker)" },
-  fuel_petrol: { bg: "rgba(20,80,40,0.12)",   text: "var(--brand-green-darker)" },
+  electricity: { bg: "rgba(34,197,94,0.12)", text: "var(--brand-green-dark)" },
+  gas: { bg: "rgba(34,197,94,0.10)", text: "var(--brand-green-dark)" },
+  water: { bg: "rgba(34,197,94,0.08)", text: "var(--brand-green-dark)" },
+  fuel_diesel: { bg: "rgba(20,80,40,0.12)", text: "var(--brand-green-darker)" },
+  fuel_petrol: { bg: "rgba(20,80,40,0.12)", text: "var(--brand-green-darker)" },
 };
 const TYPE_COLORS: Record<string, string> = {
   electricity: "#22c55e", gas: "#16a34a", water: "#4ade80",
@@ -44,7 +44,7 @@ export default async function DashboardPage() {
     Array.isArray(profile?.organisations) ? profile.organisations[0] : profile?.organisations
   ) as { name: string } | null;
   const orgName = org?.name ?? "Your Organisation";
-  const orgId   = profile?.org_id ?? null;
+  const orgId = profile?.org_id ?? null;
 
   const twelveMonthsAgo = new Date();
   twelveMonthsAgo.setFullYear(twelveMonthsAgo.getFullYear() - 1);
@@ -66,33 +66,33 @@ export default async function DashboardPage() {
   /* ── Core stats ─────────────────────────────────────────────── */
   const totalCo2 = bills.reduce((s, b) => s + (b.co2_kg ?? 0), 0);
   const totalKwh = bills.filter((b) => b.usage_unit === "kWh")
-                        .reduce((s, b) => s + (b.usage_amount ?? 0), 0);
+    .reduce((s, b) => s + (b.usage_amount ?? 0), 0);
 
-  const now           = new Date();
-  const thisMonthStr  = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const now = new Date();
+  const thisMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
   const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const lastMonthStr  = `${lastMonthDate.getFullYear()}-${String(lastMonthDate.getMonth() + 1).padStart(2, "0")}`;
+  const lastMonthStr = `${lastMonthDate.getFullYear()}-${String(lastMonthDate.getMonth() + 1).padStart(2, "0")}`;
 
   const thisMonthCo2 = bills.filter((b) => b.bill_date?.startsWith(thisMonthStr))
-                            .reduce((s, b) => s + (b.co2_kg ?? 0), 0);
+    .reduce((s, b) => s + (b.co2_kg ?? 0), 0);
   const lastMonthCo2 = bills.filter((b) => b.bill_date?.startsWith(lastMonthStr))
-                            .reduce((s, b) => s + (b.co2_kg ?? 0), 0);
+    .reduce((s, b) => s + (b.co2_kg ?? 0), 0);
 
-  const trendPct  = lastMonthCo2 > 0
+  const trendPct = lastMonthCo2 > 0
     ? (((thisMonthCo2 - lastMonthCo2) / lastMonthCo2) * 100).toFixed(1)
     : "0";
   const trendDown = thisMonthCo2 <= lastMonthCo2;
 
   /* Monthly average over distinct billing months */
   const distinctMonths = new Set(bills.map((b) => b.bill_date?.slice(0, 7))).size;
-  const monthlyAvg     = distinctMonths > 0 ? totalCo2 / distinctMonths : 0;
+  const monthlyAvg = distinctMonths > 0 ? totalCo2 / distinctMonths : 0;
 
   const milesDriven = Math.round(totalCo2 / 0.255);
 
   /* ── Chart data ─────────────────────────────────────────────── */
   const monthlyMap: Record<string, { co2: number; kwh: number; __label?: string }> = {};
   for (let i = 5; i >= 0; i--) {
-    const d   = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
     monthlyMap[key] = { co2: 0, kwh: 0, __label: d.toLocaleString("en-GB", { month: "short" }) };
   }
@@ -105,8 +105,8 @@ export default async function DashboardPage() {
   }
   const monthlyChart = Object.values(monthlyMap).map((v) => ({
     month: v.__label as string,
-    co2:   Math.round(v.co2 * 10) / 10,
-    kwh:   Math.round(v.kwh),
+    co2: Math.round(v.co2 * 10) / 10,
+    kwh: Math.round(v.kwh),
   }));
 
   const typeMap: Record<string, number> = {};
@@ -124,17 +124,17 @@ export default async function DashboardPage() {
     const top = byType[0];
     const pct = totalCo2 > 0 ? ((top.co2_kg / totalCo2) * 100).toFixed(0) : "0";
     insights.push({
-      type:  "warning",
+      type: "warning",
       title: `${TYPE_LABELS[top.type] ?? top.type} is your top source`,
-      body:  `${pct}% of all emissions — consider switching to a lower-carbon alternative.`,
+      body: `${pct}% of all emissions — consider switching to a lower-carbon alternative.`,
     });
   }
   if (lastMonthCo2 > 0) {
     const isDown = thisMonthCo2 <= lastMonthCo2;
     insights.push({
-      type:  isDown ? "success" : "warning",
+      type: isDown ? "success" : "warning",
       title: isDown ? `↓ ${Math.abs(Number(trendPct))}% reduction this month` : `↑ ${Math.abs(Number(trendPct))}% increase this month`,
-      body:  isDown
+      body: isDown
         ? "Great progress — keep up the efficiency gains."
         : "Emissions rose vs last month. Review energy usage.",
     });
@@ -142,9 +142,9 @@ export default async function DashboardPage() {
   const projected = monthlyAvg * 12;
   if (projected > 0) {
     insights.push({
-      type:  "info",
+      type: "info",
       title: `${(projected / 1000).toFixed(1)} tCO₂e projected this year`,
-      body:  `Based on your monthly average of ${monthlyAvg.toFixed(0)} kg. Set a target to reduce it.`,
+      body: `Based on your monthly average of ${monthlyAvg.toFixed(0)} kg. Set a target to reduce it.`,
     });
   }
 
@@ -240,12 +240,12 @@ export default async function DashboardPage() {
           className="lg:col-span-8 rounded-2xl p-4 lg:p-6 min-h-[260px] lg:min-h-[350px]"
           style={{
             background: "var(--neu-base)",
-            boxShadow:  "var(--shadow-inset)",
-            border:     "var(--card-border)",
+            boxShadow: "var(--shadow-inset)",
+            border: "var(--card-border)",
           }}
         >
           <p className="text-xs font-bold uppercase tracking-widest mb-4"
-             style={{ color: "var(--text-muted)" }}>
+            style={{ color: "var(--text-muted)" }}>
             Monthly CO₂ Emissions (6 months)
           </p>
           <DashboardCharts monthlyChart={monthlyChart} byType={byType} totalCo2={totalCo2} chartOnly="co2" />
@@ -256,8 +256,8 @@ export default async function DashboardPage() {
           className="lg:col-span-4 rounded-2xl p-4 lg:p-6"
           style={{
             background: "var(--neu-base)",
-            boxShadow:  "var(--shadow-raised)",
-            border:     "var(--card-border)",
+            boxShadow: "var(--shadow-raised)",
+            border: "var(--card-border)",
           }}
         >
           <BudgetRing thisMonthCo2={thisMonthCo2} monthlyAvg={monthlyAvg} />
@@ -272,8 +272,8 @@ export default async function DashboardPage() {
           className="md:col-span-2 lg:col-span-5 rounded-2xl p-4 lg:p-6"
           style={{
             background: "var(--neu-base)",
-            boxShadow:  "var(--shadow-raised)",
-            border:     "var(--card-border)",
+            boxShadow: "var(--shadow-raised)",
+            border: "var(--card-border)",
           }}
         >
           <PeriodComparison bills={billsSlim} />
@@ -284,8 +284,8 @@ export default async function DashboardPage() {
           className="lg:col-span-4 rounded-2xl p-4 lg:p-6 flex flex-col gap-4"
           style={{
             background: "var(--neu-base)",
-            boxShadow:  "var(--shadow-raised)",
-            border:     "var(--card-border)",
+            boxShadow: "var(--shadow-raised)",
+            border: "var(--card-border)",
           }}
         >
           <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
@@ -296,12 +296,12 @@ export default async function DashboardPage() {
               <p className="text-sm text-center py-4" style={{ color: "var(--text-muted)" }}>No data yet</p>
             )}
             {byType.map(({ type, co2_kg }) => {
-              const pct   = totalCo2 > 0 ? (co2_kg / totalCo2) * 100 : 0;
+              const pct = totalCo2 > 0 ? (co2_kg / totalCo2) * 100 : 0;
               const color = TYPE_COLORS[type] ?? "#6b7280";
               return (
                 <div key={type}>
                   <div className="flex justify-between text-xs mb-1.5 font-semibold"
-                       style={{ color: "var(--text-secondary)" }}>
+                    style={{ color: "var(--text-secondary)" }}>
                     <span>{TYPE_LABELS[type] ?? type}</span>
                     <span style={{ color: "var(--text-muted)" }}>{co2_kg.toFixed(1)} kg · {pct.toFixed(0)}%</span>
                   </div>
@@ -309,11 +309,11 @@ export default async function DashboardPage() {
                     className="w-full h-2 rounded-full overflow-hidden"
                     style={{
                       background: "var(--neu-base)",
-                      boxShadow:  "var(--shadow-inset-xs)",
+                      boxShadow: "var(--shadow-inset-xs)",
                     }}
                   >
                     <div className="h-full rounded-full transition-all duration-700"
-                         style={{ width: `${pct}%`, background: color }} />
+                      style={{ width: `${pct}%`, background: color }} />
                   </div>
                 </div>
               );
@@ -323,11 +323,11 @@ export default async function DashboardPage() {
 
         {/* AI Insights */}
         <div className="lg:col-span-3 rounded-2xl p-4 lg:p-5 flex flex-col gap-3"
-             style={{
-               background: "var(--neu-base)",
-               boxShadow:  "var(--shadow-raised)",
-               border:     "var(--card-border)",
-             }}>
+          style={{
+            background: "var(--neu-base)",
+            boxShadow: "var(--shadow-raised)",
+            border: "var(--card-border)",
+          }}>
           <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
             AI Insights
           </p>
@@ -345,8 +345,8 @@ export default async function DashboardPage() {
         className="rounded-2xl p-4 lg:p-6 min-h-[220px] lg:min-h-[300px]"
         style={{
           background: "var(--neu-base)",
-          boxShadow:  "var(--shadow-inset)",
-          border:     "var(--card-border)",
+          boxShadow: "var(--shadow-inset)",
+          border: "var(--card-border)",
         }}
       >
         <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: "var(--text-muted)" }}>
@@ -363,14 +363,14 @@ export default async function DashboardPage() {
           </p>
           <div className="h-[1px] flex-1 bg-border-subtle/30 mx-4" />
         </div>
-        
+
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 lg:gap-4">
           {[
-            { label: "Upload Bill",     href: "/upload",   Icon: Upload,   color: "var(--brand-green)", bg: "bg-gt-green-500/10" },
-            { label: "Compare Periods", href: "/compare",  Icon: Scale,    color: "var(--brand-green-dark)", bg: "bg-gt-green-700/10" },
-            { label: "Set Targets",     href: "/targets",  Icon: Target,   color: "var(--brand-green-darker)", bg: "bg-gt-green-900/10" },
-            { label: "Generate Report", href: "/reports",  Icon: FileText, color: "var(--brand-green-dark)", bg: "bg-gt-green-600/10" },
-            { label: "Manage Team",     href: "/team",     Icon: Users,    color: "var(--text-secondary)", bg: "bg-bg-inset" },
+            { label: "Upload Bill", href: "/upload", Icon: Upload, color: "var(--brand-green)", bg: "bg-gt-green-500/10" },
+            { label: "Compare Periods", href: "/compare", Icon: Scale, color: "var(--brand-green-dark)", bg: "bg-gt-green-700/10" },
+            { label: "Set Targets", href: "/targets", Icon: Target, color: "var(--brand-green-darker)", bg: "bg-gt-green-900/10" },
+//            { label: "Generate Report", href: "/reports", Icon: FileText, color: "var(--brand-green-dark)", bg: "bg-gt-green-600/10" },
+            { label: "Manage Team", href: "/team", Icon: Users, color: "var(--text-secondary)", bg: "bg-bg-inset" },
           ].map(({ label, href, Icon, color, bg }, i) => (
             <Link
               key={href}
@@ -392,156 +392,26 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* ── Recent Bills ─────────────────────────────────────────── */}
-      <div className="premium-card border-none overflow-hidden shadow-2xl">
-        <div className="px-4 lg:px-8 py-4 lg:py-6 border-b border-border-subtle/30 bg-bg-inset/10 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-             <div className="w-2 h-2 rounded-full bg-gt-green-500 animate-pulse" />
-             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted">Ledger Activity</p>
-          </div>
-          <Link
-            href="/history"
-            className="px-4 py-2 rounded-xl bg-bg-inset hover:bg-white hover:shadow-lg text-[9px] font-black uppercase tracking-widest text-text-primary transition-all flex items-center gap-2"
-          >
-            Archive Access <ArrowUpRight className="w-3 h-3" />
-          </Link>
-        </div>
 
-        <div className="p-2">
-          {recentBills.length === 0 ? (
-            <div className="relative py-24 px-8 overflow-hidden rounded-2xl bg-bg-inset/20 flex flex-col items-center text-center">
-              {/* Background abstract element */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gt-green-500/5 rounded-full blur-[80px] pointer-events-none" />
-              
-              <div className="relative z-10 space-y-6 max-w-sm">
-                <div className="w-20 h-20 bg-white shadow-premium rounded-3xl mx-auto flex items-center justify-center animate-bounce-slow">
-                   <Upload className="w-8 h-8 text-gt-green-600" />
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-sm font-black text-text-primary uppercase tracking-widest">Repository Vacant</h3>
-                  <p className="text-xs font-bold text-text-muted opacity-60 leading-relaxed">
-                    Begin your decarbonization audit by synchronizing your first energy utility statement.
-                  </p>
-                </div>
-                <Link 
-                  href="/upload" 
-                  className="inline-flex items-center gap-3 px-8 py-4 rounded-2xl bg-black text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-gt-green-600 transition-all hover:scale-105 shadow-xl shadow-black/20"
-                >
-                  Initialize First Audit <ArrowUpRight className="w-4 h-4" />
-                </Link>
-              </div>
-            </div>
-          ) : (
-            <>
-              {/* ── Mobile card list (hidden on lg+) ─────────────── */}
-              <div className="lg:hidden divide-y divide-border-subtle/20">
-                {recentBills.map((bill) => {
-                  const bs = BADGE_STYLES[bill.bill_type] ?? { bg: "rgba(0,0,0,0.06)", text: "var(--text-muted)" };
-                  return (
-                    <div key={bill.id} className="flex items-center gap-3 px-3 py-3.5">
-                      <div className="w-9 h-9 rounded-xl bg-white shadow-sm flex items-center justify-center shrink-0">
-                        {bill.bill_type === "electricity"
-                          ? <Zap className="w-4 h-4 text-gt-green-500" />
-                          : <Flame className="w-4 h-4 text-brand-orange" />}
-                      </div>
-
-                      <div className="flex-1 min-w-0">
-                        <span className="text-[11px] font-black uppercase tracking-wider" style={{ color: bs.text }}>
-                          {TYPE_LABELS[bill.bill_type] ?? bill.bill_type}
-                        </span>
-                        <p className="text-[10px] text-text-muted font-medium mt-0.5 truncate">
-                          {bill.bill_date}
-                          {" · "}{bill.usage_amount.toLocaleString()} {bill.usage_unit}
-                          {bill.supplier ? ` · ${bill.supplier}` : ""}
-                        </p>
-                      </div>
-
-                      <div className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-gt-green-500/8 border border-gt-green-500/15">
-                        <span className="text-xs font-black text-gt-green-700 tracking-tight">{bill.co2_kg}</span>
-                        <span className="text-[9px] font-bold text-text-muted opacity-50 uppercase">kg</span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* ── Desktop table (hidden below lg) ──────────────── */}
-              <div className="hidden lg:block overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-[10px] font-black uppercase tracking-widest text-text-muted opacity-40">
-                      <th className="px-8 py-4 text-left font-black">Instrument</th>
-                      <th className="px-6 py-4 text-left font-black">Date</th>
-                      <th className="px-6 py-4 text-left font-black">Vendor</th>
-                      <th className="px-6 py-4 text-right font-black">Consumption</th>
-                      <th className="px-8 py-4 text-right font-black">Carbon Impact</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border-subtle/20">
-                    {recentBills.map((bill) => {
-                      const bs = BADGE_STYLES[bill.bill_type] ?? { bg: "rgba(0,0,0,0.06)", text: "var(--text-muted)" };
-                      return (
-                        <tr key={bill.id} className="group hover:bg-bg-inset/30 transition-all duration-300">
-                          <td className="px-8 py-5">
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-xl bg-white shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
-                                {bill.bill_type === "electricity" ? <Zap className="w-4 h-4 text-gt-green-500" /> : <Flame className="w-4 h-4 text-brand-orange" />}
-                              </div>
-                              <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: bs.text }}>
-                                {TYPE_LABELS[bill.bill_type] ?? bill.bill_type}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-5">
-                            <p className="text-[11px] font-bold text-text-muted uppercase tracking-widest">{bill.bill_date}</p>
-                          </td>
-                          <td className="px-6 py-5">
-                            <p className="text-[10px] font-black text-text-primary uppercase tracking-tighter opacity-60">
-                              {bill.supplier ?? "Verified Protocol"}
-                            </p>
-                          </td>
-                          <td className="px-6 py-5 text-right">
-                            <div className="flex flex-col items-end">
-                              <span className="text-xs font-black text-text-primary tracking-tight">{bill.usage_amount.toLocaleString()}</span>
-                              <span className="text-[9px] font-bold text-text-muted uppercase tracking-widest opacity-40">{bill.usage_unit}</span>
-                            </div>
-                          </td>
-                          <td className="px-8 py-5 text-right">
-                            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gt-green-500/5 border border-gt-green-500/10">
-                              <span className="text-sm font-black text-gt-green-700 tracking-tighter">
-                                {bill.co2_kg} <span className="text-[10px] opacity-40 font-bold uppercase tracking-widest ml-1">kg</span>
-                              </span>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </>
-          )}
-        </div>
-      </div>
     </div>
   );
 }
 
 /* ── Stat Card ───────────────────────────────────────────────── */
 function StatCard({ label, value, unit, sub, icon, accent }: {
-  label:  string; value: string; unit: string;
-  sub:    React.ReactNode; icon: React.ReactNode; accent: "green" | "orange";
+  label: string; value: string; unit: string;
+  sub: React.ReactNode; icon: React.ReactNode; accent: "green" | "orange";
 }) {
   const accentColor = accent === "green" ? "var(--brand-green)" : "var(--brand-orange)";
-  const iconColor   = accent === "green" ? "var(--brand-green-dark)" : "var(--brand-orange-dark)";
+  const iconColor = accent === "green" ? "var(--brand-green-dark)" : "var(--brand-orange-dark)";
   return (
     <div
       className="rounded-2xl p-3.5 lg:p-5"
       style={{
         background: "var(--neu-base)",
-        boxShadow:  "var(--shadow-raised)",
-        border:     "var(--card-border)",
-        borderTop:  `3px solid ${accentColor}`,
+        boxShadow: "var(--shadow-raised)",
+        border: "var(--card-border)",
+        borderTop: `3px solid ${accentColor}`,
       }}
     >
       <div className="flex items-center justify-between mb-2 lg:mb-3">
@@ -552,7 +422,7 @@ function StatCard({ label, value, unit, sub, icon, accent }: {
           className="w-7 h-7 lg:w-8 lg:h-8 rounded-lg flex items-center justify-center shrink-0"
           style={{
             background: "var(--neu-base)",
-            boxShadow:  "var(--shadow-inset-sm)",
+            boxShadow: "var(--shadow-inset-sm)",
             color: iconColor,
           }}
         >
@@ -575,9 +445,9 @@ function InsightCard({ insight }: {
   insight: { type: "success" | "warning" | "info"; title: string; body: string };
 }) {
   const cfg = {
-    success: { Icon: CheckCircle,   color: "#22c55e", bg: "rgba(34,197,94,0.10)"  },
+    success: { Icon: CheckCircle, color: "#22c55e", bg: "rgba(34,197,94,0.10)" },
     warning: { Icon: AlertTriangle, color: "#16a34a", bg: "rgba(22,163,74,0.10)" },
-    info:    { Icon: Lightbulb,     color: "#4ade80", bg: "rgba(74,222,128,0.10)"  },
+    info: { Icon: Lightbulb, color: "#4ade80", bg: "rgba(74,222,128,0.10)" },
   }[insight.type];
 
   return (

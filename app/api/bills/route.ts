@@ -4,10 +4,6 @@ import { NextResponse } from "next/server";
 /**
  * GET /api/bills
  * Returns paginated bills for the authenticated user's org.
- * Query params: page (default 1), page_size (default 10), type (filter), search (date/supplier)
- *
- * DELETE /api/bills?id=<uuid>
- * Deletes a single bill by ID (org-scoped, admin only in full impl).
  */
 export async function GET(request: Request) {
   const supabase = await createClient();
@@ -45,8 +41,7 @@ export async function GET(request: Request) {
   }
 
   if (search) {
-    // Filter by date prefix or supplier name (case-insensitive via ilike)
-    query = query.or(`bill_date.ilike.%${search}%,supplier.ilike.%${search}%`);
+    query = query.or(`bill_date.ilike.%${search}%,supplier.ilike.%${search}%,account_number.ilike.%${search}%`);
   }
 
   const from = (page - 1) * pageSize;
@@ -59,21 +54,19 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  // Summary stats across ALL filtered bills (not just this page)
-  const { data: allBills } = await supabase
+  // Summary stats across ALL filtered bills
+  const { data: allSummaryBills } = await supabase
     .from("bills")
     .select("co2_kg, cost_gbp, bill_type")
-    .eq("org_id", profile.org_id)
-    .then((r) => {
-      // reapply same type filter for summary
-      if (typeFilter && typeFilter !== "all") {
-        return { data: r.data?.filter((b) => b.bill_type === typeFilter) ?? [] };
-      }
-      return r;
-    });
+    .eq("org_id", profile.org_id);
 
-  const totalCo2 = allBills?.reduce((s, b) => s + (b.co2_kg ?? 0), 0) ?? 0;
-  const totalCost = allBills?.reduce((s, b) => s + (b.cost_gbp ?? 0), 0) ?? 0;
+  let summaryData = allSummaryBills ?? [];
+  if (typeFilter && typeFilter !== "all") {
+    summaryData = summaryData.filter(b => b.bill_type === typeFilter);
+  }
+
+  const totalCo2 = summaryData.reduce((s, b) => s + (Number(b.co2_kg) || 0), 0);
+  const totalCost = summaryData.reduce((s, b) => s + (Number(b.cost_gbp) || 0), 0);
 
   return NextResponse.json({
     bills: bills ?? [],
@@ -108,7 +101,6 @@ export async function DELETE(request: Request) {
   const billId = searchParams.get("id");
   if (!billId) return NextResponse.json({ error: "Missing bill id" }, { status: 400 });
 
-  // RLS ensures org scoping; also check role if needed
   const { error } = await supabase
     .from("bills")
     .delete()

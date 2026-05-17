@@ -2,6 +2,9 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
 export async function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  console.log(`[PROXY] Incoming Request: ${pathname}`);
+  
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -29,23 +32,25 @@ export async function proxy(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  const { pathname } = request.nextUrl;
-
-  // Landing page: logged-in → dashboard, guest → show landing page
-  if (pathname === "/") {
-    if (user) return NextResponse.redirect(new URL("/dashboard", request.url));
-    return supabaseResponse;
-  }
-
   const publicPrefixes = [
     "/login", "/signup", "/auth/callback",
     "/privacy", "/terms",
     "/api/webhooks/stripe",
     "/api/auth",
+    "/api/org/discovery",
+    "/api/org/request-join",
+    "/verify-email",
+    "/admin-login",
   ];
+  
   const isPublic = publicPrefixes.some((p) => pathname.startsWith(p));
+  
+  if (pathname.includes("/api/org")) {
+    console.log(`[PROXY] API Check: ${pathname} | isPublic: ${isPublic} | user: ${!!user}`);
+  }
 
   if (!user && !isPublic) {
+    console.log(`[PROXY] REDIRECTING ${pathname} -> /login`);
     return NextResponse.redirect(new URL("/login", request.url));
   }
 

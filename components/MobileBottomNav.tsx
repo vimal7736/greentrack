@@ -11,7 +11,7 @@ const NAV_LEFT = [
 ];
 
 const NAV_RIGHT = [
-  { label: "Reports", href: "/reports",   icon: FileText },
+//  { label: "Reports", href: "/reports",   icon: FileText },
   { label: "Targets", href: "/targets",   icon: Target },
 ];
 
