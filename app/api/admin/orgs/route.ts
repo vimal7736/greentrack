@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
   const orgs = orgsRes.data;
   if (!orgs) return NextResponse.json({ orgs: [] });
 
-  const orgIds = orgs.map((o) => o.id);
+  const orgIds = orgs.map((o: { id: string }) => o.id);
   const [profilesRes, billsRes] = await Promise.all([
     admin.from("profiles").select("org_id").in("org_id", orgIds),
     admin.from("bills").select("org_id").in("org_id", orgIds),
@@ -94,7 +94,7 @@ export async function GET(request: NextRequest) {
   for (const b of billsRes.data ?? []) { if (b.org_id) billsByOrg[b.org_id] = (billsByOrg[b.org_id] ?? 0) + 1; }
 
   return NextResponse.json({
-    orgs: orgs.map((o) => ({
+    orgs: orgs.map((o: Record<string, unknown>) => ({
       ...o,
       status: (o as Record<string, unknown>).status ?? "active",
       user_count: usersByOrg[o.id] ?? 0,
