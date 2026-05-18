@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import {
   BarChart3, Building2, Beaker, Users, Activity,
-  LogOut, Shield, Leaf, CreditCard,
+  LogOut, Shield, Leaf, CreditCard, UserCircle,
 } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 
@@ -12,9 +12,10 @@ const ADMIN_NAV = [
   { label: "Overview",      href: "/admin",              icon: BarChart3 },
   { label: "Organisations", href: "/admin/organisations", icon: Building2 },
   { label: "Subscriptions", href: "/admin/subscriptions", icon: CreditCard },
-// { label: "Factors",       href: "/admin/factors",       icon: Beaker },
+  { label: "Factors",       href: "/admin/factors",       icon: Beaker },
   { label: "Users",         href: "/admin/users",         icon: Users },
   { label: "Activity",      href: "/admin/activity",      icon: Activity },
+  { label: "Profile",       href: "/admin/profile",       icon: UserCircle },
 ];
 
 const BG  = "#1e293b";

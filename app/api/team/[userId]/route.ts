@@ -31,8 +31,8 @@ export async function DELETE(
     return NextResponse.json({ error: "No organisation found" }, { status: 404 });
   }
 
-  if (profile.role !== "admin" && profile.role !== "owner") {
-    return NextResponse.json({ error: "Only admins can remove members" }, { status: 403 });
+  if (profile.role !== "owner") {
+    return NextResponse.json({ error: "Only owners can remove members" }, { status: 403 });
   }
 
   // Verify the target user is in the same org
@@ -85,12 +85,12 @@ export async function PATCH(
     return NextResponse.json({ error: "No organisation found" }, { status: 404 });
   }
 
-  if (profile.role !== "admin" && profile.role !== "owner") {
-    return NextResponse.json({ error: "Only admins can change roles" }, { status: 403 });
+  if (profile.role !== "owner") {
+    return NextResponse.json({ error: "Only owners can change roles" }, { status: 403 });
   }
 
   const { role } = await request.json();
-  if (!["admin", "member"].includes(role)) {
+  if (!["owner", "member"].includes(role)) {
     return NextResponse.json({ error: "Invalid role" }, { status: 400 });
   }
 

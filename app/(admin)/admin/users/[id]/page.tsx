@@ -129,7 +129,12 @@ export default function UserDetailPage() {
               {user.is_disabled && <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest" style={{ background: "rgba(239,68,68,0.10)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.20)" }}><Ban className="w-3 h-3" />Disabled</span>}
             </div>
             <p className="text-[10px] font-bold uppercase tracking-widest text-text-muted opacity-60">
-              {user.email} · <Link href={`/admin/organisations/${user.org_id}`} className="hover:underline" style={{ color: "var(--brand-green-dark)" }}>{user.org_name}</Link> · Joined {formatDate(user.created_at)}
+              {user.email} ·{" "}
+              {user.org_id
+                ? <Link href={`/admin/organisations/${user.org_id}`} className="hover:underline" style={{ color: "var(--brand-green-dark)" }}>{user.org_name}</Link>
+                : <span style={{ color: "#ef4444" }}>GreenTrack Platform</span>
+              }
+              {" "}· Joined {formatDate(user.created_at)}
             </p>
           </div>
         </div>
@@ -155,7 +160,7 @@ export default function UserDetailPage() {
               {[
                 { label: "Full Name", value: user.full_name },
                 { label: "Email", value: user.email },
-                { label: "Organisation", value: user.org_name, link: `/admin/organisations/${user.org_id}` },
+                { label: "Organisation", value: user.org_name, link: user.org_id ? `/admin/organisations/${user.org_id}` : undefined },
                 { label: "Joined", value: formatDate(user.created_at) },
               ].map(({ label, value, link }) => (
                 <div key={label} className="p-3 rounded-xl" style={{ background: "var(--bg-inset)", border: "var(--card-border)" }}>

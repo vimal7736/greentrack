@@ -1,6 +1,6 @@
 "use client";
-import { useState } from "react";
-import { Package, ToggleLeft, ToggleRight, Edit3, Trash2, Plus, X } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Package, ToggleLeft, ToggleRight, Edit3, Trash2, Plus, X, Save } from "lucide-react";
 
 interface PlanFeature { key: string; label: string; enabled: boolean }
 interface PlanQuotas { bills_per_month: number; max_organisations: number }
@@ -9,41 +9,46 @@ interface Plan {
   description: string; features: PlanFeature[]; quotas: PlanQuotas; is_active: boolean;
 }
 
-const DEFAULT_FEATURES: PlanFeature[] = [
-  { key: "ai_bill_processing", label: "AI Bill Processing", enabled: false },
-  { key: "secr_reporting", label: "SECR Reporting", enabled: false },
-  { key: "team_management", label: "Team Management", enabled: false },
-  { key: "api_access", label: "API Access", enabled: false },
-  { key: "priority_support", label: "Priority Support", enabled: false },
-  { key: "custom_branding", label: "Custom Branding", enabled: false },
-];
-
-const INITIAL_PLANS: Plan[] = [
-  {
-    id: "plan_free", name: "Free", slug: "free", monthly_price: 0, yearly_price: 0,
-    description: "Basic carbon tracking for small teams",
-    features: DEFAULT_FEATURES.map((f) => ({ ...f, enabled: f.key === "ai_bill_processing" })),
-    quotas: { bills_per_month: 10, max_organisations: 1 }, is_active: true,
-  },
-  {
-    id: "plan_starter", name: "Starter", slug: "starter", monthly_price: 24, yearly_price: 240,
-    description: "Professional carbon management with AI-powered insights",
-    features: DEFAULT_FEATURES.map((f) => ({ ...f, enabled: ["ai_bill_processing", "secr_reporting", "team_management"].includes(f.key) })),
-    quotas: { bills_per_month: 100, max_organisations: 3 }, is_active: true,
-  },
-  {
-    id: "plan_business", name: "Business", slug: "business", monthly_price: 99, yearly_price: 990,
-    description: "Enterprise-grade sustainability platform with full API access",
-    features: DEFAULT_FEATURES.map((f) => ({ ...f, enabled: true })),
-    quotas: { bills_per_month: 500, max_organisations: 10 }, is_active: true,
-  },
-];
-
 const PLAN_COLORS: Record<string, string> = { free: "#6b7280", starter: "#3b82f6", business: "#22c55e" };
 
 export default function PlansTab() {
-  const [plans, setPlans] = useState<Plan[]>(INITIAL_PLANS);
+  const [plans, setPlans] = useState<Plan[]>([]);
+  const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<Plan | null>(null);
+  const [editDraft, setEditDraft] = useState<Partial<Plan>>({});
+  const [saving, setSaving] = useState(false);
+  const [saveMsg, setSaveMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  useEffect(() => {
+    fetch("/api/admin/subscriptions?view=plans")
+      .then((r) => r.json())
+      .then((d) => { setPlans(d.plans ?? []); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, []);
+
+  function openEdit(plan: Plan) {
+    setEditing(plan);
+    setEditDraft({ name: plan.name, monthly_price: plan.monthly_price, yearly_price: plan.yearly_price, description: plan.description });
+    setSaveMsg(null);
+  }
+
+  async function handleSave() {
+    if (!editing) return;
+    setSaving(true);
+    const res = await fetch("/api/admin/subscriptions", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "update_plan", plan_id: editing.id, ...editDraft }),
+    });
+    if (res.ok) {
+      setPlans((prev) => prev.map((p) => p.id === editing.id ? { ...p, ...editDraft } as Plan : p));
+      setSaveMsg({ type: "success", text: "Plan updated successfully" });
+      setTimeout(() => { setEditing(null); setSaveMsg(null); }, 1200);
+    } else {
+      setSaveMsg({ type: "error", text: "Failed to save changes" });
+    }
+    setSaving(false);
+  }
 
   function toggleFeature(planId: string, featureKey: string) {
     setPlans((prev) => prev.map((p) =>
@@ -59,6 +64,18 @@ export default function PlansTab() {
     ));
   }
 
+  if (loading) {
+    return (
+      <div className="space-y-4 animate-pulse">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="premium-card p-5 h-80" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4 lg:space-y-6">
       {/* Header */}
@@ -67,10 +84,11 @@ export default function PlansTab() {
           <p className="text-sm font-black" style={{ color: "var(--text-primary)" }}>Plan Catalog</p>
           <p className="text-[9px] font-bold text-text-muted uppercase tracking-widest">{plans.length} plans configured</p>
         </div>
-        <button className="px-4 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95"
-          style={{ background: "var(--brand-orange)", color: "#fff" }}>
-          <span className="flex items-center gap-1.5"><Plus className="w-3 h-3" /> Add Plan</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <span className="text-[9px] font-bold text-text-muted opacity-50 uppercase tracking-widest">
+            Feature toggles apply immediately
+          </span>
+        </div>
       </div>
 
       {/* Plan Cards */}
@@ -90,18 +108,12 @@ export default function PlansTab() {
                       <p className="text-[9px] font-bold text-text-muted">{plan.description}</p>
                     </div>
                   </div>
-                  <div className="flex gap-1">
-                    <button onClick={() => setEditing(plan)} className="w-7 h-7 rounded-lg flex items-center justify-center hover:scale-110 transition-transform"
-                      style={{ background: "rgba(59,130,246,0.1)", color: "#3b82f6" }}>
-                      <Edit3 className="w-3 h-3" />
-                    </button>
-                    {plan.slug !== "free" && (
-                      <button className="w-7 h-7 rounded-lg flex items-center justify-center hover:scale-110 transition-transform"
-                        style={{ background: "rgba(239,68,68,0.1)", color: "#ef4444" }}>
-                        <Trash2 className="w-3 h-3" />
-                      </button>
-                    )}
-                  </div>
+                  <button onClick={() => openEdit(plan)}
+                    className="w-7 h-7 rounded-lg flex items-center justify-center hover:scale-110 transition-transform"
+                    style={{ background: "rgba(59,130,246,0.1)", color: "#3b82f6" }}
+                    title="Edit plan">
+                    <Edit3 className="w-3 h-3" />
+                  </button>
                 </div>
                 {/* Pricing */}
                 <div className="flex items-baseline gap-2">
@@ -121,7 +133,8 @@ export default function PlansTab() {
                 <div className="space-y-2">
                   {plan.features.map((f) => (
                     <div key={f.key} className="flex items-center justify-between">
-                      <span className="text-[10px] font-bold" style={{ color: f.enabled ? "var(--text-primary)" : "var(--text-muted)", opacity: f.enabled ? 1 : 0.5 }}>
+                      <span className="text-[10px] font-bold transition-colors"
+                        style={{ color: f.enabled ? "var(--text-primary)" : "var(--text-muted)", opacity: f.enabled ? 1 : 0.5 }}>
                         {f.label}
                       </span>
                       <button onClick={() => toggleFeature(plan.id, f.key)} className="transition-transform hover:scale-110">
@@ -173,34 +186,62 @@ export default function PlansTab() {
                 <X className="w-4 h-4" />
               </button>
             </div>
+
             <div className="space-y-3">
               <div className="flex flex-col gap-1.5">
                 <label className="text-[10px] font-black uppercase tracking-widest text-text-muted">Plan Name</label>
-                <input defaultValue={editing.name} className="w-full px-3 py-2.5 rounded-xl text-sm font-black"
+                <input
+                  value={editDraft.name ?? ""}
+                  onChange={(e) => setEditDraft((d) => ({ ...d, name: e.target.value }))}
+                  className="w-full px-3 py-2.5 rounded-xl text-sm font-black"
                   style={{ background: "var(--bg-inset)", color: "var(--text-primary)", border: "var(--card-border)" }} />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[10px] font-black uppercase tracking-widest text-text-muted">Monthly (£)</label>
-                  <input type="number" defaultValue={editing.monthly_price} className="w-full px-3 py-2.5 rounded-xl text-sm font-black"
+                  <input type="number"
+                    value={editDraft.monthly_price ?? 0}
+                    onChange={(e) => setEditDraft((d) => ({ ...d, monthly_price: Number(e.target.value) }))}
+                    className="w-full px-3 py-2.5 rounded-xl text-sm font-black"
                     style={{ background: "var(--bg-inset)", color: "var(--text-primary)", border: "var(--card-border)" }} />
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[10px] font-black uppercase tracking-widest text-text-muted">Yearly (£)</label>
-                  <input type="number" defaultValue={editing.yearly_price} className="w-full px-3 py-2.5 rounded-xl text-sm font-black"
+                  <input type="number"
+                    value={editDraft.yearly_price ?? 0}
+                    onChange={(e) => setEditDraft((d) => ({ ...d, yearly_price: Number(e.target.value) }))}
+                    className="w-full px-3 py-2.5 rounded-xl text-sm font-black"
                     style={{ background: "var(--bg-inset)", color: "var(--text-primary)", border: "var(--card-border)" }} />
                 </div>
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-[10px] font-black uppercase tracking-widest text-text-muted">Description</label>
-                <textarea defaultValue={editing.description} rows={2} className="w-full px-3 py-2.5 rounded-xl text-sm font-black resize-none"
+                <textarea
+                  value={editDraft.description ?? ""}
+                  onChange={(e) => setEditDraft((d) => ({ ...d, description: e.target.value }))}
+                  rows={2}
+                  className="w-full px-3 py-2.5 rounded-xl text-sm font-black resize-none"
                   style={{ background: "var(--bg-inset)", color: "var(--text-primary)", border: "var(--card-border)" }} />
               </div>
             </div>
-            <button className="mt-5 w-full px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all hover:scale-[1.02] active:scale-95"
-              style={{ background: "var(--brand-orange)", color: "#fff" }}
-              onClick={() => setEditing(null)}>
-              Save Changes
+
+            {saveMsg && (
+              <div className="mt-3 px-3 py-2 rounded-xl text-[10px] font-black"
+                style={{
+                  background: saveMsg.type === "success" ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)",
+                  color: saveMsg.type === "success" ? "var(--brand-green)" : "#ef4444",
+                }}>
+                {saveMsg.text}
+              </div>
+            )}
+
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="mt-5 w-full px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
+              style={{ background: "var(--brand-orange)", color: "#fff" }}>
+              <Save className="w-3.5 h-3.5" />
+              {saving ? "Saving..." : "Save Changes"}
             </button>
           </div>
         </div>

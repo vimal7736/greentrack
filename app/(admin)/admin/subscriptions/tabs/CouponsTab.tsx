@@ -4,10 +4,23 @@ import { Tag, Percent, DollarSign, ToggleLeft, ToggleRight } from "lucide-react"
 import type { CouponRow } from "@/types";
 import { formatDate } from "@/lib/utils/format";
 
+interface CreateForm {
+  code: string;
+  type: "percentage" | "fixed";
+  value: string;
+  usage_limit: string;
+  valid_until: string;
+}
+
+const EMPTY_FORM: CreateForm = { code: "", type: "percentage", value: "", usage_limit: "", valid_until: "" };
+
 export default function CouponsTab() {
   const [coupons, setCoupons] = useState<CouponRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
+  const [form, setForm] = useState<CreateForm>(EMPTY_FORM);
+  const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/admin/subscriptions?view=coupons")
@@ -15,6 +28,36 @@ export default function CouponsTab() {
       .then((d) => { setCoupons(d.coupons ?? []); setLoading(false); })
       .catch(() => setLoading(false));
   }, []);
+
+  async function handleCreate() {
+    if (!form.code || !form.value || !form.usage_limit) {
+      setCreateError("Code, value and usage limit are required");
+      return;
+    }
+    setCreating(true);
+    setCreateError(null);
+    const res = await fetch("/api/admin/subscriptions", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "create_coupon",
+        code: form.code,
+        type: form.type,
+        value: Number(form.value),
+        usage_limit: Number(form.usage_limit),
+        valid_until: form.valid_until || undefined,
+      }),
+    });
+    const data = await res.json();
+    if (res.ok && data.coupon) {
+      setCoupons((prev) => [data.coupon, ...prev]);
+      setForm(EMPTY_FORM);
+      setShowCreate(false);
+    } else {
+      setCreateError(data.error || "Failed to create coupon");
+    }
+    setCreating(false);
+  }
 
   function toggleCoupon(id: string) {
     setCoupons((prev) => prev.map((c) => c.id === id ? { ...c, is_active: !c.is_active } : c));
@@ -37,7 +80,7 @@ export default function CouponsTab() {
           <p className="text-sm font-black" style={{ color: "var(--text-primary)" }}>Discount Codes</p>
           <p className="text-[9px] font-bold text-text-muted uppercase tracking-widest">{coupons.length} coupons configured</p>
         </div>
-        <button onClick={() => setShowCreate(!showCreate)}
+        <button onClick={() => { setShowCreate(!showCreate); setCreateError(null); setForm(EMPTY_FORM); }}
           className="px-4 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95"
           style={{ background: "var(--brand-orange)", color: "#fff" }}>
           + New Coupon
@@ -51,30 +94,68 @@ export default function CouponsTab() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <div className="flex flex-col gap-1.5">
               <label className="text-[10px] font-black uppercase tracking-widest text-text-muted">Code</label>
-              <input placeholder="e.g. SAVE20" className="w-full px-3 py-2.5 rounded-xl text-sm font-black" style={{ background: "var(--bg-inset)", color: "var(--text-primary)", border: "var(--card-border)" }} />
+              <input
+                placeholder="e.g. SAVE20"
+                value={form.code}
+                onChange={(e) => setForm((f) => ({ ...f, code: e.target.value.toUpperCase() }))}
+                className="w-full px-3 py-2.5 rounded-xl text-sm font-black"
+                style={{ background: "var(--bg-inset)", color: "var(--text-primary)", border: "var(--card-border)" }} />
             </div>
             <div className="flex flex-col gap-1.5">
               <label className="text-[10px] font-black uppercase tracking-widest text-text-muted">Type</label>
-              <select className="w-full px-3 py-2.5 rounded-xl text-sm font-black appearance-none" style={{ background: "var(--bg-inset)", color: "var(--text-primary)", border: "var(--card-border)" }}>
+              <select
+                value={form.type}
+                onChange={(e) => setForm((f) => ({ ...f, type: e.target.value as "percentage" | "fixed" }))}
+                className="w-full px-3 py-2.5 rounded-xl text-sm font-black appearance-none"
+                style={{ background: "var(--bg-inset)", color: "var(--text-primary)", border: "var(--card-border)" }}>
                 <option value="percentage">Percentage (%)</option>
                 <option value="fixed">Fixed (£)</option>
               </select>
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] font-black uppercase tracking-widest text-text-muted">Value</label>
-              <input type="number" placeholder="25" className="w-full px-3 py-2.5 rounded-xl text-sm font-black" style={{ background: "var(--bg-inset)", color: "var(--text-primary)", border: "var(--card-border)" }} />
+              <label className="text-[10px] font-black uppercase tracking-widest text-text-muted">
+                Value {form.type === "percentage" ? "(%)" : "(£)"}
+              </label>
+              <input
+                type="number"
+                placeholder={form.type === "percentage" ? "25" : "10"}
+                value={form.value}
+                onChange={(e) => setForm((f) => ({ ...f, value: e.target.value }))}
+                className="w-full px-3 py-2.5 rounded-xl text-sm font-black"
+                style={{ background: "var(--bg-inset)", color: "var(--text-primary)", border: "var(--card-border)" }} />
             </div>
             <div className="flex flex-col gap-1.5">
               <label className="text-[10px] font-black uppercase tracking-widest text-text-muted">Usage Limit</label>
-              <input type="number" placeholder="100" className="w-full px-3 py-2.5 rounded-xl text-sm font-black" style={{ background: "var(--bg-inset)", color: "var(--text-primary)", border: "var(--card-border)" }} />
+              <input
+                type="number"
+                placeholder="100"
+                value={form.usage_limit}
+                onChange={(e) => setForm((f) => ({ ...f, usage_limit: e.target.value }))}
+                className="w-full px-3 py-2.5 rounded-xl text-sm font-black"
+                style={{ background: "var(--bg-inset)", color: "var(--text-primary)", border: "var(--card-border)" }} />
             </div>
           </div>
+          <div className="mt-3">
+            <label className="text-[10px] font-black uppercase tracking-widest text-text-muted block mb-1.5">Expires On (optional)</label>
+            <input
+              type="date"
+              value={form.valid_until}
+              onChange={(e) => setForm((f) => ({ ...f, valid_until: e.target.value }))}
+              className="w-full sm:w-48 px-3 py-2.5 rounded-xl text-sm font-black"
+              style={{ background: "var(--bg-inset)", color: "var(--text-primary)", border: "var(--card-border)" }} />
+          </div>
+          {createError && (
+            <p className="text-[10px] font-black text-red-500 mt-2">{createError}</p>
+          )}
           <div className="flex gap-3 mt-4">
-            <button className="px-5 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95"
+            <button
+              onClick={handleCreate}
+              disabled={creating}
+              className="px-5 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
               style={{ background: "var(--brand-green)", color: "#fff" }}>
-              Create Coupon
+              {creating ? "Creating..." : "Create Coupon"}
             </button>
-            <button onClick={() => setShowCreate(false)}
+            <button onClick={() => { setShowCreate(false); setCreateError(null); }}
               className="px-5 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest"
               style={{ background: "var(--bg-inset)", color: "var(--text-muted)" }}>
               Cancel

@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { UserPlus, Trash2, Crown, User, ChevronDown, Clock, Check, X, ShieldAlert, Building2, AlertTriangle } from "lucide-react";
+import { UserPlus, Trash2, Crown, User, Clock, Check, X, ShieldAlert, Building2, AlertTriangle } from "lucide-react";
 import { isPublicDomain } from "@/lib/utils/domain";
 
 import type { TeamMember, TeamApiResponse } from "@/types";
@@ -19,7 +19,9 @@ export default function TeamPage() {
   const members = teamData?.members ?? [];
   const org = teamData?.org ?? null;
   const myRole = teamData?.myRole ?? "member";
-  const isAdmin = myRole === "admin" || myRole === "owner";
+  const isAdmin = myRole === "owner";
+  // "admin" no longer exists at org level — normalize legacy admin → member
+  const normalizeRole = (role: string) => role === "admin" ? "member" : role;
 
   useEffect(() => {
     if (org) {
@@ -34,8 +36,6 @@ export default function TeamPage() {
   const [inviting, setInviting] = useState(false);
   const [inviteStatus, setInviteStatus] = useState<"idle" | "success" | "error">("idle");
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [openRoleDropdown, setOpenRoleDropdown] = useState<string | null>(null);
-
   // Discovery Settings State
   const [domain, setDomain] = useState("");
   const [allowDiscovery, setAllowDiscovery] = useState(false);
@@ -153,43 +153,17 @@ export default function TeamPage() {
             ) : (
               <div className="relative inline-block">
                 {isAdmin ? (
-                  <div className="relative">
-                    <button
-                      type="button"
-                      onClick={() => setOpenRoleDropdown(openRoleDropdown === member.id ? null : member.id)}
-                      className="text-[10px] font-black uppercase tracking-[0.1em] pl-4 pr-10 py-2.5 rounded-xl bg-white border border-gray-100 text-gray-900 flex items-center gap-2 hover:border-gt-green-400 shadow-sm transition-all outline-none"
-                    >
-                      {member.role}
-                      <ChevronDown className={`w-3.5 h-3.5 text-gt-green-600 transition-transform duration-300 ${openRoleDropdown === member.id ? "rotate-180" : ""}`} />
-                    </button>
-
-                    {openRoleDropdown === member.id && (
-                      <>
-                        <div className="fixed inset-0 z-40" onClick={() => setOpenRoleDropdown(null)} />
-                        <div className="absolute top-full left-0 mt-2 w-40 z-50 animate-scale-in bg-white border border-gray-100 shadow-2xl p-2 rounded-2xl">
-                          {["member", "admin"].map((r) => (
-                            <button
-                              key={r}
-                              onClick={() => {
-                                handleRoleChange(member.id, r);
-                                setOpenRoleDropdown(null);
-                              }}
-                              className={`w-full text-left px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                                member.role === r
-                                  ? "bg-gt-green-600 text-white shadow-lg"
-                                  : "text-text-muted hover:text-text-primary hover:bg-gray-50"
-                              }`}
-                            >
-                              {r}
-                            </button>
-                          ))}
-                        </div>
-                      </>
-                    )}
-                  </div>
+                  <select
+                    value={normalizeRole(member.role)}
+                    onChange={(e) => handleRoleChange(member.id, e.target.value)}
+                    className="text-[10px] font-black uppercase tracking-[0.1em] pl-4 pr-8 py-2.5 rounded-xl bg-white border border-gray-100 text-gray-900 hover:border-gt-green-400 shadow-sm transition-all outline-none cursor-pointer"
+                  >
+                    <option value="owner">Owner</option>
+                    <option value="member">Member</option>
+                  </select>
                 ) : (
                   <span className="text-[10px] px-4 py-2.5 rounded-xl font-black uppercase tracking-[0.1em] bg-gray-50 text-gray-400 border border-gray-100 shadow-inner">
-                    {member.role}
+                    {normalizeRole(member.role)}
                   </span>
                 )}
               </div>
@@ -440,43 +414,17 @@ export default function TeamPage() {
                       ) : (
                         <div className="relative inline-block">
                           {isAdmin ? (
-                            <div className="relative">
-                              <button
-                                type="button"
-                                onClick={() => setOpenRoleDropdown(openRoleDropdown === member.id ? null : member.id)}
-                                className="text-[10px] font-black uppercase tracking-[0.1em] pl-3 pr-8 py-2 rounded-xl bg-white border border-gray-100 text-gray-900 flex items-center gap-1 hover:border-gt-green-400 shadow-sm transition-all outline-none"
-                              >
-                                {member.role}
-                                <ChevronDown className={`w-3 h-3 text-gt-green-600 transition-transform duration-300 ${openRoleDropdown === member.id ? "rotate-180" : ""}`} />
-                              </button>
-
-                              {openRoleDropdown === member.id && (
-                                <>
-                                  <div className="fixed inset-0 z-40" onClick={() => setOpenRoleDropdown(null)} />
-                                  <div className="absolute bottom-full right-0 mb-2 w-32 z-50 animate-scale-in bg-white border border-gray-100 shadow-2xl p-1.5 rounded-2xl">
-                                    {["member", "admin"].map((r) => (
-                                      <button
-                                        key={r}
-                                        onClick={() => {
-                                          handleRoleChange(member.id, r);
-                                          setOpenRoleDropdown(null);
-                                        }}
-                                        className={`w-full text-left px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${
-                                          member.role === r
-                                            ? "bg-gt-green-600 text-white shadow-lg"
-                                            : "text-text-muted hover:text-text-primary hover:bg-gray-50"
-                                        }`}
-                                      >
-                                        {r}
-                                      </button>
-                                    ))}
-                                  </div>
-                                </>
-                              )}
-                            </div>
+                            <select
+                              value={normalizeRole(member.role)}
+                              onChange={(e) => handleRoleChange(member.id, e.target.value)}
+                              className="text-[9px] font-black uppercase tracking-[0.1em] pl-3 pr-7 py-2 rounded-xl bg-white border border-gray-100 text-gray-900 hover:border-gt-green-400 shadow-sm transition-all outline-none cursor-pointer"
+                            >
+                              <option value="owner">Owner</option>
+                              <option value="member">Member</option>
+                            </select>
                           ) : (
                             <span className="text-[9px] px-3 py-2 rounded-xl font-black uppercase tracking-[0.1em] bg-gray-50 text-gray-400 border border-gray-100 shadow-inner">
-                              {member.role}
+                              {normalizeRole(member.role)}
                             </span>
                           )}
                         </div>

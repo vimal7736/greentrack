@@ -4,7 +4,7 @@ import Link from "next/link";
 import {
   Users, Search, Shield, UserCheck, User as UserIcon,
   ChevronDown, ExternalLink, Ban, CheckCircle2,
-  Mail, Calendar, MapPin, Activity, X, FileText, Leaf,
+  Mail, Calendar, MapPin, Activity, X, FileText, Leaf, ShieldAlert,
 } from "lucide-react";
 import type { AdminUser } from "@/types";
 import { DataTable, type ColumnDef } from "@/components/ui/DataTable";
@@ -15,22 +15,25 @@ import { formatDate } from "@/lib/utils/format";
 
 /* ── Role badge styles ─────────────────────────────────────── */
 const ROLE_STYLES: Record<string, { bg: string; text: string; ring: string }> = {
-  owner: { bg: "rgba(249,115,22,0.10)", text: "var(--brand-orange-dark)", ring: "rgba(249,115,22,0.20)" },
-  admin: { bg: "rgba(59,130,246,0.10)", text: "#3b82f6", ring: "rgba(59,130,246,0.20)" },
-  member: { bg: "rgba(120,120,120,0.08)", text: "var(--text-muted)", ring: "rgba(120,120,120,0.15)" },
-  superadmin: { bg: "rgba(239,68,68,0.10)", text: "#ef4444", ring: "rgba(239,68,68,0.20)" },
-  super_admin: { bg: "rgba(239,68,68,0.10)", text: "#ef4444", ring: "rgba(239,68,68,0.20)" },
+  owner:       { bg: "rgba(249,115,22,0.10)", text: "var(--brand-orange-dark)", ring: "rgba(249,115,22,0.20)" },
+  admin:       { bg: "rgba(239,68,68,0.10)",  text: "#ef4444",                 ring: "rgba(239,68,68,0.20)" },
+  member:      { bg: "rgba(120,120,120,0.08)", text: "var(--text-muted)",       ring: "rgba(120,120,120,0.15)" },
+  superadmin:  { bg: "rgba(239,68,68,0.10)",  text: "#ef4444",                 ring: "rgba(239,68,68,0.20)" },
+  super_admin: { bg: "rgba(239,68,68,0.10)",  text: "#ef4444",                 ring: "rgba(239,68,68,0.20)" },
 };
 
+function isPlatformAdmin(role: string) {
+  return role === "admin" || role === "superadmin" || role === "super_admin";
+}
+
 const ROLE_FILTERS = [
-  { key: "all", label: "All" },
-  { key: "owner", label: "Owners" },
-  { key: "admin", label: "Admins" },
+  { key: "all",    label: "All" },
+  { key: "owner",  label: "Owners" },
   { key: "member", label: "Members" },
-  { key: "superadmin", label: "Super" },
+  { key: "admin",  label: "Admins" },
 ];
 
-const ASSIGNABLE_ROLES = ["owner", "admin", "member"];
+const ASSIGNABLE_ROLES = ["owner", "member"];
 
 export default function AdminUsersPage() {
   const toast = useToast();
@@ -139,7 +142,11 @@ export default function AdminUsersPage() {
   const filtered = useMemo(() => {
     let result = users;
     if (roleFilter !== "all") {
-      result = result.filter((u) => u.role === roleFilter || u.role === roleFilter.replace("admin", "_admin"));
+      if (roleFilter === "admin") {
+        result = result.filter((u) => u.role === "admin" || u.role === "superadmin" || u.role === "super_admin");
+      } else {
+        result = result.filter((u) => u.role === roleFilter);
+      }
     }
     if (search.trim()) {
       const q = search.toLowerCase();
@@ -150,13 +157,18 @@ export default function AdminUsersPage() {
           u.org_name.toLowerCase().includes(q)
       );
     }
-    return result;
+    // Platform admins always float to the top
+    return [...result].sort((a, b) => {
+      const aAdmin = isPlatformAdmin(a.role) ? 0 : 1;
+      const bAdmin = isPlatformAdmin(b.role) ? 0 : 1;
+      return aAdmin - bAdmin;
+    });
   }, [users, roleFilter, search]);
 
   /* ── Stats ──────────────────────────────────────────────── */
   const totalUsers = users.length;
   const ownerCount = users.filter((u) => u.role === "owner").length;
-  const adminCount = users.filter((u) => u.role === "admin").length;
+  const adminCount = users.filter((u) => u.role === "admin" || u.role === "superadmin" || u.role === "super_admin").length;
   const memberCount = users.filter((u) => u.role === "member").length;
 
   /* ── Columns ────────────────────────────────────────────── */
@@ -219,11 +231,23 @@ export default function AdminUsersPage() {
     {
       key: "org",
       header: "Organisation",
-      render: (u) => (
-        <span className="text-[10px] font-bold uppercase tracking-widest text-text-muted">
-          {u.org_name}
-        </span>
-      ),
+      render: (u) => {
+        const platform = isPlatformAdmin(u.role);
+        if (platform) {
+          return (
+            <span className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest"
+              style={{ color: "#ef4444" }}>
+              <ShieldAlert className="w-3 h-3" />
+              GreenTrack Platform
+            </span>
+          );
+        }
+        return (
+          <span className="text-[10px] font-bold uppercase tracking-widest text-text-muted">
+            {u.org_name}
+          </span>
+        );
+      },
     },
     {
       key: "role",
@@ -232,20 +256,22 @@ export default function AdminUsersPage() {
       render: (u) => {
         const style = ROLE_STYLES[u.role] ?? ROLE_STYLES.member;
         const isSuperadmin = u.role === "superadmin" || u.role === "super_admin";
+        const platform = isPlatformAdmin(u.role);
         return (
           <div className="flex flex-col items-center gap-1.5">
             <span
-              className="inline-flex items-center px-2 lg:px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest"
+              className="inline-flex items-center gap-1 px-2 lg:px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest"
               style={{
                 background: style.bg,
                 color: style.text,
                 border: `1px solid ${style.ring}`,
               }}
             >
-              {u.role.replace("_", " ")}
+              {platform && <ShieldAlert className="w-3 h-3" />}
+              {platform ? "Platform Admin" : u.role.replace("_", " ")}
             </span>
-            {/* Role change dropdown — not shown for superadmins */}
-            {!isSuperadmin && (
+            {/* Role change dropdown — not shown for platform admins */}
+            {!isSuperadmin && !isPlatformAdmin(u.role) && (
               <div className="relative inline-block">
                 <select
                   value={u.role}
@@ -285,7 +311,7 @@ export default function AdminUsersPage() {
       align: "right",
       render: (u) => {
         const isSuperadmin = u.role === "superadmin" || u.role === "super_admin";
-        if (isSuperadmin) return <span className="text-[9px] font-bold text-text-muted opacity-30">Protected</span>;
+        if (isSuperadmin || isPlatformAdmin(u.role)) return <span className="text-[9px] font-bold text-text-muted opacity-30">Protected</span>;
 
         const isDisabled = (u as AdminUser & { is_disabled?: boolean }).is_disabled;
         return (
@@ -364,23 +390,29 @@ export default function AdminUsersPage() {
           } as React.CSSProperties}
         >
           {ROLE_FILTERS.map(({ key, label }) => (
-            <button
-              key={key}
-              type="button"
-              onClick={() => setRoleFilter(key)}
-              className="px-3 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all whitespace-nowrap"
-              style={
-                roleFilter === key
-                  ? {
-                    background: "var(--bg-surface)",
-                    color: "var(--brand-orange)",
-                    boxShadow: "var(--shadow-raised)",
-                  }
-                  : { color: "var(--text-muted)" }
-              }
-            >
-              {label}
-            </button>
+            <div key={key} className="flex items-center">
+              {key === "admin" && (
+                <div className="w-px h-5 mx-1 rounded-full" style={{ background: "var(--card-border-color, rgba(0,0,0,0.10))" }} />
+              )}
+              <button
+                type="button"
+                onClick={() => setRoleFilter(key)}
+                className="px-3 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all whitespace-nowrap"
+                style={
+                  roleFilter === key
+                    ? {
+                      background: key === "admin" ? "rgba(239,68,68,0.10)" : "var(--bg-surface)",
+                      color: key === "admin" ? "#ef4444" : "var(--brand-orange)",
+                      boxShadow: "var(--shadow-raised)",
+                    }
+                    : {
+                      color: key === "admin" ? "rgba(239,68,68,0.6)" : "var(--text-muted)",
+                    }
+                }
+              >
+                {label}
+              </button>
+            </div>
           ))}
         </div>
       </div>

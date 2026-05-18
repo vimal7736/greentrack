@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  BarChart3, Building2, Beaker, Users, Shield, X, CreditCard,
+  BarChart3, Building2, Beaker, Users, Shield, X, CreditCard, UserCircle,
 } from "lucide-react";
 
 const NAV_LEFT = [
@@ -11,9 +11,8 @@ const NAV_LEFT = [
 ];
 
 const NAV_RIGHT = [
-  { label: "Subs",    href: "/admin/subscriptions", icon: CreditCard },
-// { label: "Factors", href: "/admin/factors", icon: Beaker },
-  { label: "Users",   href: "/admin/users",   icon: Users },
+  { label: "Users",   href: "/admin/users",         icon: Users },
+  { label: "Profile", href: "/admin/profile",       icon: UserCircle },
 ];
 
 interface AdminMobileBottomNavProps {

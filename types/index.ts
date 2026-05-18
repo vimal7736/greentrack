@@ -144,10 +144,21 @@ export interface ReportSummary {
   total_co2_kg: number;
   total_kwh: number;
   total_cost_gbp: number;
-  by_type: { type: string; co2_kg: number }[];
+  by_type: { type: string; co2_kg: number; cost_gbp: number }[];
   by_scope: { scope1: number; scope2: number; scope3: number };
   by_quarter: { period: string; co2: number }[];
+  by_month: { month: string; co2: number; cost: number }[];
   bill_count: number;
+  prev_year_co2: number;
+  prev_year_cost: number;
+  months_with_data: number;
+  target: {
+    annual_carbon_cap_kg: number;
+    yearly_reduction_rate: number;
+    net_zero_target_year: number | null;
+    sbti_pathway: string;
+    baseline_year: number;
+  } | null;
 }
 
 // ─── Targets ─────────────────────────────────────────────────────────────────

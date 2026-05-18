@@ -7,6 +7,7 @@ import Sidebar from "./Sidebar";
 import MobileBottomNav from "./MobileBottomNav";
 import { ThemeToggle } from "./ThemeToggle";
 import { GooeyMenu } from "./ui/GooeyMenu";
+import { ToastProvider } from "./ui/Toast";
 
 const BG  = "#1a4731";
 const ND  = "rgba(0,0,0,0.45)";
@@ -73,6 +74,7 @@ export default function AppShell({
   }, []);
 
   return (
+    <ToastProvider>
     <div style={{ background: "var(--bg-base)", minHeight: "100vh" }}>
 
       {/* ── Mobile top header (hidden on lg+) ─────────────────── */}
@@ -244,5 +246,6 @@ export default function AppShell({
         </div>
       )}
     </div>
+    </ToastProvider>
   );
 }

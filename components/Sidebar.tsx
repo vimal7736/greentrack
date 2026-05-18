@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import {
   LayoutDashboard, Upload, History, FileText,
   Users, CreditCard, LogOut, Leaf,
-  Scale, Target,
+  Scale, Target, UserCircle,
 } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 
@@ -13,10 +13,11 @@ const NAV_ITEMS = [
   { label: "Dashboard",  href: "/dashboard", icon: LayoutDashboard },
   { label: "Upload Bill", href: "/upload",    icon: Upload },
   { label: "History",    href: "/history",   icon: History },
-//  { label: "Reports",    href: "/reports",   icon: FileText },
+  { label: "Reports",    href: "/reports",   icon: FileText },
   { label: "Compare",    href: "/compare",   icon: Scale },
   { label: "Targets",    href: "/targets",   icon: Target },
   { label: "Team",       href: "/team",      icon: Users },
+  { label: "Profile",    href: "/profile",   icon: UserCircle },
   { label: "Billing",    href: "/billing",   icon: CreditCard },
 ];
 

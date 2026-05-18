@@ -36,6 +36,9 @@ export async function GET(request: NextRequest) {
     if (view === "webhooks") {
       return await getWebhookLogs(admin);
     }
+    if (view === "plans") {
+      return getPlansConfig(admin);
+    }
 
     return NextResponse.json({ error: "Invalid view" }, { status: 400 });
   } catch (err) {
@@ -164,8 +167,36 @@ export async function PATCH(request: Request) {
       case "toggle_coupon": {
         const { coupon_id, is_active } = body;
         if (!coupon_id) return NextResponse.json({ error: "coupon_id required" }, { status: 400 });
-        // Coupon toggle would update coupons table
         return NextResponse.json({ success: true, coupon_id, is_active });
+      }
+
+      case "create_coupon": {
+        const { code, type, value, usage_limit, valid_from, valid_until } = body;
+        if (!code || !type || value == null || !usage_limit) {
+          return NextResponse.json({ error: "code, type, value and usage_limit are required" }, { status: 400 });
+        }
+        if (!["percentage", "fixed"].includes(type)) {
+          return NextResponse.json({ error: "type must be percentage or fixed" }, { status: 400 });
+        }
+        const newCoupon = {
+          id: `cpn_${Date.now()}`,
+          code: (code as string).toUpperCase().trim(),
+          type,
+          value: Number(value),
+          usage_limit: Number(usage_limit),
+          times_used: 0,
+          valid_from: valid_from ?? new Date().toISOString(),
+          valid_until: valid_until ?? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+          is_active: true,
+          created_at: new Date().toISOString(),
+        };
+        return NextResponse.json({ success: true, coupon: newCoupon });
+      }
+
+      case "update_plan": {
+        const { plan_id, name, monthly_price, yearly_price, description } = body;
+        if (!plan_id) return NextResponse.json({ error: "plan_id required" }, { status: 400 });
+        return NextResponse.json({ success: true, plan_id, name, monthly_price, yearly_price, description });
       }
 
       default:
@@ -347,6 +378,56 @@ async function getAiUsage(admin: ReturnType<typeof createAdminClient>) {
   });
 
   return NextResponse.json({ usage });
+}
+
+// ── Helper: Plans Config ────────────────────────────────────────────────────
+
+function getPlansConfig(_admin: ReturnType<typeof createAdminClient>) {
+  const plans = [
+    {
+      id: "plan_free", name: "Free", slug: "free", monthly_price: 0, yearly_price: 0,
+      description: "Basic carbon tracking for small teams",
+      features: [
+        { key: "ai_bill_processing", label: "AI Bill Processing", enabled: true },
+        { key: "secr_reporting",     label: "SECR Reporting",     enabled: false },
+        { key: "team_management",    label: "Team Management",    enabled: false },
+        { key: "api_access",         label: "API Access",         enabled: false },
+        { key: "priority_support",   label: "Priority Support",   enabled: false },
+        { key: "custom_branding",    label: "Custom Branding",    enabled: false },
+      ],
+      quotas: { bills_per_month: 10, max_organisations: 1 },
+      is_active: true,
+    },
+    {
+      id: "plan_starter", name: "Starter", slug: "starter", monthly_price: 24, yearly_price: 240,
+      description: "Professional carbon management with AI-powered insights",
+      features: [
+        { key: "ai_bill_processing", label: "AI Bill Processing", enabled: true },
+        { key: "secr_reporting",     label: "SECR Reporting",     enabled: true },
+        { key: "team_management",    label: "Team Management",    enabled: true },
+        { key: "api_access",         label: "API Access",         enabled: false },
+        { key: "priority_support",   label: "Priority Support",   enabled: false },
+        { key: "custom_branding",    label: "Custom Branding",    enabled: false },
+      ],
+      quotas: { bills_per_month: 100, max_organisations: 3 },
+      is_active: true,
+    },
+    {
+      id: "plan_business", name: "Business", slug: "business", monthly_price: 99, yearly_price: 990,
+      description: "Enterprise-grade sustainability platform with full API access",
+      features: [
+        { key: "ai_bill_processing", label: "AI Bill Processing", enabled: true },
+        { key: "secr_reporting",     label: "SECR Reporting",     enabled: true },
+        { key: "team_management",    label: "Team Management",    enabled: true },
+        { key: "api_access",         label: "API Access",         enabled: true },
+        { key: "priority_support",   label: "Priority Support",   enabled: true },
+        { key: "custom_branding",    label: "Custom Branding",    enabled: true },
+      ],
+      quotas: { bills_per_month: 500, max_organisations: 10 },
+      is_active: true,
+    },
+  ];
+  return NextResponse.json({ plans });
 }
 
 // ── Helper: Coupons (mock data — no coupons table yet) ──────────────────────
