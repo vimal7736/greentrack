@@ -123,6 +123,8 @@ export default function SignupPage() {
     setRequestStatus("loading");
 
     // 1. Sign up the user first (auth only)
+    // emailRedirectTo ensures the auth callback fires — no org_name in metadata
+    // tells the callback this is a join requester, not a new org creator.
     const { data, error: signUpErr } = await supabase.auth.signUp({
       email: user.email,
       password: user.password,
@@ -130,7 +132,8 @@ export default function SignupPage() {
         data: {
           full_name: `${user.firstName} ${user.lastName}`,
           job_title: user.jobTitle,
-        }
+        },
+        emailRedirectTo: `${window.location.origin}/api/auth/callback`,
       }
     });
 

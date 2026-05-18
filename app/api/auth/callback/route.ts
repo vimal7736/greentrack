@@ -71,6 +71,18 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}${next}`);
   }
 
+  // ── Join requester — no org_name means they used domain discovery ──────────
+  // They already have an access_request row; just ensure a minimal profile
+  // exists (no org_id) and send them to the waiting-approval screen.
+  if (!meta.org_name) {
+    await admin.from("profiles").upsert({
+      id:        user.id,
+      full_name: (meta.full_name as string) ?? "",
+      email:     user.email,
+    }, { onConflict: "id" });
+    return NextResponse.redirect(`${origin}/waiting-approval`);
+  }
+
   const orgName = (meta.org_name as string) || "My Organisation";
 
   // Try full insert with all fields; fall back to minimal if extra columns don't exist yet
