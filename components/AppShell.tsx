@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { Leaf } from "lucide-react";
+import { Leaf, FileText } from "lucide-react";
 import Sidebar from "./Sidebar";
 import MobileBottomNav from "./MobileBottomNav";
 import { ThemeToggle } from "./ThemeToggle";
@@ -88,7 +88,14 @@ export default function AppShell({
           borderBottom: "1px solid rgba(255,255,255,0.10)",
         }}
       >
-        <div className="w-9" /> {/* Spacer for symmetry */}
+        <Link
+          href="/reports"
+          aria-label="Reports"
+          className="flex items-center justify-center w-9 h-9 rounded-xl transition-colors"
+          style={{ background: "rgba(255,255,255,0.08)", boxShadow: inset }}
+        >
+          <FileText className="w-4 h-4" style={{ color: "#4ade80" }} />
+        </Link>
 
         <Link
           href="/dashboard"
