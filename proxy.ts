@@ -12,16 +12,17 @@ export async function proxy(request: NextRequest) {
     "/privacy", "/terms",
     "/api/webhooks/stripe",
     "/api/auth",
+    "/api/contact",
     "/api/org/discovery",
     "/api/org/request-join",
     "/verify-email",
     "/admin-login",
     "/manifest.json",
   ];
-  
-  const isPublic = publicPrefixes.some((p) => pathname.startsWith(p));
 
-  const isBypass = isPublic && pathname !== "/login" && pathname !== "/signup";
+  const isPublic = pathname === "/" || publicPrefixes.some((p) => pathname.startsWith(p));
+
+  const isBypass = isPublic && pathname !== "/" && pathname !== "/login" && pathname !== "/signup";
   if (isBypass) {
     return supabaseResponse;
   }
@@ -60,7 +61,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  if (user && (pathname === "/login" || pathname === "/signup")) {
+  if (user && (pathname === "/" || pathname === "/login" || pathname === "/signup")) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 

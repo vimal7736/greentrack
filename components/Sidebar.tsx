@@ -5,9 +5,10 @@ import { useState, useEffect } from "react";
 import {
   LayoutDashboard, Upload, History, FileText,
   Users, CreditCard, LogOut, Leaf,
-  Scale, Target, UserCircle,
+  Scale, Target, UserCircle, LifeBuoy,
 } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
+import SupportDrawer from "./SupportDrawer";
 
 const NAV_ITEMS = [
   { label: "Dashboard",  href: "/dashboard", icon: LayoutDashboard },
@@ -87,6 +88,7 @@ export default function Sidebar({
 }: SidebarProps) {
   const pathname = usePathname();
   const [isMobile, setIsMobile] = useState(false);
+  const [supportOpen, setSupportOpen] = useState(false);
 
   useEffect(() => {
     function check() { setIsMobile(window.innerWidth < 1024); }
@@ -151,6 +153,7 @@ export default function Sidebar({
   }
 
   return (
+    <>
     <aside
       className={`fixed left-0 top-0 h-screen flex flex-col z-40 ${
         mobileOpen ? "translate-x-0" : "-translate-x-full"
@@ -298,6 +301,18 @@ export default function Sidebar({
             >
               {initials}
             </div>
+            <button
+              type="button"
+              onClick={() => setSupportOpen(true)}
+              title="Help & Support"
+              aria-label="Help & Support"
+              className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors"
+              style={{ background: "rgba(255,255,255,0.06)", boxShadow: inset, color: "rgba(255,255,255,0.55)", border: "none", cursor: "pointer" }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "#4ade80"; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.55)"; }}
+            >
+              <LifeBuoy className="w-4 h-4" />
+            </button>
             <ThemeToggle buttonStyle={{ ...toggleBtnStyle, width: 32, height: 32, borderRadius: 8 }} />
           </div>
         ) : (
@@ -315,21 +330,49 @@ export default function Sidebar({
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={handleSignOut}
-              aria-label="Sign out"
-              className="flex items-center gap-2 text-xs font-medium transition-colors duration-150"
-              style={{ color: "rgba(255,255,255,0.35)", background: "none", border: "none", cursor: "pointer" }}
-              onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = "#fb923c")}
-              onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.35)")}
-            >
-              <LogOut className="w-3.5 h-3.5" aria-hidden="true" />
-              Sign out
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setSupportOpen(true)}
+                aria-label="Help & Support"
+                className="flex items-center gap-2 text-xs font-medium transition-colors duration-150"
+                style={{ color: "rgba(255,255,255,0.45)", background: "none", border: "none", cursor: "pointer" }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "#4ade80"; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.45)"; }}
+              >
+                <LifeBuoy className="w-3.5 h-3.5" aria-hidden="true" />
+                Help &amp; Support
+              </button>
+
+              <span style={{ color: "rgba(255,255,255,0.15)", fontSize: 10 }}>·</span>
+
+              <button
+                type="button"
+                onClick={handleSignOut}
+                aria-label="Sign out"
+                className="flex items-center gap-2 text-xs font-medium transition-colors duration-150"
+                style={{ color: "rgba(255,255,255,0.35)", background: "none", border: "none", cursor: "pointer" }}
+                onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = "#fb923c")}
+                onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.35)")}
+              >
+                <LogOut className="w-3.5 h-3.5" aria-hidden="true" />
+                Sign out
+              </button>
+            </div>
           </>
         )}
       </div>
     </aside>
+
+    <SupportDrawer
+      open={supportOpen}
+      onClose={() => setSupportOpen(false)}
+      userRole={userRole}
+      userName={userName}
+      userEmail={userEmail}
+      orgName={orgName}
+      orgTier={orgTier}
+    />
+    </>
   );
 }

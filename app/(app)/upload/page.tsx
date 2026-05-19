@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState, useRef } from "react";
 import Link from "next/link";
 import { 
@@ -540,7 +540,7 @@ export default function UploadPage() {
                 <div className="flex justify-center gap-8 lg:gap-12">
                   <div className="text-center">
                     <p className="text-[9px] font-black uppercase tracking-widest opacity-40 mb-1">Equivalent</p>
-                    <p className="text-base lg:text-lg font-black">{result.equivalents.miles_driven.toLocaleString()} <span className="text-xs opacity-50">miles</span></p>
+                    <p className="text-base lg:text-lg font-black">{result.equivalents.miles_driven.toLocaleString("en-GB")} <span className="text-xs opacity-50">miles</span></p>
                   </div>
                   <div className="text-center">
                     <p className="text-[9px] font-black uppercase tracking-widest opacity-40 mb-1">Offset</p>

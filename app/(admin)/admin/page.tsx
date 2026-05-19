@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
@@ -76,7 +76,7 @@ export default function AdminOverviewPage() {
     },
     {
       label: "Monthly MRR",
-      value: `£${(stats?.mrr ?? 0).toLocaleString()}`,
+      value: `£${(stats?.mrr ?? 0).toLocaleString("en-GB")}`,
       icon: <TrendingUp className="w-4 h-4" />,
       accent: "green" as const,
     },
@@ -88,7 +88,7 @@ export default function AdminOverviewPage() {
     },
     {
       label: "Total Bills",
-      value: (stats?.total_bills ?? 0).toLocaleString(),
+      value: (stats?.total_bills ?? 0).toLocaleString("en-GB"),
       icon: <Database className="w-4 h-4" />,
       accent: "green" as const,
     },
@@ -237,7 +237,7 @@ export default function AdminOverviewPage() {
                   </div>
                 </div>
                 <span className="text-base lg:text-lg font-black tracking-tighter" style={{ color: "var(--text-primary)" }}>
-                  £{(count * price).toLocaleString()}
+                  £{(count * price).toLocaleString("en-GB")}
                 </span>
               </div>
             ))}
@@ -253,7 +253,7 @@ export default function AdminOverviewPage() {
                 Total MRR (ex VAT)
               </span>
               <span className="text-xl lg:text-2xl font-black tracking-tighter" style={{ color: "var(--brand-orange)" }}>
-                £{(stats?.mrr ?? 0).toLocaleString()}
+                £{(stats?.mrr ?? 0).toLocaleString("en-GB")}
               </span>
             </div>
           </div>

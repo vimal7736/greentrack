@@ -98,11 +98,12 @@ export default function DashboardCharts({ monthlyChart, byType, totalCo2, chartO
           </p>
           
           {/* Segmented Switcher Button Group (Rich Inset Neumorphic Pill Tray) */}
-          <div 
-            className="flex items-center p-1 rounded-full border border-border-subtle/5 shrink-0 transition-all duration-300"
-            style={{ 
+          <div
+            className="flex items-center p-1 rounded-full shrink-0 transition-all duration-300"
+            style={{
               background: "var(--bg-inset)",
               boxShadow: "var(--shadow-inset-sm)",
+              border: "2px solid rgba(8, 139, 30, 0.93)",
             }}
           >
             <button

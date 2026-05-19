@@ -5,7 +5,7 @@ import {
   Leaf, BarChart3, UploadCloud, FileText, ShieldCheck,
   Zap, ArrowRight, CheckCircle, Building2,
   Target, Users, Globe, Lock, Scale, ChevronRight, Cpu,
-  Menu, X,
+  Menu, X, Mail, MapPin, Clock, Send, AlertCircle,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
@@ -15,6 +15,10 @@ export default function LandingPage() {
   const [sweeping, setSweeping] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [contactForm, setContactForm] = useState({ name: "", email: "", company: "", subject: "", message: "" });
+  const [contactLoading, setContactLoading] = useState(false);
+  const [contactSubmitted, setContactSubmitted] = useState(false);
+  const [contactError, setContactError] = useState<string | null>(null);
   const lastScrollY = useRef(0);
   const isHoveredRef = useRef(false);
   const sweepTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -72,6 +76,25 @@ export default function LandingPage() {
     if (window.scrollY > 80) setNavExpanded(false);
   };
 
+  async function handleContactSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setContactLoading(true);
+    setContactError(null);
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(contactForm),
+      });
+      if (!res.ok) throw new Error("failed");
+      setContactSubmitted(true);
+    } catch {
+      setContactError("Could not send your message. Please email us at support@greentrack.ai");
+    } finally {
+      setContactLoading(false);
+    }
+  }
+
   return (
     <div className="min-h-screen overflow-x-hidden" style={{ background: "var(--bg-base)", color: "var(--text-primary)" }}>
 
@@ -102,6 +125,22 @@ export default function LandingPage() {
         @keyframes liveDot {
           0%,100% { opacity:1; transform:scale(1); }
           50%      { opacity:.4; transform:scale(.7); }
+        }
+        @keyframes leafFall {
+          0%   { transform:translateY(-70px) translateX(0px) rotate(-20deg) scale(1); opacity:0; }
+          6%   { opacity:1; }
+          35%  { transform:translateY(35%) translateX(14px) rotate(110deg) scale(0.9); }
+          65%  { transform:translateY(68%) translateX(-10px) rotate(230deg) scale(0.82); }
+          92%  { opacity:0.7; }
+          100% { transform:translateY(115%) translateX(5px) rotate(340deg) scale(0.72); opacity:0; }
+        }
+        @keyframes sendingPulse {
+          0%,100% { transform:scale(1) rotate(0deg); opacity:1; }
+          50%      { transform:scale(1.14) rotate(8deg); opacity:0.75; }
+        }
+        @keyframes dotBounce {
+          0%,80%,100% { transform:translateY(0); opacity:0.4; }
+          40%          { transform:translateY(-6px); opacity:1; }
         }
 
         .nl { position:relative; }
@@ -167,7 +206,7 @@ export default function LandingPage() {
 
         {/* Nav links */}
         <nav className="flex-1 px-6 py-6 flex flex-col gap-2" aria-label="Mobile navigation">
-          {["Features", "Compliance", "Pricing"].map((item) => (
+          {["Features", "Compliance", "Pricing", "Contact"].map((item) => (
             <a
               key={item}
               href={`#${item.toLowerCase()}`}
@@ -961,6 +1000,336 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ─── CONTACT ─────────────────────────────────────────────── */}
+      <section id="contact" className="py-16 sm:py-24 px-6"
+        style={{ background: "linear-gradient(160deg, #091a0e 0%, #050f07 100%)" }}>
+        <div className="max-w-7xl mx-auto">
+
+          <div className="text-center mb-12 sm:mb-16">
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] mb-3 text-gt-green-400">Get in Touch</p>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter text-white">
+              Talk to Our Team
+            </h2>
+            <p className="text-sm font-medium mt-4 max-w-md mx-auto" style={{ color: "rgba(255,255,255,0.4)" }}>
+              Questions about compliance, pricing, or your net-zero strategy? We reply within one business day.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-5 gap-6 sm:gap-8 items-stretch">
+
+            {/* ── Contact Form ── */}
+            <div className="md:col-span-3 rounded-3xl p-6 sm:p-8 relative overflow-hidden min-h-[600px] flex flex-col" style={{
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
+            }}>
+
+              {/* ── Crystal Leaf Loading Overlay ── */}
+              {contactLoading && (
+                <div className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-6 rounded-3xl overflow-hidden"
+                  style={{
+                    background: "rgba(3, 11, 5, 0.86)",
+                    backdropFilter: "blur(14px)",
+                    WebkitBackdropFilter: "blur(14px)",
+                    border: "1px solid rgba(34,197,94,0.15)",
+                  }}>
+
+                  {/* Falling crystal leaves — crisp, no blur */}
+                  {[
+                    { x:  6, size: 14, dur: 3.6, delay: 0.0 },
+                    { x: 17, size: 21, dur: 2.8, delay: 0.5 },
+                    { x: 29, size: 11, dur: 4.3, delay: 1.0 },
+                    { x: 43, size: 25, dur: 2.6, delay: 0.2 },
+                    { x: 56, size: 16, dur: 3.9, delay: 0.8 },
+                    { x: 67, size: 19, dur: 3.0, delay: 1.3 },
+                    { x: 79, size: 13, dur: 4.1, delay: 0.4 },
+                    { x: 90, size: 23, dur: 2.7, delay: 1.1 },
+                    { x: 36, size: 18, dur: 3.3, delay: 1.6 },
+                    { x: 72, size: 10, dur: 4.5, delay: 0.7 },
+                  ].map((leaf, i) => (
+                    <div key={i} aria-hidden="true" style={{
+                      position: "absolute",
+                      left: `${leaf.x}%`,
+                      top: 0,
+                      pointerEvents: "none",
+                      animation: `leafFall ${leaf.dur}s ${leaf.delay}s ease-in infinite`,
+                    }}>
+                      <Leaf style={{
+                        width:  leaf.size,
+                        height: leaf.size,
+                        /* crystal effect: light mint stroke, razor-thin crisp outline only */
+                        color: i % 3 === 0
+                          ? "rgba(220,255,235,0.80)"
+                          : i % 3 === 1
+                          ? "rgba(134,239,172,0.65)"
+                          : "rgba(74,222,128,0.55)",
+                        filter: "drop-shadow(0 0 1px rgba(200,255,220,0.9))",
+                        display: "block",
+                        strokeWidth: 1.5,
+                      }} />
+                    </div>
+                  ))}
+
+                  {/* Central focal content */}
+                  <div className="relative z-10 flex flex-col items-center gap-5 text-center px-6">
+                    {/* Crystal glass leaf badge */}
+                    <div style={{
+                      width: 72, height: 72, borderRadius: 22,
+                      background: "rgba(255,255,255,0.04)",
+                      border: "1px solid rgba(134,239,172,0.35)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(0,0,0,0.2)",
+                    }}>
+                      <Leaf style={{
+                        width: 34, height: 34,
+                        color: "rgba(200,255,225,0.9)",
+                        filter: "drop-shadow(0 0 1px rgba(180,255,210,1))",
+                        animation: "sendingPulse 2s ease-in-out infinite",
+                      }} />
+                    </div>
+
+                    <div>
+                      <p style={{ fontSize: 15, fontWeight: 900, color: "rgba(255,255,255,0.92)", marginBottom: 5, letterSpacing: "-0.2px" }}>
+                        Sending your message
+                      </p>
+                      <p style={{ fontSize: 10, fontWeight: 700, color: "rgba(134,239,172,0.55)", letterSpacing: "0.18em", textTransform: "uppercase" }}>
+                        Just a moment
+                      </p>
+                    </div>
+
+                    {/* Bouncing dots */}
+                    <div style={{ display: "flex", gap: 7 }}>
+                      {[0, 1, 2].map(i => (
+                        <div key={i} style={{
+                          width: 6, height: 6, borderRadius: "50%",
+                          background: "rgba(134,239,172,0.7)",
+                          border: "1px solid rgba(200,255,220,0.5)",
+                          animation: `dotBounce 1.1s ${i * 0.18}s ease-in-out infinite`,
+                        }} />
+                      ))}
+                    </div>
+                  </div>
+
+                </div>
+              )}
+
+              {contactSubmitted ? (
+                <div className="flex flex-col items-center justify-center py-12 text-center gap-5">
+                  <div className="w-16 h-16 rounded-2xl flex items-center justify-center"
+                    style={{ background: "rgba(34,197,94,0.12)", border: "1px solid rgba(34,197,94,0.3)" }}>
+                    <CheckCircle className="w-8 h-8 text-gt-green-400" />
+                  </div>
+                  <div>
+                    <p className="text-xl font-black text-white mb-2">Message Sent</p>
+                    <p className="text-sm font-medium leading-relaxed" style={{ color: "rgba(255,255,255,0.4)" }}>
+                      We&apos;ll get back to{" "}
+                      <span className="text-gt-green-400 font-bold">{contactForm.email}</span>{" "}
+                      within one business day.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setContactSubmitted(false);
+                      setContactForm({ name: "", email: "", company: "", subject: "", message: "" });
+                    }}
+                    className="text-xs font-black uppercase tracking-widest px-6 py-3 rounded-xl transition-all hover:scale-105"
+                    style={{ background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.2)", color: "#4ade80" }}
+                  >
+                    Send Another Message
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={handleContactSubmit} className="space-y-5">
+                  <div className="mb-2">
+                    <p className="text-base font-black text-white">Send us a message</p>
+                    <p className="text-xs font-medium mt-0.5" style={{ color: "rgba(255,255,255,0.3)" }}>
+                      Fields marked * are required
+                    </p>
+                  </div>
+
+                  {contactError && (
+                    <div className="flex items-center gap-2.5 px-4 py-3 rounded-xl text-xs font-bold"
+                      style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#f87171" }}>
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                      {contactError}
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[9px] font-black uppercase tracking-[0.2em]" style={{ color: "rgba(255,255,255,0.35)" }}>
+                        Full Name *
+                      </label>
+                      <input
+                        required
+                        type="text"
+                        placeholder="James Mitchell"
+                        value={contactForm.name}
+                        onChange={e => setContactForm(p => ({ ...p, name: e.target.value }))}
+                        className="w-full px-4 py-3 rounded-xl text-sm text-white transition-all focus:outline-none"
+                        style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+                        onFocus={e => { e.target.style.borderColor = "rgba(34,197,94,0.5)"; e.target.style.background = "rgba(255,255,255,0.08)"; }}
+                        onBlur={e => { e.target.style.borderColor = "rgba(255,255,255,0.1)"; e.target.style.background = "rgba(255,255,255,0.06)"; }}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[9px] font-black uppercase tracking-[0.2em]" style={{ color: "rgba(255,255,255,0.35)" }}>
+                        Work Email *
+                      </label>
+                      <input
+                        required
+                        type="email"
+                        placeholder="james@acme.co.uk"
+                        value={contactForm.email}
+                        onChange={e => setContactForm(p => ({ ...p, email: e.target.value }))}
+                        className="w-full px-4 py-3 rounded-xl text-sm text-white transition-all focus:outline-none"
+                        style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+                        onFocus={e => { e.target.style.borderColor = "rgba(34,197,94,0.5)"; e.target.style.background = "rgba(255,255,255,0.08)"; }}
+                        onBlur={e => { e.target.style.borderColor = "rgba(255,255,255,0.1)"; e.target.style.background = "rgba(255,255,255,0.06)"; }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[9px] font-black uppercase tracking-[0.2em]" style={{ color: "rgba(255,255,255,0.35)" }}>
+                        Company
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Acme Ltd"
+                        value={contactForm.company}
+                        onChange={e => setContactForm(p => ({ ...p, company: e.target.value }))}
+                        className="w-full px-4 py-3 rounded-xl text-sm text-white transition-all focus:outline-none"
+                        style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+                        onFocus={e => { e.target.style.borderColor = "rgba(34,197,94,0.5)"; e.target.style.background = "rgba(255,255,255,0.08)"; }}
+                        onBlur={e => { e.target.style.borderColor = "rgba(255,255,255,0.1)"; e.target.style.background = "rgba(255,255,255,0.06)"; }}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[9px] font-black uppercase tracking-[0.2em]" style={{ color: "rgba(255,255,255,0.35)" }}>
+                        Topic *
+                      </label>
+                      <select
+                        required
+                        value={contactForm.subject}
+                        onChange={e => setContactForm(p => ({ ...p, subject: e.target.value }))}
+                        className="w-full px-4 py-3 rounded-xl text-sm transition-all focus:outline-none cursor-pointer"
+                        style={{
+                          background: "rgba(255,255,255,0.06)",
+                          border: "1px solid rgba(255,255,255,0.1)",
+                          color: contactForm.subject ? "white" : "rgba(255,255,255,0.3)",
+                        }}
+                        onFocus={e => { e.target.style.borderColor = "rgba(34,197,94,0.5)"; }}
+                        onBlur={e => { e.target.style.borderColor = "rgba(255,255,255,0.1)"; }}
+                      >
+                        <option value="" disabled style={{ background: "#0d2416" }}>Select a topic…</option>
+                        {["Pricing & Plans", "Compliance & SECR", "Technical Support", "Enterprise / Custom", "Partnership", "Other"].map(t => (
+                          <option key={t} value={t} style={{ background: "#0d2416", color: "white" }}>{t}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[9px] font-black uppercase tracking-[0.2em]" style={{ color: "rgba(255,255,255,0.35)" }}>
+                      Message *
+                    </label>
+                    <textarea
+                      required
+                      rows={5}
+                      placeholder="Tell us about your carbon reporting goals or anything we can help with…"
+                      value={contactForm.message}
+                      onChange={e => setContactForm(p => ({ ...p, message: e.target.value }))}
+                      className="w-full px-4 py-3 rounded-xl text-sm text-white resize-none transition-all focus:outline-none"
+                      style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+                      onFocus={e => { e.target.style.borderColor = "rgba(34,197,94,0.5)"; e.target.style.background = "rgba(255,255,255,0.08)"; }}
+                      onBlur={e => { e.target.style.borderColor = "rgba(255,255,255,0.1)"; e.target.style.background = "rgba(255,255,255,0.06)"; }}
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={contactLoading}
+                    className="w-full flex items-center justify-center gap-3 py-4 rounded-xl font-black text-xs uppercase tracking-widest text-white transition-all hover:scale-[1.02] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100"
+                    style={{
+                      background: "linear-gradient(135deg, #22c55e 0%, #15803d 100%)",
+                      boxShadow: "0 0 32px rgba(34,197,94,0.22), 0 4px 16px rgba(0,0,0,0.3)",
+                    }}
+                  >
+                    {contactLoading ? (
+                      <>
+                        <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                        Sending…
+                      </>
+                    ) : (
+                      <>
+                        <Send className="w-4 h-4" />
+                        Send Message
+                      </>
+                    )}
+                  </button>
+
+                  <p className="text-[10px] font-medium text-center" style={{ color: "rgba(255,255,255,0.2)" }}>
+                    Protected by UK GDPR · We never share your data
+                  </p>
+                </form>
+              )}
+            </div>
+
+            {/* ── Contact Info ── */}
+            <div className="md:col-span-2 flex flex-col gap-4 h-full">
+
+              <div className="rounded-2xl p-6" style={{
+                background: "rgba(34,197,94,0.06)",
+                border: "1px solid rgba(34,197,94,0.18)",
+              }}>
+                <p className="text-[9px] font-black uppercase tracking-[0.25em] mb-3 text-gt-green-400">Our Promise</p>
+                <p className="text-sm font-black text-white mb-1.5">Always a Real Person</p>
+                <p className="text-xs font-medium leading-relaxed" style={{ color: "rgba(255,255,255,0.4)" }}>
+                  No bots, no automated replies. Every enquiry is handled by our UK-based team who know SECR and net zero inside out.
+                </p>
+              </div>
+
+              {([
+                { icon: Mail,   label: "Email",        value: "support@greentrack.ai",   sub: "Replies within 24 hours",      green: true },
+                { icon: MapPin, label: "Location",     value: "London, United Kingdom",  sub: "Data stored in eu-west-2",     green: false },
+                { icon: Clock,  label: "Office Hours", value: "Mon – Fri · 9am – 6pm",  sub: "GMT / BST (UK time)",           green: false },
+              ] as const).map(({ icon: Icon, label, value, sub, green }) => (
+                <div key={label} className="flex items-start gap-4 rounded-2xl p-5 transition-all hover:scale-[1.01]" style={{
+                  background: "rgba(255,255,255,0.03)",
+                  border: "1px solid rgba(255,255,255,0.07)",
+                }}>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                    style={{ background: green ? "rgba(34,197,94,0.15)" : "rgba(255,255,255,0.06)" }}>
+                    <Icon className="w-5 h-5" style={{ color: green ? "#4ade80" : "rgba(255,255,255,0.45)" }} />
+                  </div>
+                  <div>
+                    <p className="text-[9px] font-black uppercase tracking-[0.2em] mb-0.5" style={{ color: "rgba(255,255,255,0.25)" }}>{label}</p>
+                    <p className="text-sm font-black text-white">{value}</p>
+                    <p className="text-[10px] font-medium mt-0.5" style={{ color: "rgba(255,255,255,0.3)" }}>{sub}</p>
+                  </div>
+                </div>
+              ))}
+
+              <div className="flex-1 flex items-start gap-4 rounded-2xl p-5" style={{
+                background: "rgba(255,255,255,0.03)",
+                border: "1px solid rgba(255,255,255,0.07)",
+              }}>
+                <ShieldCheck className="w-8 h-8 text-gt-green-500 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-xs font-black text-white">UK GDPR Compliant</p>
+                  <p className="text-[10px] font-medium mt-0.5" style={{ color: "rgba(255,255,255,0.3)" }}>
+                    Your information is never shared or sold
+                  </p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ─── CTA BANNER ──────────────────────────────────────────── */}
       <section className="py-8 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto">
@@ -1012,6 +1381,7 @@ export default function LandingPage() {
             {[
               { href: "/terms", label: "Terms" },
               { href: "/privacy", label: "Privacy" },
+              { href: "#contact", label: "Contact" },
               { href: "/login", label: "Login" },
               { href: "/signup", label: "Sign Up" },
             ].map(({ href, label }) => (

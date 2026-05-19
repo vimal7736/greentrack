@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import {
@@ -221,7 +221,7 @@ export default function AdminOrganisationsPage() {
                 {icon}
               </div>
             </div>
-            <span className="text-xl lg:text-2xl font-black tracking-tighter" style={{ color: "var(--text-primary)" }}>{value.toLocaleString()}</span>
+            <span className="text-xl lg:text-2xl font-black tracking-tighter" style={{ color: "var(--text-primary)" }}>{value.toLocaleString("en-GB")}</span>
           </div>
         ))}
       </div>

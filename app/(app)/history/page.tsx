@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState, useEffect, useCallback } from "react";
 import { Search, Filter, Download, Eye, Trash2, AlertCircle, Zap, Flame, ChevronDown, Leaf, X } from "lucide-react";
 
@@ -95,7 +95,7 @@ export default function HistoryPage() {
       key: "usage", header: "Consumption", align: "right",
       render: (bill) => (
         <span className="text-xs font-black text-text-primary">
-          {bill.usage_amount.toLocaleString()} <span className="opacity-40 text-[9px]">{bill.usage_unit}</span>
+          {bill.usage_amount.toLocaleString("en-GB")} <span className="opacity-40 text-[9px]">{bill.usage_unit}</span>
         </span>
       ),
     },
@@ -294,7 +294,7 @@ export default function HistoryPage() {
                 <p className="text-[9px] font-black uppercase tracking-widest text-text-muted/50">Supplier & Usage</p>
                 <p className="text-[11px] font-bold text-text-primary leading-none truncate">{bill.supplier ?? "Unknown"}</p>
                 <p className="text-[11px] font-black text-text-muted">
-                  {bill.usage_amount.toLocaleString()} <span className="text-[9px] opacity-40">{bill.usage_unit}</span>
+                  {bill.usage_amount.toLocaleString("en-GB")} <span className="text-[9px] opacity-40">{bill.usage_unit}</span>
                 </p>
               </div>
               <div className="text-right space-y-1">

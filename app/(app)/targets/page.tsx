@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState, useMemo } from "react";
 import {
@@ -239,7 +239,7 @@ export default function TargetsPage() {
                   <div className="grid grid-cols-3 gap-1.5 text-center">
                     <div>
                       <p className="text-[7.5px] font-black text-text-muted uppercase tracking-widest font-mono">Cap limit</p>
-                      <p className="text-[10px] font-black text-text-primary mt-0.5">{displayedCap.toLocaleString()} kg</p>
+                      <p className="text-[10px] font-black text-text-primary mt-0.5">{displayedCap.toLocaleString("en-GB")} kg</p>
                     </div>
                     <div>
                       <p className="text-[7.5px] font-black text-text-muted uppercase tracking-widest font-mono">reduction</p>

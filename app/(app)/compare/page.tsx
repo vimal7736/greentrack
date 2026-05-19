@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState } from "react";
 import {
@@ -163,7 +163,7 @@ export default function ComparePage() {
               {
                 label: "Energy Intensity", unit: "kWh",
                 a: sA.kwh,  b: sB.kwh,
-                fmt: (v: number) => v.toLocaleString(),
+                fmt: (v: number) => v.toLocaleString("en-GB"),
               },
               {
                 label: "Aggregate Cost", unit: "GBP",

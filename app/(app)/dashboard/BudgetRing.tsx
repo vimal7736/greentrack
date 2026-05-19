@@ -48,7 +48,7 @@ export function BudgetRing({ thisMonthCo2, monthlyAvg, distinctMonths }: Props) 
         System Baseline
       </p>
       <p className="text-text-secondary leading-normal font-semibold">
-        This is your first month of tracking! GreenTrack is setting your carbon footprint baseline as <span className="text-gt-green-500 font-extrabold text-xs">{thisMonthCo2.toLocaleString()} kg</span>. Next month, we will start comparing your savings trend!
+        This is your first month of tracking! GreenTrack is setting your carbon footprint baseline as <span className="text-gt-green-500 font-extrabold text-xs">{thisMonthCo2.toLocaleString("en-GB")} kg</span>. Next month, we will start comparing your savings trend!
       </p>
     </div>
   ) : (
@@ -57,7 +57,7 @@ export function BudgetRing({ thisMonthCo2, monthlyAvg, distinctMonths }: Props) 
         Historical Comparison
       </p>
       <p className="text-text-secondary leading-normal font-semibold">
-        Compares your current carbon footprint of <span className="text-gt-green-500 font-extrabold text-xs">{thisMonthCo2.toLocaleString()} kg</span> against your running historical monthly average of <span className="text-gt-green-500 font-extrabold text-xs">{monthlyAvg.toLocaleString()} kg</span>.
+        Compares your current carbon footprint of <span className="text-gt-green-500 font-extrabold text-xs">{thisMonthCo2.toLocaleString("en-GB")} kg</span> against your running historical monthly average of <span className="text-gt-green-500 font-extrabold text-xs">{monthlyAvg.toLocaleString("en-GB")} kg</span>.
       </p>
     </div>
   );

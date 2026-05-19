@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+﻿import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import {
@@ -333,7 +333,7 @@ export default async function DashboardPage() {
                 </span>{" "}
                 of carbon footprint is equivalent to driving a petrol car{" "}
                 <span className="text-gt-green-500 font-black text-xs tracking-tight animate-pulse-green">
-                  {milesDriven.toLocaleString()} miles
+                  {milesDriven.toLocaleString("en-GB")} miles
                 </span>!
               </p>
             </div>
@@ -385,7 +385,7 @@ export default async function DashboardPage() {
           unit="GBP"
           sub={
             <span className="font-bold text-gt-green-600">
-              ✓ £{estimatedSavings.toLocaleString()} Saved (ROI)
+              ✓ £{estimatedSavings.toLocaleString("en-GB")} Saved (ROI)
             </span>
           }
           icon={<Zap className="w-4 h-4" />}
@@ -401,7 +401,7 @@ export default async function DashboardPage() {
                   £{totalCost.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                 </span>. Swapping to clean energy can save you an estimated{" "}
                 <span className="text-gt-green-500 font-black text-xs tracking-tight animate-pulse-green">
-                  £{estimatedSavings.toLocaleString()}
+                  £{estimatedSavings.toLocaleString("en-GB")}
                 </span>!
               </p>
             </div>

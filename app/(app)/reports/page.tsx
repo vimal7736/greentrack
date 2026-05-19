@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState } from "react";
 import {
   FileText, Download, TrendingDown, TrendingUp,
@@ -200,7 +200,7 @@ export default function ReportsPage() {
               {loading ? "—" : fmtGbp(currCost)}
             </p>
             <p className="text-[9px] font-bold text-text-muted mt-1.5 opacity-60">
-              {(summary?.total_kwh ?? 0).toLocaleString()} kWh consumed
+              {(summary?.total_kwh ?? 0).toLocaleString("en-GB")} kWh consumed
             </p>
           </div>
         </div>
@@ -307,8 +307,8 @@ export default function ReportsPage() {
           <div className="space-y-2">
             <div className="flex justify-between text-[9px] font-black uppercase tracking-widest text-text-muted">
               <span>0 kg</span>
-              <span>{actual.toLocaleString()} kg used</span>
-              <span>{cap.toLocaleString()} kg cap</span>
+              <span>{actual.toLocaleString("en-GB")} kg used</span>
+              <span>{cap.toLocaleString("en-GB")} kg cap</span>
             </div>
 
             {/* Track */}
@@ -382,7 +382,7 @@ export default function ReportsPage() {
                 <Tooltip
                   cursor={CHART_CURSOR}
                   contentStyle={CHART_TOOLTIP_STYLE}
-                  formatter={(v: number) => [`${v.toLocaleString()} kg`, "CO₂e"]}
+                  formatter={(v: number) => [`${v.toLocaleString("en-GB")} kg`, "CO₂e"]}
                 />
                 {monthlyTarget && (
                   <ReferenceLine

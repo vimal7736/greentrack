@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useEffect, useState } from "react";
 import {
   TrendingUp, Users, AlertTriangle, Cpu,
@@ -33,10 +33,10 @@ export default function OverviewTab() {
   }
 
   const kpis = [
-    { label: "Monthly MRR", value: `£${(stats?.mrr ?? 0).toLocaleString()}`, icon: <TrendingUp className="w-4 h-4" />, accent: "green" },
+    { label: "Monthly MRR", value: `£${(stats?.mrr ?? 0).toLocaleString("en-GB")}`, icon: <TrendingUp className="w-4 h-4" />, accent: "green" },
     { label: "Active Subscribers", value: stats?.active_subscribers ?? 0, icon: <Users className="w-4 h-4" />, accent: "green" },
     { label: "Churn Rate", value: `${stats?.churn_rate ?? 0}%`, icon: <AlertTriangle className="w-4 h-4" />, accent: "orange" },
-    { label: "AI Credits Used", value: (stats?.total_ai_credits ?? 0).toLocaleString(), icon: <Cpu className="w-4 h-4" />, accent: "orange" },
+    { label: "AI Credits Used", value: (stats?.total_ai_credits ?? 0).toLocaleString("en-GB"), icon: <Cpu className="w-4 h-4" />, accent: "orange" },
   ];
 
   const dist = stats?.plan_distribution ?? [];
@@ -133,13 +133,13 @@ export default function OverviewTab() {
                     <p className="text-[9px] font-bold text-text-muted opacity-40 uppercase tracking-widest">£{price} / mo each</p>
                   </div>
                 </div>
-                <span className="text-base lg:text-lg font-black tracking-tighter" style={{ color: "var(--text-primary)" }}>£{(count * price).toLocaleString()}</span>
+                <span className="text-base lg:text-lg font-black tracking-tighter" style={{ color: "var(--text-primary)" }}>£{(count * price).toLocaleString("en-GB")}</span>
               </div>
             ))}
             <div className="flex items-center justify-between p-3 lg:p-4 rounded-xl"
               style={{ background: "rgba(249,115,22,0.06)", border: "1px solid rgba(249,115,22,0.15)" }}>
               <span className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: "var(--brand-orange)" }}>Total MRR</span>
-              <span className="text-xl lg:text-2xl font-black tracking-tighter" style={{ color: "var(--brand-orange)" }}>£{(stats?.mrr ?? 0).toLocaleString()}</span>
+              <span className="text-xl lg:text-2xl font-black tracking-tighter" style={{ color: "var(--brand-orange)" }}>£{(stats?.mrr ?? 0).toLocaleString("en-GB")}</span>
             </div>
           </div>
         </div>

@@ -193,7 +193,7 @@ export default function OrgDetailPage() {
             {[
               { label: "Members", value: org.user_count, icon: <Users className="w-4 h-4" />, accent: "orange" },
               { label: "Bills", value: org.bill_count, icon: <FileText className="w-4 h-4" />, accent: "green" },
-              { label: "Total CO₂", value: `${(org.total_co2_kg ?? 0).toLocaleString()} kg`, icon: <Leaf className="w-4 h-4" />, accent: "green" },
+              { label: "Total CO₂", value: `${(org.total_co2_kg ?? 0).toLocaleString("en-GB")} kg`, icon: <Leaf className="w-4 h-4" />, accent: "green" },
             ].map(({ label, value, icon, accent }) => (
               <div key={label} className="premium-card p-4 lg:p-5" style={{ borderTop: `3px solid ${accent === "green" ? "var(--brand-green)" : "var(--brand-orange)"}` }}>
                 <div className="flex items-center justify-between mb-2">
@@ -341,7 +341,7 @@ export default function OrgDetailPage() {
                     </div>
                   </td>
                   <td className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-text-muted">{formatDate(b.bill_date)}</td>
-                  <td className="px-6 py-4 text-xs font-black" style={{ color: "var(--text-primary)" }}>{b.usage_amount.toLocaleString()} {b.usage_unit}</td>
+                  <td className="px-6 py-4 text-xs font-black" style={{ color: "var(--text-primary)" }}>{b.usage_amount.toLocaleString("en-GB")} {b.usage_unit}</td>
                   <td className="px-6 py-4 text-xs font-black" style={{ color: "var(--brand-green-dark)" }}>{b.co2_kg.toFixed(1)}</td>
                   <td className="px-6 py-4 text-xs font-bold text-text-muted">{b.cost_gbp != null ? `£${b.cost_gbp.toFixed(2)}` : "—"}</td>
                 </tr>
@@ -594,11 +594,11 @@ function BillDetailModal({ bill, isOpen, onClose }: { bill: any; isOpen: boolean
           <div className="grid grid-cols-2 gap-4">
             <div className="premium-card p-4 bg-gt-green-500/5 border-gt-green-500/20">
               <p className="text-[9px] font-black uppercase tracking-widest text-brand-green-dark opacity-70 mb-1">Total CO₂e</p>
-              <p className="text-xl font-black text-brand-green-dark">{bill.co2_kg.toLocaleString()} <span className="text-xs">kg</span></p>
+              <p className="text-xl font-black text-brand-green-dark">{bill.co2_kg.toLocaleString("en-GB")} <span className="text-xs">kg</span></p>
             </div>
             <div className="premium-card p-4 bg-brand-orange/5 border-brand-orange/20">
               <p className="text-[9px] font-black uppercase tracking-widest text-brand-orange-dark opacity-70 mb-1">Resource Usage</p>
-              <p className="text-xl font-black text-brand-orange-dark">{bill.usage_amount.toLocaleString()} <span className="text-xs">{bill.usage_unit}</span></p>
+              <p className="text-xl font-black text-brand-orange-dark">{bill.usage_amount.toLocaleString("en-GB")} <span className="text-xs">{bill.usage_unit}</span></p>
             </div>
           </div>
 
@@ -613,7 +613,7 @@ function BillDetailModal({ bill, isOpen, onClose }: { bill: any; isOpen: boolean
               <ModalDetailRow 
                 icon={<ShieldAlert className="w-3.5 h-3.5" />} 
                 label="Financial Cost" 
-                value={bill.cost_gbp != null ? `£${bill.cost_gbp.toLocaleString()}` : "Not recorded"} 
+                value={bill.cost_gbp != null ? `£${bill.cost_gbp.toLocaleString("en-GB")}` : "Not recorded"} 
                 valueColor={bill.cost_gbp != null ? "var(--text-primary)" : "var(--text-muted)"}
               />
               <ModalDetailRow icon={<Leaf className="w-3.5 h-3.5" />} label="Record ID" value={bill.id} isCode />
