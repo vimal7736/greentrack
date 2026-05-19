@@ -32,7 +32,7 @@ export async function GET() {
 
   if (!org) return NextResponse.json({ error: "Organisation not found" }, { status: 404 });
 
-  return NextResponse.json({ ...org, user_role: profile.role });
+  return NextResponse.json({ ...(org as unknown as Record<string, unknown>), user_role: profile.role });
 }
 
 export async function PATCH(request: Request) {
