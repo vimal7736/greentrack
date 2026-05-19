@@ -382,7 +382,7 @@ export default function ReportsPage() {
                 <Tooltip
                   cursor={CHART_CURSOR}
                   contentStyle={CHART_TOOLTIP_STYLE}
-                  formatter={(v: number) => [`${v.toLocaleString("en-GB")} kg`, "CO₂e"]}
+                  formatter={(v) => [`${Number(v).toLocaleString("en-GB")} kg`, "CO₂e"]}
                 />
                 {monthlyTarget && (
                   <ReferenceLine
