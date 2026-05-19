@@ -8,7 +8,6 @@ import {
   Scale, Target, UserCircle, LifeBuoy,
 } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
-import SupportDrawer from "./SupportDrawer";
 
 const NAV_ITEMS = [
   { label: "Dashboard",  href: "/dashboard", icon: LayoutDashboard },
@@ -78,17 +77,17 @@ interface SidebarProps {
   mobileOpen: boolean;
   onMobileClose: () => void;
   onNavigate?: () => void;
+  onSupportOpen?: () => void;
 }
 
 export default function Sidebar({
-  userName, userEmail, userRole, orgName, orgTier,
+  userName, userEmail, orgName, orgTier,
   collapsed, onCollapseToggle,
   mobileOpen, onMobileClose,
-  onNavigate,
+  onNavigate, onSupportOpen,
 }: SidebarProps) {
   const pathname = usePathname();
   const [isMobile, setIsMobile] = useState(false);
-  const [supportOpen, setSupportOpen] = useState(false);
 
   useEffect(() => {
     function check() { setIsMobile(window.innerWidth < 1024); }
@@ -303,7 +302,7 @@ export default function Sidebar({
             </div>
             <button
               type="button"
-              onClick={() => setSupportOpen(true)}
+              onClick={() => onSupportOpen?.()}
               title="Help & Support"
               aria-label="Help & Support"
               className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors"
@@ -333,7 +332,7 @@ export default function Sidebar({
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => setSupportOpen(true)}
+                onClick={() => onSupportOpen?.()}
                 aria-label="Help & Support"
                 className="flex items-center gap-2 text-xs font-medium transition-colors duration-150"
                 style={{ color: "rgba(255,255,255,0.45)", background: "none", border: "none", cursor: "pointer" }}
@@ -364,15 +363,6 @@ export default function Sidebar({
       </div>
     </aside>
 
-    <SupportDrawer
-      open={supportOpen}
-      onClose={() => setSupportOpen(false)}
-      userRole={userRole}
-      userName={userName}
-      userEmail={userEmail}
-      orgName={orgName}
-      orgTier={orgTier}
-    />
     </>
   );
 }

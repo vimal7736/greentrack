@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard, Upload, FileText, Target, Leaf, X
+  LayoutDashboard, Upload, Target, Leaf, X, LifeBuoy
 } from "lucide-react";
 
 const NAV_LEFT = [
@@ -16,12 +16,13 @@ const NAV_RIGHT = [
 ];
 
 interface MobileBottomNavProps {
-  onMenuToggle: () => void;
-  isOpen: boolean;
-  onNavigate?: () => void;
+  onMenuToggle:   () => void;
+  isOpen:         boolean;
+  onNavigate?:    () => void;
+  onSupportOpen?: () => void;
 }
 
-export default function MobileBottomNav({ onMenuToggle, isOpen, onNavigate }: MobileBottomNavProps) {
+export default function MobileBottomNav({ onMenuToggle, isOpen, onNavigate, onSupportOpen }: MobileBottomNavProps) {
   const pathname = usePathname();
 
   const renderLink = ({ label, href, icon: Icon }: any) => {
@@ -93,6 +94,18 @@ export default function MobileBottomNav({ onMenuToggle, isOpen, onNavigate }: Mo
       {/* Right items */}
       <div className="flex-1 flex items-stretch">
         {NAV_RIGHT.map(renderLink)}
+        <button
+          type="button"
+          onClick={() => onSupportOpen?.()}
+          aria-label="Help & Support"
+          className="flex-1 flex flex-col items-center justify-center gap-0.5 transition-colors duration-150 active:opacity-70"
+          style={{ color: "rgba(255,255,255,0.40)", background: "none", border: "none", cursor: "pointer" }}
+          onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = "#4ade80")}
+          onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.40)")}
+        >
+          <LifeBuoy className="w-5 h-5" strokeWidth={1.8} aria-hidden="true" />
+          <span className="text-[10px] font-semibold leading-none" style={{ letterSpacing: "0.02em" }}>Help</span>
+        </button>
       </div>
     </nav>
   );

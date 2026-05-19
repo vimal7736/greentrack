@@ -8,6 +8,7 @@ import MobileBottomNav from "./MobileBottomNav";
 import { ThemeToggle } from "./ThemeToggle";
 import { GooeyMenu } from "./ui/GooeyMenu";
 import { ToastProvider } from "./ui/Toast";
+import SupportDrawer from "./SupportDrawer";
 
 const BG  = "#1a4731";
 const ND  = "rgba(0,0,0,0.45)";
@@ -43,9 +44,10 @@ export default function AppShell({
   userName, userEmail, userRole, orgName, orgTier,
 }: AppShellProps) {
   const pathname = usePathname();
-  const [collapsed, setCollapsed]   = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [collapsed, setCollapsed]     = useState(false);
+  const [mobileOpen, setMobileOpen]   = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
+  const [supportOpen, setSupportOpen] = useState(false);
 
   useEffect(() => {
     setIsNavigating(false);
@@ -126,9 +128,10 @@ export default function AppShell({
         orgTier={orgTier}
         collapsed={collapsed}
         onCollapseToggle={() => setCollapsed((c) => !c)}
-        mobileOpen={false} // Disable sidebar trigger for mobile, handled by GooeyMenu
+        mobileOpen={false}
         onMobileClose={() => setMobileOpen(false)}
         onNavigate={() => setIsNavigating(true)}
+        onSupportOpen={() => setSupportOpen(true)}
       />
 
       {/* ── Main content ───────────────────────────────────────── */}
@@ -147,10 +150,21 @@ export default function AppShell({
       </main>
 
       {/* ── Mobile bottom nav (hidden on lg+) ─────────────────── */}
-      <MobileBottomNav 
-        isOpen={mobileOpen} 
-        onMenuToggle={() => setMobileOpen(!mobileOpen)} 
+      <MobileBottomNav
+        isOpen={mobileOpen}
+        onMenuToggle={() => setMobileOpen(!mobileOpen)}
         onNavigate={() => setIsNavigating(true)}
+        onSupportOpen={() => setSupportOpen(true)}
+      />
+
+      <SupportDrawer
+        open={supportOpen}
+        onClose={() => setSupportOpen(false)}
+        userRole={userRole}
+        userName={userName}
+        userEmail={userEmail}
+        orgName={orgName}
+        orgTier={orgTier}
       />
 
       {/* ── Instant full screen loader overlay (Slate-Black, Emerald Green, and Solar Orange leaves) ── */}
