@@ -195,13 +195,14 @@ export default function ProfilePage() {
   const roleCfg      = ROLE_CFG[role] ?? ROLE_CFG.member;
   const tierCfg      = TIER_CFG[profile?.org_tier ?? "free"] ?? TIER_CFG.free;
 
-  const TABS: { id: TabId; label: string; icon: typeof User; restricted?: boolean }[] = [
-    { id: "profile",      label: "Profile",      icon: User      },
-    { id: "account",      label: "Account",      icon: Shield    },
-    { id: "organisation", label: "Organisation", icon: Building2, restricted: true },
-    { id: "discovery",    label: "Discovery",    icon: Globe,     restricted: true },
-    { id: "appearance",   label: "Appearance",   icon: Palette   },
-  ].filter((t) => !t.restricted || canSeeOrgTabs);
+  const TABS = ([
+    { id: "profile"      as const, label: "Profile",      icon: User      },
+    { id: "account"      as const, label: "Account",      icon: Shield    },
+    { id: "organisation" as const, label: "Organisation", icon: Building2, restricted: true },
+    { id: "discovery"    as const, label: "Discovery",    icon: Globe,     restricted: true },
+    { id: "appearance"   as const, label: "Appearance",   icon: Palette   },
+  ] as { id: TabId; label: string; icon: typeof User; restricted?: boolean }[])
+    .filter((t) => !t.restricted || canSeeOrgTabs);
 
   // ── Handlers ───────────────────────────────────────────────────────────────
   async function saveProfile() {
