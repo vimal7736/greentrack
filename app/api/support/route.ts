@@ -48,7 +48,7 @@ export async function POST(request: Request) {
 
   const userName = profile?.full_name ?? user.email ?? "Unknown";
   const role     = profile?.role ?? "member";
-  const org      = (profile?.organisations as { name: string; tier: string } | null);
+  const org      = (profile?.organisations as unknown as { name: string; tier: string } | null);
   const orgName  = org?.name ?? "—";
   const orgTier  = org?.tier ?? "free";
   const tierLabel = orgTier.charAt(0).toUpperCase() + orgTier.slice(1);
