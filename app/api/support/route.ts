@@ -54,12 +54,43 @@ export async function POST(request: Request) {
   const tierLabel = orgTier.charAt(0).toUpperCase() + orgTier.slice(1);
   const roleLabel = role.charAt(0).toUpperCase() + role.slice(1);
 
+  // ── Determine priority from topic ──────────────────────────────────────────
+  let priority: "low" | "medium" | "high" | "urgent" = "medium";
+  const topicLower = topic.toLowerCase();
+  if (topicLower.includes("bug") || topicLower.includes("secr")) priority = "high";
+  else if (topicLower.includes("billing") || topicLower.includes("subscription")) priority = "high";
+  else if (topicLower.includes("feedback") || topicLower.includes("general")) priority = "low";
+
+  // ── Save ticket to Supabase ────────────────────────────────────────────────
+  const { data: ticket, error: dbError } = await supabase
+    .from("support_tickets")
+    .insert({
+      user_id: user.id,
+      user_name: userName,
+      user_email: user.email ?? "—",
+      org_name: orgName,
+      org_tier: orgTier,
+      topic,
+      message,
+      status: "open",
+      priority,
+    })
+    .select("id")
+    .single();
+
+  if (dbError) {
+    console.error("Failed to save support ticket:", dbError);
+    // Continue to send email even if DB insert fails
+  }
+
+  const ticketId = ticket?.id ? `#${ticket.id.slice(0, 8).toUpperCase()}` : "";
+
   try {
     await transporter.sendMail({
       from: FROM,
       to: SUPPORT,
       replyTo: `"${userName}" <${user.email}>`,
-      subject: `[Support] ${topic} — ${userName} (${orgName})`,
+      subject: `[Support] ${ticketId ? ticketId + " — " : ""}${topic} — ${userName} (${orgName})`,
       html: `
         <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#1a1a1a">
           <div style="background:#14532d;padding:24px 32px;border-radius:12px 12px 0 0">
@@ -68,6 +99,7 @@ export async function POST(request: Request) {
           <div style="background:#fff;padding:32px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 12px 12px">
             <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:24px">
               ${[
+                ["Ticket",       ticketId || "—"],
                 ["Name",         userName],
                 ["Email",        user.email ?? "—"],
                 ["Role",         roleLabel],
@@ -94,9 +126,13 @@ export async function POST(request: Request) {
         </div>`,
     });
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, ticketId: ticket?.id ?? null });
   } catch (err) {
     console.error("Support email failed:", err);
+    // If email fails but ticket was saved, still return success
+    if (ticket?.id) {
+      return NextResponse.json({ success: true, ticketId: ticket.id, emailSent: false });
+    }
     return NextResponse.json({ error: "Failed to send" }, { status: 500 });
   }
 }

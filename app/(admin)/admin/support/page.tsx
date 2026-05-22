@@ -3,8 +3,16 @@ import { useState, useEffect } from "react";
 import {
   LifeBuoy, Search, Filter, Clock, CheckCircle2, AlertTriangle,
   MessageSquare, ChevronRight, X, Send, User, Building2,
-  Mail, Tag, Calendar, ArrowUpRight, Inbox, XCircle,
+  Mail, Tag, Calendar, ArrowUpRight, Inbox, XCircle, RefreshCw
 } from "lucide-react";
+
+interface TicketReply {
+  id: string;
+  admin_name: string;
+  message: string;
+  emailed: boolean;
+  created_at: string;
+}
 
 interface Ticket {
   id: string;
@@ -18,16 +26,8 @@ interface Ticket {
   priority: "low" | "medium" | "high" | "urgent";
   created_at: string;
   updated_at: string;
+  ticket_replies?: TicketReply[];
 }
-
-const MOCK_TICKETS: Ticket[] = [
-  { id: "T-1001", user_name: "James Carter", user_email: "james@acme.co", org_name: "Acme Corp", org_tier: "business", topic: "Billing & Subscription", message: "We need to upgrade our plan to accommodate 50 new team members. Can you assist with bulk pricing?", status: "open", priority: "high", created_at: "2026-05-21T08:30:00Z", updated_at: "2026-05-21T08:30:00Z" },
-  { id: "T-1002", user_name: "Sarah Lin", user_email: "sarah@greenco.uk", org_name: "GreenCo Ltd", org_tier: "starter", topic: "SECR Compliance Help", message: "Our SECR report is showing incorrect scope 2 calculations. Could you review our emission factors?", status: "in_progress", priority: "urgent", created_at: "2026-05-20T14:15:00Z", updated_at: "2026-05-21T06:00:00Z" },
-  { id: "T-1003", user_name: "David Okonkwo", user_email: "david@ecotrack.io", org_name: "EcoTrack", org_tier: "business", topic: "API / Integrations", message: "We're trying to integrate GreenTrack with our internal ERP system. Do you have webhook docs?", status: "open", priority: "medium", created_at: "2026-05-19T11:00:00Z", updated_at: "2026-05-19T11:00:00Z" },
-  { id: "T-1004", user_name: "Emily Hartman", user_email: "emily@solarflow.com", org_name: "SolarFlow", org_tier: "free", topic: "Bug Report", message: "Dashboard charts are not loading on Safari. Blank white screen after login.", status: "resolved", priority: "high", created_at: "2026-05-18T16:45:00Z", updated_at: "2026-05-20T09:30:00Z" },
-  { id: "T-1005", user_name: "Amir Patel", user_email: "amir@cleanair.org", org_name: "CleanAir NGO", org_tier: "free", topic: "General Feedback", message: "Love the platform! It would be great to have a CSV export for monthly reports.", status: "closed", priority: "low", created_at: "2026-05-17T09:20:00Z", updated_at: "2026-05-18T14:00:00Z" },
-  { id: "T-1006", user_name: "Olivia Chen", user_email: "olivia@netzero.co", org_name: "NetZero Co", org_tier: "starter", topic: "Team Management", message: "I accidentally removed a team member. Can their data be restored?", status: "open", priority: "high", created_at: "2026-05-21T07:10:00Z", updated_at: "2026-05-21T07:10:00Z" },
-];
 
 const STATUS_CFG: Record<string, { label: string; color: string; bg: string; Icon: typeof CheckCircle2 }> = {
   open:        { label: "Open",        color: "#f97316", bg: "rgba(249,115,22,0.10)", Icon: Inbox },
@@ -41,12 +41,6 @@ const PRIORITY_CFG: Record<string, { label: string; color: string; bg: string }>
   medium: { label: "Medium", color: "#3b82f6",           bg: "rgba(59,130,246,0.08)" },
   high:   { label: "High",   color: "#f97316",           bg: "rgba(249,115,22,0.08)" },
   urgent: { label: "Urgent", color: "#ef4444",           bg: "rgba(239,68,68,0.08)" },
-};
-
-const TIER_COLORS: Record<string, { color: string; bg: string }> = {
-  free:     { color: "var(--text-muted)", bg: "var(--bg-inset)" },
-  starter:  { color: "#3b82f6",           bg: "rgba(59,130,246,0.10)" },
-  business: { color: "#22c55e",           bg: "rgba(34,197,94,0.10)" },
 };
 
 function timeAgo(dateStr: string): string {
@@ -68,23 +62,29 @@ export default function AdminSupportPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [reply, setReply] = useState("");
+  const [sendingReply, setSendingReply] = useState(false);
+  const [updating, setUpdating] = useState(false);
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/admin/support");
+      if (res.ok) {
+        const d = await res.json();
+        setTickets(d.tickets ?? []);
+        // update selected if it's currently open
+        if (selected) {
+          const updatedSelected = (d.tickets ?? []).find((t: Ticket) => t.id === selected.id);
+          if (updatedSelected) setSelected(updatedSelected);
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    setLoading(false);
+  };
 
   useEffect(() => {
-    async function load() {
-      setLoading(true);
-      try {
-        const res = await fetch("/api/admin/support");
-        if (res.ok) {
-          const d = await res.json();
-          setTickets(d.tickets?.length ? d.tickets : MOCK_TICKETS);
-        } else {
-          setTickets(MOCK_TICKETS);
-        }
-      } catch {
-        setTickets(MOCK_TICKETS);
-      }
-      setLoading(false);
-    }
     load();
   }, []);
 
@@ -111,7 +111,90 @@ export default function AdminSupportPage() {
     closed: tickets.filter((t) => t.status === "closed").length,
   };
 
-  if (loading) {
+  const handleSendReply = async () => {
+    if (!selected || !reply.trim() || sendingReply) return;
+    setSendingReply(true);
+    try {
+      const res = await fetch("/api/admin/support", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ticketId: selected.id, message: reply }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setReply("");
+        
+        // Update local state without full reload
+        setTickets((prev) => prev.map(t => {
+          if (t.id === selected.id) {
+            const newReplies = [...(t.ticket_replies || []), data.reply];
+            const newStatus = t.status === "open" ? "in_progress" : t.status;
+            const updatedTicket = { ...t, ticket_replies: newReplies, status: newStatus } as Ticket;
+            if (selected.id === updatedTicket.id) setSelected(updatedTicket);
+            return updatedTicket;
+          }
+          return t;
+        }));
+      } else {
+        alert("Failed to send reply");
+      }
+    } catch (err) {
+      alert("Error sending reply");
+    }
+    setSendingReply(false);
+  };
+
+  const handleUpdateStatus = async (status: string) => {
+    if (!selected || updating) return;
+    setUpdating(true);
+    try {
+      const res = await fetch("/api/admin/support", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ticketId: selected.id, status }),
+      });
+      if (res.ok) {
+        setTickets((prev) => prev.map(t => {
+          if (t.id === selected.id) {
+            const updated = { ...t, status } as Ticket;
+            if (selected.id === updated.id) setSelected(updated);
+            return updated;
+          }
+          return t;
+        }));
+      }
+    } catch (err) {
+      alert("Error updating status");
+    }
+    setUpdating(false);
+  };
+
+  const handleUpdatePriority = async (priority: string) => {
+    if (!selected || updating) return;
+    setUpdating(true);
+    try {
+      const res = await fetch("/api/admin/support", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ticketId: selected.id, priority }),
+      });
+      if (res.ok) {
+        setTickets((prev) => prev.map(t => {
+          if (t.id === selected.id) {
+            const updated = { ...t, priority } as Ticket;
+            if (selected.id === updated.id) setSelected(updated);
+            return updated;
+          }
+          return t;
+        }));
+      }
+    } catch (err) {
+      alert("Error updating priority");
+    }
+    setUpdating(false);
+  };
+
+  if (loading && tickets.length === 0) {
     return (
       <div className="space-y-4 lg:space-y-6 animate-pulse">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 lg:gap-4">
@@ -147,6 +230,13 @@ export default function AdminSupportPage() {
             </p>
           </div>
         </div>
+        <button
+          onClick={load}
+          className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all"
+          style={{ background: "var(--bg-inset)", color: "var(--text-primary)", border: "1px solid var(--border-default)" }}
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} /> Refresh
+        </button>
       </div>
 
       {/* KPI Row */}
@@ -220,8 +310,8 @@ export default function AdminSupportPage() {
       {/* Tickets List + Detail Panel */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
         {/* Ticket List */}
-        <div className="lg:col-span-3 rounded-2xl overflow-hidden" style={{ background: "var(--neu-base)", boxShadow: "var(--shadow-raised)", border: "var(--card-border)" }}>
-          <div className="px-4 lg:px-5 py-3 flex items-center justify-between" style={{ borderBottom: "1px solid var(--border-subtle)" }}>
+        <div className="lg:col-span-3 rounded-2xl overflow-hidden flex flex-col" style={{ background: "var(--neu-base)", boxShadow: "var(--shadow-raised)", border: "var(--card-border)", maxHeight: 800 }}>
+          <div className="px-4 lg:px-5 py-3 flex items-center justify-between shrink-0" style={{ borderBottom: "1px solid var(--border-subtle)" }}>
             <div className="flex items-center gap-2">
               <Filter className="w-3.5 h-3.5" style={{ color: "var(--text-muted)" }} />
               <span className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: "var(--text-muted)" }}>
@@ -230,7 +320,7 @@ export default function AdminSupportPage() {
             </div>
           </div>
 
-          <div className="divide-y" style={{ borderColor: "var(--border-subtle)" }}>
+          <div className="divide-y overflow-y-auto" style={{ borderColor: "var(--border-subtle)" }}>
             {filtered.length === 0 ? (
               <div className="py-16 text-center">
                 <AlertTriangle className="w-8 h-8 mx-auto mb-3" style={{ color: "var(--text-muted)", opacity: 0.4 }} />
@@ -262,13 +352,18 @@ export default function AdminSupportPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-xs font-black truncate" style={{ color: "var(--text-primary)" }}>{t.user_name}</span>
-                        <span className="text-[9px] font-bold" style={{ color: "var(--text-muted)", opacity: 0.5 }}>{t.id}</span>
+                        <span className="text-[9px] font-bold" style={{ color: "var(--text-muted)", opacity: 0.5 }}>#{t.id.slice(0,8)}</span>
                       </div>
                       <p className="text-[11px] font-bold truncate mb-1.5" style={{ color: "var(--text-secondary)" }}>{t.topic}</p>
                       <p className="text-[10px] truncate" style={{ color: "var(--text-muted)" }}>{t.message}</p>
                       <div className="flex items-center gap-2 mt-2">
                         <span className="text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded" style={{ background: sc.bg, color: sc.color }}>{sc.label}</span>
                         <span className="text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded" style={{ background: pc.bg, color: pc.color }}>{pc.label}</span>
+                        {(t.ticket_replies?.length ?? 0) > 0 && (
+                          <span className="text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded" style={{ background: "rgba(59,130,246,0.1)", color: "#3b82f6" }}>
+                            {t.ticket_replies?.length} Repl{(t.ticket_replies?.length ?? 0) > 1 ? "ies" : "y"}
+                          </span>
+                        )}
                         <span className="text-[9px] font-bold ml-auto" style={{ color: "var(--text-muted)", opacity: 0.5 }}>{timeAgo(t.created_at)}</span>
                       </div>
                     </div>
@@ -281,7 +376,7 @@ export default function AdminSupportPage() {
         </div>
 
         {/* Detail Panel */}
-        <div className="lg:col-span-2 rounded-2xl overflow-hidden flex flex-col" style={{ background: "var(--neu-base)", boxShadow: "var(--shadow-raised)", border: "var(--card-border)", minHeight: 400 }}>
+        <div className="lg:col-span-2 rounded-2xl overflow-hidden flex flex-col" style={{ background: "var(--neu-base)", boxShadow: "var(--shadow-raised)", border: "var(--card-border)", minHeight: 600, maxHeight: 800 }}>
           {!selected ? (
             <div className="flex-1 flex flex-col items-center justify-center gap-3 p-6">
               <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: "var(--bg-inset)", boxShadow: "var(--shadow-inset-sm)" }}>
@@ -294,7 +389,7 @@ export default function AdminSupportPage() {
               {/* Detail Header */}
               <div className="px-5 py-4 flex items-center justify-between shrink-0" style={{ borderBottom: "1px solid var(--border-subtle)" }}>
                 <div>
-                  <p className="text-sm font-black" style={{ color: "var(--text-primary)" }}>{selected.id}</p>
+                  <p className="text-sm font-black" style={{ color: "var(--text-primary)" }}>#{selected.id.slice(0,8).toUpperCase()}</p>
                   <p className="text-[10px] font-bold" style={{ color: "var(--text-muted)" }}>{timeAgo(selected.created_at)}</p>
                 </div>
                 <button
@@ -307,7 +402,7 @@ export default function AdminSupportPage() {
               </div>
 
               {/* Detail Body */}
-              <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+              <div className="flex-1 overflow-y-auto p-5 space-y-5">
                 {/* User Info */}
                 <div className="rounded-xl p-3.5" style={{ background: "var(--bg-inset)", border: "var(--card-border)" }}>
                   <div className="flex items-center gap-3 mb-3">
@@ -316,7 +411,7 @@ export default function AdminSupportPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-black truncate" style={{ color: "var(--text-primary)" }}>{selected.user_name}</p>
-                      <p className="text-[10px] truncate" style={{ color: "var(--text-muted)" }}>{selected.user_email}</p>
+                      <a href={`mailto:${selected.user_email}`} className="text-[10px] truncate hover:underline" style={{ color: "var(--text-muted)" }}>{selected.user_email}</a>
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
@@ -326,58 +421,100 @@ export default function AdminSupportPage() {
                     ].map(({ icon: Ic, label }) => (
                       <div key={label} className="flex items-center gap-1.5 text-[10px] font-bold" style={{ color: "var(--text-secondary)" }}>
                         <Ic className="w-3 h-3" style={{ color: "var(--text-muted)" }} />
-                        {label}
+                        <span className="truncate">{label}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                {/* Status & Priority */}
-                <div className="flex items-center gap-2">
-                  {(() => { const sc = STATUS_CFG[selected.status]; return (
-                    <span className="text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg" style={{ background: sc.bg, color: sc.color }}>{sc.label}</span>
-                  ); })()}
-                  {(() => { const pc = PRIORITY_CFG[selected.priority]; return (
-                    <span className="text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg" style={{ background: pc.bg, color: pc.color }}>{pc.label} Priority</span>
-                  ); })()}
-                </div>
+                {/* Status & Priority Management */}
+                <div className="flex flex-col gap-2">
+                  <p className="text-[9px] font-black uppercase tracking-[0.2em]" style={{ color: "var(--text-muted)" }}>Management</p>
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={selected.status}
+                      onChange={(e) => handleUpdateStatus(e.target.value)}
+                      disabled={updating}
+                      className="px-2.5 py-1.5 rounded-lg text-xs font-bold outline-none"
+                      style={{ background: "var(--bg-inset)", color: STATUS_CFG[selected.status].color, border: "1px solid var(--border-default)" }}
+                    >
+                      <option value="open">Open</option>
+                      <option value="in_progress">In Progress</option>
+                      <option value="resolved">Resolved</option>
+                      <option value="closed">Closed</option>
+                    </select>
 
-                {/* Topic */}
-                <div>
-                  <p className="text-[9px] font-black uppercase tracking-[0.2em] mb-1.5" style={{ color: "var(--text-muted)" }}>Topic</p>
-                  <p className="text-xs font-bold" style={{ color: "var(--text-primary)" }}>{selected.topic}</p>
-                </div>
-
-                {/* Message */}
-                <div>
-                  <p className="text-[9px] font-black uppercase tracking-[0.2em] mb-1.5" style={{ color: "var(--text-muted)" }}>Message</p>
-                  <div className="rounded-xl p-3.5" style={{ background: "var(--bg-inset)", border: "var(--card-border)" }}>
-                    <p className="text-xs leading-relaxed" style={{ color: "var(--text-primary)", whiteSpace: "pre-wrap" }}>{selected.message}</p>
+                    <select
+                      value={selected.priority}
+                      onChange={(e) => handleUpdatePriority(e.target.value)}
+                      disabled={updating}
+                      className="px-2.5 py-1.5 rounded-lg text-xs font-bold outline-none"
+                      style={{ background: "var(--bg-inset)", color: PRIORITY_CFG[selected.priority].color, border: "1px solid var(--border-default)" }}
+                    >
+                      <option value="low">Low Priority</option>
+                      <option value="medium">Medium Priority</option>
+                      <option value="high">High Priority</option>
+                      <option value="urgent">Urgent Priority</option>
+                    </select>
                   </div>
                 </div>
 
-                {/* Reply */}
-                <div>
-                  <p className="text-[9px] font-black uppercase tracking-[0.2em] mb-1.5" style={{ color: "var(--text-muted)" }}>Reply</p>
-                  <textarea
-                    rows={4}
-                    placeholder="Type your reply..."
-                    value={reply}
-                    onChange={(e) => setReply(e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-xl text-xs resize-none focus:outline-none transition-all"
-                    style={{ background: "var(--bg-inset)", border: "1px solid var(--border-default)", color: "var(--text-primary)" }}
-                    onFocus={(e) => { e.target.style.borderColor = "rgba(249,115,22,0.5)"; e.target.style.boxShadow = "0 0 0 3px rgba(249,115,22,0.08)"; }}
-                    onBlur={(e) => { e.target.style.borderColor = "var(--border-default)"; e.target.style.boxShadow = "none"; }}
-                  />
-                  <button
-                    className="mt-2 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-white transition-all hover:scale-[1.02] active:scale-[0.99] disabled:opacity-50"
-                    style={{ background: "linear-gradient(135deg,#ea580c 0%,#f97316 100%)", boxShadow: "0 0 22px rgba(249,115,22,0.15)", cursor: reply ? "pointer" : "not-allowed", border: "none" }}
-                    disabled={!reply}
-                    onClick={() => { setReply(""); alert("Reply sent (demo)"); }}
-                  >
-                    <Send className="w-3.5 h-3.5" /> Send Reply
-                  </button>
+                {/* Conversation History */}
+                <div className="space-y-4">
+                  {/* Original Message */}
+                  <div>
+                    <p className="text-[9px] font-black uppercase tracking-[0.2em] mb-1.5" style={{ color: "var(--text-muted)" }}>Original Request</p>
+                    <div className="rounded-xl p-3.5" style={{ background: "var(--bg-inset)", border: "1px solid var(--border-default)" }}>
+                      <p className="text-xs font-bold mb-2" style={{ color: "var(--text-primary)" }}>{selected.topic}</p>
+                      <p className="text-xs leading-relaxed" style={{ color: "var(--text-secondary)", whiteSpace: "pre-wrap" }}>{selected.message}</p>
+                    </div>
+                  </div>
+
+                  {/* Replies */}
+                  {selected.ticket_replies && selected.ticket_replies.length > 0 && (
+                    <div className="space-y-3">
+                      <p className="text-[9px] font-black uppercase tracking-[0.2em]" style={{ color: "var(--text-muted)" }}>Replies</p>
+                      {selected.ticket_replies.map((r) => (
+                        <div key={r.id} className="rounded-xl p-3.5 relative" style={{ background: "rgba(59,130,246,0.05)", border: "1px solid rgba(59,130,246,0.15)" }}>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-[10px] font-black" style={{ color: "#3b82f6" }}>{r.admin_name}</span>
+                            <span className="text-[9px] font-bold opacity-50" style={{ color: "var(--text-muted)" }}>{timeAgo(r.created_at)}</span>
+                          </div>
+                          <p className="text-xs leading-relaxed" style={{ color: "var(--text-primary)", whiteSpace: "pre-wrap" }}>{r.message}</p>
+                          {r.emailed && (
+                            <div className="mt-2 flex items-center gap-1 text-[8px] font-bold uppercase" style={{ color: "#22c55e" }}>
+                              <CheckCircle2 className="w-3 h-3" /> Emailed to user
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
+              </div>
+              
+              {/* Reply Area */}
+              <div className="p-4 shrink-0" style={{ borderTop: "1px solid var(--border-subtle)", background: "var(--neu-base)" }}>
+                <p className="text-[9px] font-black uppercase tracking-[0.2em] mb-2" style={{ color: "var(--text-muted)" }}>Send Reply</p>
+                <textarea
+                  rows={3}
+                  placeholder="Type your reply. This will be emailed to the user..."
+                  value={reply}
+                  onChange={(e) => setReply(e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-xl text-xs resize-none focus:outline-none transition-all"
+                  style={{ background: "var(--bg-inset)", border: "1px solid var(--border-default)", color: "var(--text-primary)" }}
+                  onFocus={(e) => { e.target.style.borderColor = "rgba(249,115,22,0.5)"; e.target.style.boxShadow = "0 0 0 3px rgba(249,115,22,0.08)"; }}
+                  onBlur={(e) => { e.target.style.borderColor = "var(--border-default)"; e.target.style.boxShadow = "none"; }}
+                />
+                <button
+                  className="mt-2 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-white transition-all hover:scale-[1.02] active:scale-[0.99] disabled:opacity-50 disabled:hover:scale-100"
+                  style={{ background: "linear-gradient(135deg,#ea580c 0%,#f97316 100%)", boxShadow: "0 0 22px rgba(249,115,22,0.15)", cursor: (reply && !sendingReply) ? "pointer" : "not-allowed", border: "none" }}
+                  disabled={!reply || sendingReply}
+                  onClick={handleSendReply}
+                >
+                  <Send className={`w-3.5 h-3.5 ${sendingReply ? 'animate-pulse' : ''}`} />
+                  {sendingReply ? "Sending..." : "Send Reply & Email"}
+                </button>
               </div>
             </>
           )}
