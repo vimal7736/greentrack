@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useMemo, useState } from "react";
 import {
@@ -35,7 +35,27 @@ export default function ComparePage() {
     A:     +(sA.byType[t] ?? 0).toFixed(1),
     B:     +(sB.byType[t] ?? 0).toFixed(1),
     color: BILL_TYPE_COLORS[t] ?? "#6b7280",
-  }));
+  })).filter(d => d.A > 0 || d.B > 0);
+
+  const handleFromAChange = (v: string) => {
+    setFromA(v);
+    if (v > toA) setToA(v);
+  };
+
+  const handleToAChange = (v: string) => {
+    setToA(v);
+    if (v < fromA) setFromA(v);
+  };
+
+  const handleFromBChange = (v: string) => {
+    setFromB(v);
+    if (v > toB) setToB(v);
+  };
+
+  const handleToBChange = (v: string) => {
+    setToB(v);
+    if (v < fromB) setFromB(v);
+  };
 
   const co2Diff = sA.co2 - sB.co2;
   const costDiff = sA.cost - sB.cost;
@@ -63,13 +83,13 @@ export default function ComparePage() {
           label="Observation Period A"
           color={colorA}
           from={fromA} to={toA}
-          onFromChange={setFromA} onToChange={setToA}
+          onFromChange={handleFromAChange} onToChange={handleToAChange}
         />
         <PeriodPicker
           label="Observation Period B"
           color={colorB}
           from={fromB} to={toB}
-          onFromChange={setFromB} onToChange={setToB}
+          onFromChange={handleFromBChange} onToChange={handleToBChange}
         />
       </div>
 
@@ -297,7 +317,7 @@ export default function ComparePage() {
             {typeChart.length === 0 ? (
               <div className="h-[240px] flex items-center justify-center bg-bg-inset/30 rounded-3xl border border-dashed border-border-subtle">
                 <p className="text-[10px] font-black uppercase tracking-widest text-text-muted">
-                  No overlapping data detected
+                  No data detected for selected periods
                 </p>
               </div>
             ) : (
