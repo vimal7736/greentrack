@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useToast } from "@/components/ui/Toast";
+import { AdminSelect } from "@/components/ui/AdminSelect";
 import { formatDate } from "@/lib/utils/format";
 
 const ROLE_STYLES: Record<string, { bg: string; text: string; ring: string }> = {
@@ -176,13 +177,16 @@ export default function UserDetailPage() {
             <div className="premium-card p-5 lg:p-6">
               <h3 className="text-sm font-black tracking-tight mb-4" style={{ color: "var(--text-primary)" }}>Role Management</h3>
               <div className="flex items-center gap-3">
-                <div className="relative">
-                  <select value={user.role} onChange={(e) => setRoleConfirm(e.target.value)}
-                    className="appearance-none pr-8 pl-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest cursor-pointer focus:outline-none"
-                    style={{ background: "var(--bg-inset)", color: "var(--text-primary)", border: "var(--card-border)" }}>
-                    <option value="owner">Owner</option><option value="admin">Admin</option><option value="member">Member</option>
-                  </select>
-                  <ChevronDown className="w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted" />
+                <div className="relative w-40">
+                  <AdminSelect
+                    value={user.role}
+                    onChange={(val) => setRoleConfirm(val)}
+                    options={[
+                      { label: "Owner", value: "owner" },
+                      { label: "Admin", value: "admin" },
+                      { label: "Member", value: "member" },
+                    ]}
+                  />
                 </div>
                 <span className="text-[10px] font-bold text-text-muted">Current: {user.role}</span>
               </div>

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState } from "react";
 import {
   FileText, Download, TrendingDown, TrendingUp,
@@ -91,17 +91,17 @@ export default function ReportsPage() {
         {isYearOpen && (
           <div className="absolute top-full left-0 mt-2 z-50">
             <div
-              className="animate-scale-in border shadow-2xl p-2 rounded-2xl w-44"
-              style={{ background: "var(--bg-elevated)", borderColor: "var(--border-default)" }}
+              className="animate-scale-in border border-border-default/50 shadow-[0_20px_50px_rgba(0,0,0,0.12)] p-4 rounded-[2rem] w-48 flex flex-col gap-1"
+              style={{ background: "var(--bg-elevated)" }}
             >
               {YEARS.map((y) => (
                 <button
                   key={y}
                   onClick={() => { setYear(String(y)); setIsYearOpen(false); }}
-                  className={`w-full text-left px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                  className={`w-full text-left px-6 py-3.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${
                     year === String(y)
-                      ? "bg-gt-green-600 text-white"
-                      : "text-text-muted hover:text-text-primary"
+                      ? "bg-gt-green-500 text-white shadow-md shadow-gt-green-500/10"
+                      : "text-text-primary hover:bg-bg-inset/50 hover:text-text-primary"
                   }`}
                   style={year !== String(y) ? { background: "transparent" } : {}}
                 >

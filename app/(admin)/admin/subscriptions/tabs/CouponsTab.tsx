@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { Tag, Percent, DollarSign, ToggleLeft, ToggleRight } from "lucide-react";
 import type { CouponRow } from "@/types";
+import { AdminSelect } from "@/components/ui/AdminSelect";
 import { formatDate } from "@/lib/utils/format";
 
 interface CreateForm {
@@ -101,16 +102,17 @@ export default function CouponsTab() {
                 className="w-full px-3 py-2.5 rounded-xl text-sm font-black"
                 style={{ background: "var(--bg-inset)", color: "var(--text-primary)", border: "var(--card-border)" }} />
             </div>
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-1.5 z-10">
               <label className="text-[10px] font-black uppercase tracking-widest text-text-muted">Type</label>
-              <select
+              <AdminSelect
                 value={form.type}
-                onChange={(e) => setForm((f) => ({ ...f, type: e.target.value as "percentage" | "fixed" }))}
-                className="w-full px-3 py-2.5 rounded-xl text-sm font-black appearance-none"
-                style={{ background: "var(--bg-inset)", color: "var(--text-primary)", border: "var(--card-border)" }}>
-                <option value="percentage">Percentage (%)</option>
-                <option value="fixed">Fixed (£)</option>
-              </select>
+                onChange={(val) => setForm((f) => ({ ...f, type: val as "percentage" | "fixed" }))}
+                options={[
+                  { label: "Percentage (%)", value: "percentage" },
+                  { label: "Fixed (£)", value: "fixed" },
+                ]}
+                triggerClassName="px-3 py-2.5 text-sm"
+              />
             </div>
             <div className="flex flex-col gap-1.5">
               <label className="text-[10px] font-black uppercase tracking-widest text-text-muted">

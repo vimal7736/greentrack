@@ -186,7 +186,7 @@ export default function AdminSidebar({
 
       {/* ── Nav items ───────────────────────────────────────────── */}
       <nav
-        className="flex-1 py-2 overflow-y-auto overflow-x-hidden"
+        className="flex-1 py-2 overflow-hidden"
         style={{ paddingLeft: iconOnly ? 0 : "0.5rem", paddingRight: iconOnly ? 0 : "0.5rem" }}
         aria-label="Admin navigation"
       >

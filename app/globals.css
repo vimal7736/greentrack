@@ -521,3 +521,21 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* ================================================================
+   GLOBAL INPUT STYLING (Inset shadow & border-radius)
+   ================================================================ */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="submit"]):not([type="button"]):not([type="file"]),
+select,
+textarea {
+  box-shadow: var(--shadow-inset-xs) !important;
+  border-radius: var(--radius-md) !important;
+  transition: box-shadow var(--transition-base), border-color var(--transition-base), background-color var(--transition-base);
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="submit"]):not([type="button"]):not([type="file"]):focus,
+select:focus,
+textarea:focus {
+  border-color: var(--brand-green) !important;
+}
+

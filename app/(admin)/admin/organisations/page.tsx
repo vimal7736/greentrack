@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import {
@@ -10,6 +10,7 @@ import { DataTable, type ColumnDef } from "@/components/ui/DataTable";
 import { Input } from "@/components/ui/Input";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useToast } from "@/components/ui/Toast";
+import { AdminSelect } from "@/components/ui/AdminSelect";
 import { formatDate } from "@/lib/utils/format";
 
 /* ── Style maps ────────────────────────────────────────────── */
@@ -167,16 +168,18 @@ export default function AdminOrganisationsPage() {
     {
       key: "tier_control", header: "Tier Control", align: "center",
       render: (org) => (
-        <div className="relative inline-block">
-          <select value={org.tier} disabled={changingTier === org.id}
-            onChange={(e) => handleTierChange(org.id, e.target.value)}
-            className="appearance-none pr-6 pl-2 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest cursor-pointer focus:outline-none"
-            style={{ background: "var(--bg-inset)", color: "var(--text-primary)", border: "var(--card-border)", opacity: changingTier === org.id ? 0.5 : 1 }}>
-            <option value="free">Free</option>
-            <option value="starter">Starter</option>
-            <option value="business">Business</option>
-          </select>
-          <ChevronDown className="w-3 h-3 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted" />
+        <div className="relative inline-block min-w-[100px]">
+          <AdminSelect
+            value={org.tier}
+            disabled={changingTier === org.id}
+            onChange={(val) => handleTierChange(org.id, val)}
+            options={[
+              { label: "Free", value: "free" },
+              { label: "Starter", value: "starter" },
+              { label: "Business", value: "business" },
+            ]}
+            triggerClassName="px-3 py-1.5 text-[9px]"
+          />
         </div>
       ),
     },

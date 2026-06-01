@@ -11,6 +11,7 @@ import { DataTable, type ColumnDef } from "@/components/ui/DataTable";
 import { Input } from "@/components/ui/Input";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useToast } from "@/components/ui/Toast";
+import { AdminSelect } from "@/components/ui/AdminSelect";
 import { formatDate } from "@/lib/utils/format";
 
 /* ── Role badge styles ─────────────────────────────────────── */
@@ -272,24 +273,14 @@ export default function AdminUsersPage() {
             </span>
             {/* Role change dropdown — not shown for platform admins */}
             {!isSuperadmin && !isPlatformAdmin(u.role) && (
-              <div className="relative inline-block">
-                <select
+              <div className="relative inline-block min-w-[100px]">
+                <AdminSelect
                   value={u.role}
                   disabled={changingRole === u.id}
-                  onChange={(e) => initiateRoleChange(u, e.target.value)}
-                  className="appearance-none pr-5 pl-2 py-1 rounded-lg text-[8px] font-bold uppercase tracking-widest cursor-pointer focus:outline-none"
-                  style={{
-                    background: "var(--bg-inset)",
-                    color: "var(--text-muted)",
-                    border: "var(--card-border)",
-                    opacity: changingRole === u.id ? 0.5 : 0.7,
-                  }}
-                >
-                  {ASSIGNABLE_ROLES.map((r) => (
-                    <option key={r} value={r}>{r}</option>
-                  ))}
-                </select>
-                <ChevronDown className="w-2.5 h-2.5 absolute right-1 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted" />
+                  onChange={(val) => initiateRoleChange(u, val)}
+                  options={ASSIGNABLE_ROLES.map((r) => ({ label: r, value: r }))}
+                  triggerClassName="px-3 py-1 text-[8px]"
+                />
               </div>
             )}
           </div>

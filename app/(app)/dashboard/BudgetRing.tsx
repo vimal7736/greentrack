@@ -3,6 +3,7 @@
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { Tooltip } from "@/components/ui/Tooltip";
+import { Lightbulb } from "lucide-react";
 
 interface Props {
   thisMonthCo2: number;
@@ -148,14 +149,17 @@ export function BudgetRing({ thisMonthCo2, monthlyAvg, distinctMonths }: Props) 
       {/* Mini progress bar or welcoming guide note */}
       {isFirstMonth ? (
         <div 
-          className="rounded-xl p-2.5 text-[10px] font-semibold text-center leading-normal"
+          className="rounded-xl p-2.5 text-[10px] font-semibold text-center leading-normal flex items-center justify-center gap-1.5"
           style={{
             background: "rgba(34, 197, 94, 0.05)",
             border: "1px dashed rgba(34, 197, 94, 0.25)",
             color: "var(--brand-green-dark)",
           }}
         >
-          💡 **Baseline Established**: GreenTrack will begin tracking savings comparison next month once subsequent invoices are uploaded.
+          <Lightbulb className="w-3.5 h-3.5 shrink-0" />
+          <span>
+            <strong>Baseline Established</strong>: GreenTrack will begin tracking savings comparison next month once subsequent invoices are uploaded.
+          </span>
         </div>
       ) : (
         <div>

@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useToast } from "@/components/ui/Toast";
+import { AdminSelect } from "@/components/ui/AdminSelect";
 import { formatDate } from "@/lib/utils/format";
 
 const TIER_STYLES: Record<string, { bg: string; text: string; ring: string }> = {
@@ -357,13 +358,17 @@ export default function OrgDetailPage() {
           <div className="premium-card p-5 lg:p-6">
             <h3 className="text-sm font-black tracking-tight mb-4" style={{ color: "var(--text-primary)" }}>Plan & Tier</h3>
             <div className="flex items-center gap-3">
-              <div className="relative">
-                <select value={org.tier} disabled={changingTier} onChange={(e) => handleTierChange(e.target.value)}
-                  className="appearance-none pr-8 pl-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest cursor-pointer focus:outline-none"
-                  style={{ background: "var(--bg-inset)", color: "var(--text-primary)", border: "var(--card-border)", opacity: changingTier ? 0.5 : 1 }}>
-                  <option value="free">Free</option><option value="starter">Starter</option><option value="business">Business</option>
-                </select>
-                <ChevronDown className="w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted" />
+              <div className="relative w-40">
+                <AdminSelect
+                  value={org.tier}
+                  disabled={changingTier}
+                  onChange={(val) => handleTierChange(val)}
+                  options={[
+                    { label: "Free", value: "free" },
+                    { label: "Starter", value: "starter" },
+                    { label: "Business", value: "business" },
+                  ]}
+                />
               </div>
               {org.seats_limit && <span className="text-[10px] font-bold text-text-muted">Seats limit: {org.seats_limit}</span>}
             </div>

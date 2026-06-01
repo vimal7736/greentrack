@@ -58,20 +58,20 @@ function F({ label, req, children }: { label: string; req?: boolean; children: R
 /* ── Page ───────────────────────────────────────────────────── */
 export default function SignupPage() {
   const supabase = createClient();
-  const [step, setStep]           = useState<1 | 2 | "done">(1);
-  const [loading, setLoading]     = useState(false);
-  const [error, setError]         = useState<string | null>(null);
+  const [step, setStep] = useState<1 | 2 | "done">(1);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [doneEmail, setDoneEmail] = useState("");
-  const [showPass, setShowPass]   = useState(false);
-  const [showConf, setShowConf]   = useState(false);
-  const [org, setOrg]             = useState<OrgData>(INIT_ORG);
-  const [user, setUser]           = useState<UserData>(INIT_USER);
+  const [showPass, setShowPass] = useState(false);
+  const [showConf, setShowConf] = useState(false);
+  const [org, setOrg] = useState<OrgData>(INIT_ORG);
+  const [user, setUser] = useState<UserData>(INIT_USER);
 
   // Discovery State
-  const [orgDomain, setOrgDomain]           = useState("");
-  const [discoveredOrg, setDiscoveredOrg]   = useState<{ id: string, name: string } | null>(null);
+  const [orgDomain, setOrgDomain] = useState("");
+  const [discoveredOrg, setDiscoveredOrg] = useState<{ id: string, name: string } | null>(null);
   const [checkingDomain, setCheckingDomain] = useState(false);
-  const [requestStatus, setRequestStatus]   = useState<"idle" | "loading" | "done" | "error">("idle");
+  const [requestStatus, setRequestStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
 
   const setO = (f: keyof OrgData) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
@@ -150,9 +150,9 @@ export default function SignupPage() {
     try {
       const res = await fetch("/api/org/request-join", {
         method: "POST",
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           orgId: discoveredOrg.id,
-          userId: data.user?.id 
+          userId: data.user?.id
         }),
       });
 
@@ -180,7 +180,7 @@ export default function SignupPage() {
     setError(null);
     if (user.password !== user.confirmPassword) { setError("Passwords do not match."); return; }
     if (user.password.length < 8) { setError("Password must be at least 8 characters."); return; }
-    
+
     // If we found an existing org, use the Join Request flow instead of New Org flow
     if (discoveredOrg) {
       console.log("DEBUG: Redirecting handleStep2 to handleRequestJoin");
@@ -216,17 +216,17 @@ export default function SignupPage() {
 
     console.log("DEBUG: signUp attempt in handleStep2 finished.");
     setLoading(false);
-    
-    if (err) { 
+
+    if (err) {
       console.error("DEBUG: signUp error in handleStep2:", err);
-      setError(err.message); 
-      return; 
+      setError(err.message);
+      return;
     }
-    
-    if (data.user) { 
+
+    if (data.user) {
       console.log("DEBUG: signUp success in handleStep2. User ID:", data.user.id);
-      setDoneEmail(user.email); 
-      setStep("done"); 
+      setDoneEmail(user.email);
+      setStep("done");
     }
   }
 
@@ -251,9 +251,9 @@ export default function SignupPage() {
           </p>
           <div className="space-y-4">
             {[
-              { Icon: BarChart3,  text: "Automatic CO₂ calculation from bills" },
-              { Icon: FileText,   text: "SECR-compliant PDF carbon reports" },
-              { Icon: Users,      text: "Team management & role-based access" },
+              { Icon: BarChart3, text: "Automatic CO₂ calculation from bills" },
+              { Icon: FileText, text: "SECR-compliant PDF carbon reports" },
+              { Icon: Users, text: "Team management & role-based access" },
               { Icon: ShieldCheck, text: "UK GDPR compliant · Data in London" },
             ].map(({ Icon, text }) => (
               <div key={text} className="flex items-center gap-3">
@@ -290,7 +290,7 @@ export default function SignupPage() {
                 {requestStatus === "done" ? "Request Submitted" : "Check your email"}
               </h2>
               <p className="text-gray-500 text-sm mb-1">
-                {requestStatus === "done" 
+                {requestStatus === "done"
                   ? `Your request to join ${discoveredOrg?.name} has been sent to their admins.`
                   : `Verification link sent to ${doneEmail}`
                 }
@@ -458,8 +458,8 @@ export default function SignupPage() {
                     </>
                   )}
 
-                  <button 
-                    type="submit" 
+                  <button
+                    type="submit"
                     className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 mt-4"
                   >
                     {discoveredOrg ? "Continue to Request Access" : "Continue to Admin User"} <ArrowRight className="w-4 h-4" />
@@ -521,7 +521,7 @@ export default function SignupPage() {
                         <div>
                           <p className="text-sm font-bold text-gray-900">{discoveredOrg.name} found!</p>
                           <p className="text-xs text-gray-500 leading-relaxed mt-0.5">
-                            This organisation is already registered. Instead of creating a duplicate, 
+                            This organisation is already registered. Instead of creating a duplicate,
                             you can request to join their existing workspace.
                           </p>
                         </div>
@@ -586,7 +586,7 @@ export default function SignupPage() {
                       className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg border border-gray-200 text-gray-600 text-sm font-semibold hover:bg-gray-50 transition-colors">
                       <ArrowLeft className="w-3.5 h-3.5" /> Back
                     </button>
-                    
+
                     {discoveredOrg ? (
                       <button type="button" onClick={handleRequestJoin} disabled={requestStatus === "loading"}
                         className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-60 text-white py-2.5 rounded-lg font-semibold text-sm transition-colors flex items-center justify-center gap-2">

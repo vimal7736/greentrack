@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState, useEffect, useCallback } from "react";
 import { Search, Filter, Download, Eye, Trash2, AlertCircle, Zap, Flame, ChevronDown, Leaf, X } from "lucide-react";
 
@@ -204,17 +204,17 @@ export default function HistoryPage() {
             {isFilterOpen && (
               <div className="absolute top-full left-0 mt-2 w-56 z-50 h-0 overflow-visible">
                 <div
-                  className="animate-scale-in border shadow-2xl p-2 rounded-2xl"
-                  style={{ background: "var(--bg-elevated)", borderColor: "var(--border-default)" }}
+                  className="animate-scale-in border border-border-default/50 shadow-[0_20px_50px_rgba(0,0,0,0.12)] p-4 rounded-[2rem] flex flex-col gap-1"
+                  style={{ background: "var(--bg-elevated)" }}
                 >
                   {BILL_TYPE_FILTER_OPTIONS.map(({ key, label }) => (
                     <button
                       key={key}
                       onClick={() => { setTypeFilter(key); setIsFilterOpen(false); }}
-                      className={`w-full text-left px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                      className={`w-full text-left px-6 py-3.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${
                         typeFilter === key 
-                          ? "bg-gt-green-600 text-white shadow-lg" 
-                          : "text-text-muted hover:text-text-primary"
+                          ? "bg-gt-green-500 text-white shadow-md shadow-gt-green-500/10" 
+                          : "text-text-primary hover:bg-bg-inset/50 hover:text-text-primary"
                       }`}
                       style={typeFilter !== key ? { background: "transparent" } : {}}
                     >

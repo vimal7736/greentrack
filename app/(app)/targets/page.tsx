@@ -1,10 +1,11 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState, useMemo } from "react";
 import {
   Brain, Trash2, CheckCircle2, ListTodo, Sparkles, Leaf,
   Zap, ThermometerSun, Car, Award, PartyPopper, Sliders,
-  Target, TrendingDown, Check, Info, Filter
+  Target, TrendingDown, Check, Info, Filter,
+  User, Bot
 } from "lucide-react";
 
 import { useBillsHistory } from "@/hooks/useBillsHistory";
@@ -214,13 +215,13 @@ export default function TargetsPage() {
 
                   <button
                     onClick={() => setTargetMode(targetMode === "manual" ? "ai" : "manual")}
-                    className="relative w-18 h-6 rounded-full bg-bg-inset border border-border-subtle p-0.5 transition-all duration-500 flex items-center cursor-pointer group-hover:border-gt-green-500/30 shadow-[inset_1px_2px_4px_rgba(0,0,0,0.06)]"
+                    className="relative w-22 h-6 rounded-full bg-bg-inset border border-border-subtle p-0.5 transition-all duration-500 flex items-center cursor-pointer group-hover:border-gt-green-500/30 shadow-[inset_1px_2px_4px_rgba(0,0,0,0.06)]"
                   >
                     <div
-                      className={`absolute w-8 h-4.5 rounded-full shadow-md flex items-center justify-center transition-all duration-500 text-[7px] font-black uppercase tracking-widest ${targetMode === "ai" ? "translate-x-8 bg-gt-green-500 text-white" : "translate-x-0 bg-bg-surface text-text-primary border border-border-subtle"
+                      className={`absolute w-12 h-4.5 rounded-full shadow-md flex items-center justify-center transition-all duration-500 text-[7px] font-black uppercase tracking-wide ${targetMode === "ai" ? "translate-x-9 bg-gt-green-500 text-white" : "translate-x-0 bg-bg-surface text-text-primary border border-border-subtle"
                         }`}
                     >
-                      {targetMode === "ai" ? "AI" : "User"}
+                      {targetMode === "ai" ? "AI" : "Manual"}
                     </div>
                   </button>
                 </div>
@@ -228,11 +229,16 @@ export default function TargetsPage() {
                 <div className="p-3 rounded-xl bg-bg-inset/60 border border-border-subtle space-y-2 shadow-[inset_2px_2px_5px_rgba(0,0,0,0.05),_1px_1px_2px_rgba(255,255,255,0.02)]">
                   <div className="flex justify-between items-center border-b border-border-subtle pb-1.5">
                     <span className="text-[8.5px] font-black text-text-muted uppercase tracking-widest font-mono">ACTIVE TARGET TYPE</span>
-                    <span className={`text-[7.5px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded border ${targetMode === "ai"
-                      ? "bg-gt-green-500/10 border-gt-green-500/20 text-gt-green-600"
-                      : "bg-gt-green-500/10 border-gt-green-500/20 text-gt-green-600"
-                      }`}>
-                      {targetMode === "ai" ? "🤖 AI OPTIMIZED" : "👤 MANUAL USER"}
+                    <span className="inline-flex items-center gap-1 text-[7.5px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded border bg-gt-green-500/10 border-gt-green-500/20 text-gt-green-600">
+                      {targetMode === "ai" ? (
+                        <>
+                          <Bot className="w-3 h-3 text-gt-green-600" /> AI OPTIMIZED
+                        </>
+                      ) : (
+                        <>
+                          <User className="w-3 h-3 text-gt-green-600" /> MANUAL
+                        </>
+                      )}
                     </span>
                   </div>
 
@@ -267,7 +273,7 @@ export default function TargetsPage() {
                     </div>
                     <p className="text-[10px] font-black text-text-primary uppercase tracking-wider">AI Strategy Locked</p>
                     <p className="text-[9px] font-bold text-text-secondary leading-relaxed max-w-[190px]">
-                      Parameters are locked under AI optimization. Toggle to **User** in the Strategy Deck above to customize manually.
+                      Parameters are locked under AI optimization. Toggle to **Manual** in the Strategy Deck above to customize manually.
                     </p>
                   </div>
                 </div>
@@ -424,24 +430,26 @@ export default function TargetsPage() {
                     <Filter className="w-2.5 h-2.5 text-gt-orange-500" /> Filter:
                   </span>
                   {[
-                    { key: "all", label: "All Board" },
-                    { key: "pending", label: "Pending" },
-                    { key: "completed", label: "Completed" },
-                    { key: "electricity", label: "⚡ Scope 2 Electricity" },
-                    { key: "gas", label: "🔥 Scope 1 Gas" },
-                    { key: "fuel", label: "🚗 Scope 1 Fleet" }
+                    { key: "all", label: "All Board", Icon: undefined },
+                    { key: "pending", label: "Pending", Icon: undefined },
+                    { key: "completed", label: "Completed", Icon: undefined },
+                    { key: "electricity", label: "Scope 2 Electricity", Icon: Zap },
+                    { key: "gas", label: "Scope 1 Gas", Icon: ThermometerSun },
+                    { key: "fuel", label: "Scope 1 Fleet", Icon: Car }
                   ].map((btn) => {
                     const isActive = activeFilter === btn.key;
+                    const BtnIcon = btn.Icon;
                     return (
                       <button
                         key={btn.key}
                         onClick={() => setActiveFilter(btn.key as any)}
-                        className={`px-2.5 py-1 rounded-lg text-[8.5px] font-black uppercase tracking-wider transition-all duration-300 hover:scale-[1.02] ${isActive
+                        className={`px-2.5 py-1 rounded-lg text-[8.5px] font-black uppercase tracking-wider transition-all duration-300 hover:scale-[1.02] inline-flex items-center gap-1.5 ${isActive
                           ? "bg-bg-surface text-gt-orange-500 border border-gt-orange-500/40 shadow-[inset_1.5px_1.5px_3px_rgba(0,0,0,0.1),_0_0_8px_rgba(249,115,22,0.15)] scale-[1.02]"
                           : "text-text-muted hover:text-text-primary hover:bg-bg-inset/40"
                           }`}
                       >
-                        {btn.label}
+                        {BtnIcon && <BtnIcon className="w-3 h-3" />}
+                        <span>{btn.label}</span>
                       </button>
                     );
                   })}

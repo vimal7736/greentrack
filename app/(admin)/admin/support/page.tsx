@@ -5,6 +5,7 @@ import {
   MessageSquare, ChevronRight, X, Send, User, Building2,
   Mail, Tag, Calendar, ArrowUpRight, Inbox, XCircle, RefreshCw
 } from "lucide-react";
+import { AdminSelect } from "@/components/ui/AdminSelect";
 
 interface TicketReply {
   id: string;
@@ -430,32 +431,36 @@ export default function AdminSupportPage() {
                 {/* Status & Priority Management */}
                 <div className="flex flex-col gap-2">
                   <p className="text-[9px] font-black uppercase tracking-[0.2em]" style={{ color: "var(--text-muted)" }}>Management</p>
-                  <div className="flex items-center gap-2">
-                    <select
-                      value={selected.status}
-                      onChange={(e) => handleUpdateStatus(e.target.value)}
-                      disabled={updating}
-                      className="px-2.5 py-1.5 rounded-lg text-xs font-bold outline-none"
-                      style={{ background: "var(--bg-inset)", color: STATUS_CFG[selected.status].color, border: "1px solid var(--border-default)" }}
-                    >
-                      <option value="open">Open</option>
-                      <option value="in_progress">In Progress</option>
-                      <option value="resolved">Resolved</option>
-                      <option value="closed">Closed</option>
-                    </select>
-
-                    <select
-                      value={selected.priority}
-                      onChange={(e) => handleUpdatePriority(e.target.value)}
-                      disabled={updating}
-                      className="px-2.5 py-1.5 rounded-lg text-xs font-bold outline-none"
-                      style={{ background: "var(--bg-inset)", color: PRIORITY_CFG[selected.priority].color, border: "1px solid var(--border-default)" }}
-                    >
-                      <option value="low">Low Priority</option>
-                      <option value="medium">Medium Priority</option>
-                      <option value="high">High Priority</option>
-                      <option value="urgent">Urgent Priority</option>
-                    </select>
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                    <div className="relative w-full sm:w-36">
+                      <AdminSelect
+                        value={selected.status}
+                        disabled={updating}
+                        onChange={(val) => handleUpdateStatus(val)}
+                        options={[
+                          { label: "Open", value: "open" },
+                          { label: "In Progress", value: "in_progress" },
+                          { label: "Resolved", value: "resolved" },
+                          { label: "Closed", value: "closed" },
+                        ]}
+                        triggerClassName="px-3 py-1.5 text-xs"
+                      />
+                    </div>
+                    
+                    <div className="relative w-full sm:w-40">
+                      <AdminSelect
+                        value={selected.priority}
+                        disabled={updating}
+                        onChange={(val) => handleUpdatePriority(val)}
+                        options={[
+                          { label: "Low Priority", value: "low" },
+                          { label: "Medium Priority", value: "medium" },
+                          { label: "High Priority", value: "high" },
+                          { label: "Urgent Priority", value: "urgent" },
+                        ]}
+                        triggerClassName="px-3 py-1.5 text-xs"
+                      />
+                    </div>
                   </div>
                 </div>
 

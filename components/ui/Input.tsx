@@ -36,7 +36,7 @@ export function Input({ icon, label, error, className = "", id, ...props }: Inpu
             error ? "border-brand-orange-dark" : "",
             className,
           ].join(" ")}
-          style={{ color: "var(--text-primary)" }}
+          style={{ color: "var(--text-primary)", boxShadow: "var(--shadow-inset-xs)" }}
         />
       </div>
       {error && (

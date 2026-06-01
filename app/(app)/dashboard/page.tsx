@@ -1,4 +1,4 @@
-﻿import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import {
@@ -7,6 +7,7 @@ import {
   Upload, FileText, Users, Scale, Target,
   Lightbulb, AlertTriangle, CheckCircle, Leaf,
   Droplet, Truck, Car,
+  TrendingUp, Search,
 } from "lucide-react";
 import DashboardCharts from "./DashboardCharts";
 import { BudgetRing } from "./BudgetRing";
@@ -807,9 +808,9 @@ function InsightCard({ insight }: {
       action: (
         <a 
           href="#executive-row"
-          className="inline-flex items-center gap-1 mt-1.5 text-[9px] font-black uppercase tracking-wider text-gt-green-600 hover:text-gt-green-700 transition-colors w-fit font-bold"
+          className="inline-flex items-center gap-1.5 mt-1.5 text-[9px] font-black uppercase tracking-wider text-gt-green-600 hover:text-gt-green-700 transition-colors w-fit font-bold"
         >
-          📈 View Targets <ArrowUpRight className="w-3 h-3" />
+          <TrendingUp className="w-3.5 h-3.5" /> View Targets <ArrowUpRight className="w-3 h-3" />
         </a>
       )
     },
@@ -822,9 +823,9 @@ function InsightCard({ insight }: {
       action: (
         <Link 
           href="/history" 
-          className="inline-flex items-center gap-1 mt-1.5 text-[9px] font-black uppercase tracking-wider text-gt-green-600 hover:text-gt-green-700 transition-colors w-fit font-bold"
+          className="inline-flex items-center gap-1.5 mt-1.5 text-[9px] font-black uppercase tracking-wider text-gt-green-600 hover:text-gt-green-700 transition-colors w-fit font-bold"
         >
-          🔍 Analyze Bills <ArrowUpRight className="w-3 h-3" />
+          <Search className="w-3.5 h-3.5" /> Analyze Bills <ArrowUpRight className="w-3 h-3" />
         </Link>
       )
     },
@@ -837,9 +838,9 @@ function InsightCard({ insight }: {
       action: (
         <Link 
           href="/upload" 
-          className="inline-flex items-center gap-1 mt-1.5 text-[9px] font-black uppercase tracking-wider text-gt-green-600 hover:text-gt-green-700 transition-colors w-fit font-bold"
+          className="inline-flex items-center gap-1.5 mt-1.5 text-[9px] font-black uppercase tracking-wider text-gt-green-600 hover:text-gt-green-700 transition-colors w-fit font-bold"
         >
-          ⚡ Sync Invoices <ArrowUpRight className="w-3 h-3" />
+          <Zap className="w-3.5 h-3.5" /> Sync Invoices <ArrowUpRight className="w-3 h-3" />
         </Link>
       )
     },
